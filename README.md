@@ -1,6 +1,6 @@
 # CLANG
 
-Discord bot witten with pycord, inspired by Valkyrja. Handles moderation, tickets, logging, and fun commands.
+Discord bot witten with pycord, inspired by Valkyrja. Handles moderation, tickets, logging, notes, and fun commands.
 
 Clang is a skull kept alive by eldritch magic. It screams and talks nonsense.
 

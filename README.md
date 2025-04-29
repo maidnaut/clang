@@ -6,7 +6,7 @@ Clang is fully modular, extendable, extensible, and customizable with its functi
 
 Clang is a skull kept alive by eldritch magic. It screams and talks nonsense.
 
-Clang also comes built in with its own custom mock shell for configuration and management.
+Clang also comes with its own custom mock shell built in for external configuration and management.
 
 Clang.
 

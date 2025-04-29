@@ -50,7 +50,7 @@ async def load_plugins():
     await random_decimal_sleep(0.1, 0.6)
     print("__________________________________________________________________________\n")
     await random_decimal_sleep(0.1, 0.4)
-    print(f"\nClang is starting...\n")
+    print(f"\nClang v0.1 is starting...\n")
     await random_decimal_sleep(0.5,1)
 
     print(f"Connecting to database")

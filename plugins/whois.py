@@ -17,6 +17,15 @@ class WhoisCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        # Help info
+        self.__help__ = {
+            "whois": {
+                "args": "<user:optional>",
+                "desc": "Displays user data",
+                "perm": "everyone"
+            }
+        }
+
     @commands.command()
     async def whois(self, ctx, *, user_input: str = None):
         author = ctx.author

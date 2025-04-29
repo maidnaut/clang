@@ -5,10 +5,19 @@ class ClangCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        # Help info
+        self.__help__ = {
+            "clang": {
+                "args": "",
+                "desc": "Make Clang say stuff",
+                "perm": "everyone"
+            }
+        }
+
     @commands.command()
     async def clang(self, ctx):
         # Generate a random number between 1 and 5
-        choice = random.randint(1, 20)
+        choice = random.randint(1, 21)
 
         # Define a dictionary that maps numbers to messages
         messages = {
@@ -31,7 +40,8 @@ class ClangCog(commands.Cog):
             17: "splunk",
             18: "!clang command kinda clunchy ngl",
             19: "I AM CLAG I MEAN CLANG",
-            20: "clang reference"
+            20: "clang reference",
+            21: "THE CLOCKS ARE LYING TO YOU, IT'S ALWAYS 3:07 PM."
         }
 
         # Get the message corresponding to the chosen number

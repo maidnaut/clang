@@ -11,15 +11,17 @@ from db import init_db, db_create, db_read, db_update
 
 load_dotenv()
 
+version = "0.2"
+
+activity = discord.Game(name="!help")
+
 TOKEN = os.getenv("TOKEN")
 if not TOKEN:
     raise ValueError("No token found in the .env file!")
     time.sleep(0.5)
 
-intents = discord.Intents.default()
-intents.message_content = True
-
-bot = commands.Bot(command_prefix="!", help_command=None, intents=intents)
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix="!", activity=activity, help_command=None, intents=intents)
 
 # Initialize the database
 init_db()
@@ -50,7 +52,7 @@ async def load_plugins():
     await random_decimal_sleep(0.1, 0.6)
     print("__________________________________________________________________________\n")
     await random_decimal_sleep(0.1, 0.4)
-    print(f"\nClang v0.1 is starting...\n")
+    print(f"\nClang v{version} is starting...\n")
     await random_decimal_sleep(0.5,1)
 
     print(f"Connecting to database")

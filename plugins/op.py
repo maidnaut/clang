@@ -13,6 +13,15 @@ class OpCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        # Help info
+        self.__help__ = {
+            "op": {
+                "args": "",
+                "desc": "Grants elevated perms. Must always be activated to mute and ban",
+                "perm": ["mod", "admin"]
+            }
+        }
+
     @commands.command()
     async def op(self, ctx):
 

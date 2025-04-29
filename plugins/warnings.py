@@ -41,6 +41,30 @@ class WarningsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         ensure_warnings_table_exists()
+
+        # Help info
+        self.__help__ = {
+            "warn": {
+                "args": "<user> (reason)",
+                "desc": "Creates a note and dm's them the warning",
+                "perm": ["alumni", "mod", "admin"]
+            },
+            "silentwarn": {
+                "args": "<user> (reason)",
+                "desc": "Creates a note and does NOT dm them the warning",
+                "perm": ["alumni", "mod", "admin"]
+            },
+            "delwarn": {
+                "args": "<user> (id)",
+                "desc": "Deletes a warning",
+                "perm": ["mod", "admin"]
+            },
+            "clear": {
+                "args": "<user>",
+                "desc": "Clears a users warnings",
+                "perm": ["mod", "admin"]
+            },
+        }
     
     @commands.command()
     async def warn(self, ctx, user: str = None, *, reason: str = None):

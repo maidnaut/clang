@@ -15,65 +15,73 @@ class HelpCog(commands.Cog):
 
     @commands.command()
     async def help(self, ctx):
+        author_roles = [role.id for role in ctx.author.roles]
 
-        author = ctx.author
-        author_roles = [role.id for role in author.roles]
+        def get_level():
+            if ROOT_ROLE in author_roles:
+                return "root"
+            elif OPERATOR_ROLE in author_roles:
+                return "op"
+            elif ADMIN_ROLE in author_roles:
+                return "admin"
+            elif MODERATOR_ROLE in author_roles:
+                return "mod"
+            elif ALUMNI_ROLE in author_roles:
+                return "alumni"
+            return "everyone"
 
-        text = "These are all the commands available to you.\n\n"
+        ROLE_LEVELS = {
+            "everyone": 0,
+            "alumni": 1,
+            "mod": 2,
+            "admin": 3,
+            "op": 4,
+            "root": 5
+        }
 
-        text += '''``!cookies`` Shows your cookies and supplies commands.
-``!nom`` Eats a cookie
-``!give <user>`` Gives the mentioned user one of your cookies.
-``!transfer <user> (amount)`` Cookie credit transfer.
-``!whois <user>`` Displays user info
-``!avatar <user:optional>`` Shows the user's avatar
-``!serverinfo`` Basic server stats
-``!fortune``
-'''
+        level_names = {
+            0: "Everyone",
+            1: "Alumni",
+            2: "Moderators",
+            3: "Admins",
+            4: "Operators",
+            5: "Root"
+        }
 
-        # Is alumni
-        if ALUMNI_ROLE in author_roles:
-            text += '''``!warn <user> [reason]`` Creates a note and dm's them the warning
-``!warnings <user>`` Shows all notes a user has
-``!mute <user> [reason]`` Throws them in the ⁠mute-lounge 
-``!unmute <user>`` Unmutes them
-'''
+        user_level = ROLE_LEVELS[get_level()]
+        sorted_help = {level: [] for level in range(6)}
 
-        # Is mod
-        if OPERATOR_ROLE in author_roles:
-            text += '''``!op`` You must always have this enabled to mute and ban
-``!warn <user> [reason]`` Creates a note and dm's them the warning
-``!delwarn <user>`` Opens the warning deletion prompt
-``!warnings <user>`` Shows all warnings a user has
-``!clearwarns <user>`` Deletes all warnings a user has
-``!mute <user> [reason]`` Throws them in the ⁠mute-lounge 
-``!unmute <user>`` Unmutes them
-``!ban <user> [reason]`` Please always provide reasons for bans
-``!unban <user>`` Unbans a user
-``!avatar`` Gets an avatar
-``!promote <user> <role>`` Levels up a users perms, can be used multiple times
-``!demote <user> <role>`` Demotes, can't be used on users with the same rank as you
-'''
+        for cog in self.bot.cogs.values():
+            help_info = getattr(cog, "__help__", None)
+            if help_info:
+                for cmd, meta in help_info.items():
+                    args = meta.get("args", "")
+                    desc = meta.get("desc", "")
+                    perms = meta.get("perm", "everyone")
 
-        # Is Admin
-        if ROOT_ROLE in author_roles:
-            text += '''``!op`` You must always have this enabled to mute and ban
-``!warn <user> [reason]`` Creates a note and dm's them the warning
-``!delwarn <user>`` Opens the warning deletion prompt
-``!warnings <user>`` Shows all warnings a user has
-``!clearwarns <user>`` Deletes all warnings a user has
-``!mute <user> [reason]`` Throws them in the ⁠mute-lounge 
-``!unmute <user>`` Unmutes them
-``!ban <user> [reason]`` Please always provide reasons for bans
-``!unban <user>`` Unbans a user
-``!avatar`` Gets an avatar
-``!promote <user>`` Levels up a users perms, can be used multiple times
-``!demote <user>`` Demotes, can't be used on users with the same rank as you
-``!setrate <int>`` Sets the random chance to gain a cookie on each message.
-``!airdrop <user> (amount)`` Spawn cookies out of thin air to give to a user. Don't do this tho.
-'''
+                    if isinstance(perms, str):
+                        perms = [perms]
 
-        await ctx.send(text)
+                    required_level = min(ROLE_LEVELS.get(p, 99) for p in perms)
+                    if user_level >= required_level:
+                        cmd_line = f"``!{cmd} {args}`` — {desc}" if args else f"``!{cmd}`` — {desc}"
+                        sorted_help[required_level].append(cmd_line)
+
+        embed = discord.Embed(
+            title="Available Commands",
+            color=discord.Color.blurple()
+        )
+
+        for level in sorted(sorted_help.keys()):
+            if sorted_help[level]:
+                embed.add_field(
+                    name=level_names[level],
+                    value="\n".join(sorted_help[level]),
+                    inline=False
+                )
+
+        await ctx.send(embed=embed)
+
 
 # This setup function adds the cog to the bot
 def setup(bot):

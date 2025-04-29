@@ -37,6 +37,40 @@ class CookieCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        # Help info
+        self.__help__ = {
+            "cookies": {
+                "args": "",
+                "desc": "Shows your cookies and supplies commands",
+                "perm": "everyone"
+            },
+            "nom": {
+                "args": "",
+                "desc": "Eats a cookie",
+                "perm": "everyone"
+            },
+            "give": {
+                "args": "<user>",
+                "desc": "Gives the mentioned user one of your cookies",
+                "perm": "everyone"
+            },
+            "transfer": {
+                "args": "<user> (amount)",
+                "desc": "Cookie credit transfer",
+                "perm": "everyone"
+            },
+            "airdrop": {
+                "args": "<user> (amount)",
+                "desc": "Hack in cookies",
+                "perm": "admin"
+            },
+            "setrate": {
+                "args": "(amount)",
+                "desc": "Sets the rate for the random chance to recieve cookies on every message",
+                "perm": "admin"
+            },
+        }
+
     # Command to show cookies and usage
     @commands.command()
     async def cookies(self, ctx):

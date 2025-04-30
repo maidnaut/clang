@@ -1,8 +1,9 @@
 import os
 import random
 import discord
+import sqlite3
 from discord.ext import commands
-from db import db_create, db_read, db_update
+from db import init_db, db_create, db_read, db_update
 from dotenv import load_dotenv
 from permissions import has_elevated_permissions
 
@@ -21,16 +22,31 @@ OPERATOR_ROLE = get_int_env_var("operatorRole")
 ROOT_ROLE = get_int_env_var("rootRole")
 
 # Database field for storing the cookie rate
-RATE_DB_KEY = "cookie_rate"
+DB_FILE = 'bot_data.db'
 
 # Ensure the rate exists in the database (create if missing)
-def ensure_rate_exists():
-    rate = db_read(RATE_DB_KEY)
+def ensure_rate_exists(guild_id):
+
+    init_db("cookie_rate", f"guild_id:{guild_id}", 10)
+
+    rate = db_read("cookie_rate", [f"guild_id:{guild_id}"])
     if rate is None:
-        # Create the rate in the database with a default value (e.g., 10)
-        db_create(RATE_DB_KEY, 10)
-        return 10  # Return the default rate when creating it
-    return int(rate)  # Make sure to return an integer
+        return 10
+    return int(rate)
+
+# Ensure cookies exist and the table is initialized if needed
+def ensure_cookies_exists(guild_id, user_id):
+    # Make sure the table exists before accessing it
+    init_db("cookies", [("guild_id", "TEXT"), ("user_id", "TEXT"), ("cookies", "INTEGER")])
+    
+    # Now, try to read the record
+    cookie_table = db_read("cookies", [f"guild_id:{guild_id}"])
+    
+    # If the table doesn't contain the cookie entry, initialize it with defaults
+    if cookie_table is None:
+        db_create("cookies", 
+            ["user_id", "guild_id", "cookies"], 
+            [user_id, guild_id, 0])  # Initialize with default values
 
 # Create the CookieCog class
 class CookieCog(commands.Cog):
@@ -75,23 +91,34 @@ class CookieCog(commands.Cog):
     @commands.command()
     async def cookies(self, ctx):
         user_id = str(ctx.author.id)
-        cookies = db_read(user_id)
-        if cookies is None:
-            db_create(user_id, 0)  # Initialize the user entry with 0 cookies
+        guild_id = ctx.guild.id
+
+        ensure_cookies_exists(guild_id, user_id)
+
+        cookies = db_read("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"])
+
+        if cookies[0] is None or cookies[1] is None:
+            # Initialize with default cookies value
+            db_update("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"], [0])
             cookies = 0
+        else:
+            cookies = cookies[0][0]
 
         await ctx.send(f"You have {cookies} cookies.\n-# Use ``!give <@user>``, or reply with the word thanks to give. Use ``!nom`` to eat one.")
 
     # Command to eat a cookie (subtract one)
     @commands.command()
     async def nom(self, ctx):
+        guild_id = ctx.guild.id
         user_id = str(ctx.author.id)
-        cookies = db_read(user_id)
+        cookies = db_read("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"])
         if cookies is None or int(cookies) <= 0:
             await ctx.send("You don't have any cookies to eat!")
             return
 
-        db_update(user_id, int(cookies) - 1)
+
+        db_update("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"], [int(cookies) - 1])
+        db_update(user_id, guild_id, int(cookies) - 1)
         await ctx.send(f"You ate a cookie. You now have {int(cookies) - 1} cookies.")
 
     # Command to give a cookie to another user
@@ -104,23 +131,24 @@ class CookieCog(commands.Cog):
 
         sender_id = str(ctx.author.id)
         receiver_id = str(user.id)
+        guild_id = ctx.guild.id
 
         if sender_id == receiver_id:
             await ctx.send("You can't send cookies to yourself!")
             return
         
-        sender_cookies = db_read(sender_id)
+        sender_cookies = db_read("cookies", [f"user_id:{sender_id}", f"guild_id:{guild_id}"])
         if sender_cookies is None or int(sender_cookies) <= 0:
             await ctx.send(f"You don't have any cookies {ctx.author.name}!")
             return
 
-        receiver_cookies = db_read(receiver_id)
+        receiver_cookies = db_read("cookies", [f"user_id:{receiver_id}", f"guild_id:{guild_id}"])
         if receiver_cookies is None:
-            db_create(receiver_id, 0)  # Create receiver's entry if it doesn't exist
+            ensure_cookies_exists(guild_id, receiver_id)
             receiver_cookies = 0
 
-        db_update(sender_id, int(sender_cookies) - 1)
-        db_update(receiver_id, int(receiver_cookies) + 1)
+        db_update("cookies", [f"user_id:{sender}", f"guild_id:{guild_id}"], int(sender_cookies) - 1)
+        db_update("cookies", [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], int(receiver_cookes) + 1)
 
         await ctx.send(f"{user.name} received a cookie!")
 
@@ -137,19 +165,20 @@ class CookieCog(commands.Cog):
 
         sender_id = str(ctx.author.id)
         receiver_id = str(user.id)
+        guild_id = ctx.guild.id
 
-        sender_cookies = db_read(sender_id)
+        sender_cookies = db_read("cookies", [f"user_id:{sender_id}", f"guild_id:{guild_id}"])
         if sender_cookies is None or int(sender_cookies) < amount:
             await ctx.send(f"You don't have enough cookies to transfer, {ctx.author.name}!")
             return
 
-        receiver_cookies = db_read(receiver_id)
+        receiver_cookies = db_read("cookies", [f"user_id:{receiver_id}", f"guild_id:{guild_id}"])
         if receiver_cookies is None:
             db_create(receiver_id, 0)  # Create receiver's entry if it doesn't exist
             receiver_cookies = 0
 
-        db_update(sender_id, int(sender_cookies) - amount)
-        db_update(receiver_id, int(receiver_cookies) + amount)
+        db_update("cookies", [f"user_id:{sender_id}", f"guild.id:{guild_id}", [int(sender_cookies - amount)]])
+        db_update("cookies", [f"user_id:{receiver_id}", f"guild.id:{guild_id}", [int(receiver_id + amount)]])
 
         await ctx.send(f"You transferred {amount} cookies to {user.name}. {ctx.author.name} now has {int(sender_cookies) - amount} cookies, and {user.name} now has {int(receiver_cookies) + amount} cookies.")
 
@@ -168,7 +197,8 @@ class CookieCog(commands.Cog):
             return
 
         # Update rate in database
-        db_update(RATE_DB_KEY, rate)
+        guild_id = ctx.guild.id
+        db_update("cookies", [f"guild_id:{guild_id}", [rate]])
         await ctx.send(f"The cookie rate has been set to 1 in {rate} messages.")
 
     # Command to spawn cookies out of thin air and give them to a user
@@ -192,34 +222,38 @@ class CookieCog(commands.Cog):
             return
         
         # Add the cookies to the user
+        guild_id = ctx.guild.id
         user_id = str(user.id)
-        user_cookies = db_read(user_id)
+
+        user_cookies = db_read("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"])
         if user_cookies is None:
-            db_create(user_id, 0)  # Create entry if not exists
+
+            db_update("cookies", [f"guild_id:{guild_id}", [rate]])
+            ensure_cookies_exists(user_id, guild_ud)
             user_cookies = 0
 
-        db_update(user_id, int(user_cookies) + amount)
+        db_update("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"], user_cookies + amount)
         await ctx.send(f"{ctx.author.name} has airdropped {amount} cookies to {user.name}! {user.name} now has {int(user_cookies) + amount} cookies.")
 
     # Random chance to receive a cookie when sending a message
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, ctx, message = None):
+        user_id = str(ctx.author.id)
         # Ignore messages from the bot
-        if message.author.bot:
+        if str(ctx.author.bot):
             return
 
         # Ensure rate exists in the database
-        rate = ensure_rate_exists()
+        guild_id = ctx.guild.id
+        rate = ensure_rate_exists(guild_id, user_id)
 
         # 1 in X chance based on the rate value
         if random.randint(1, rate) == 1:
-            user_id = str(message.author.id)
             user_cookies = db_read(user_id)
             if user_cookies is None:
-                db_create(user_id, 0)  # Create entry if not exists
+                ensure_cookies_exists(user_id, guild_id)
                 user_cookies = 0
-
-            db_update(user_id, int(user_cookies) + 1)
+            db_update("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"], [user_cookies + 1]);
 
 # Initialize cog
 def setup(bot):

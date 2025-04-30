@@ -1,13 +1,9 @@
-import discord
 import os
+import discord
 from discord.ext import commands
 
 # Elevated permission roles
-ALUMNI_ROLE = int(os.getenv("alumniRole"))
-MODERATOR_ROLE = int(os.getenv("moderatorRole"))
-ADMIN_ROLE = int(os.getenv("adminRole"))
-OPERATOR_ROLE = int(os.getenv("operatorRole"))
-ROOT_ROLE = int(os.getenv("rootRole"))
+roles = db_read("channelperms", "[roles:*]")
 
 class HelpCog(commands.Cog):
     def __init__(self, bot):
@@ -18,15 +14,15 @@ class HelpCog(commands.Cog):
         author_roles = [role.id for role in ctx.author.roles]
 
         def get_level():
-            if ROOT_ROLE in author_roles:
+            if roles[4] in author_roles:
                 return "root"
-            elif OPERATOR_ROLE in author_roles:
+            elif roles[3] in author_roles:
                 return "op"
-            elif ADMIN_ROLE in author_roles:
+            elif roles[2] in author_roles:
                 return "admin"
-            elif MODERATOR_ROLE in author_roles:
+            elif roles[1] in author_roles:
                 return "mod"
-            elif ALUMNI_ROLE in author_roles:
+            elif roles[0] in author_roles:
                 return "alumni"
             return "everyone"
 

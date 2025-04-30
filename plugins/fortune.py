@@ -4,17 +4,11 @@ from discord.ext import commands
 words = ["pluh", "splunk", "clunch", "spuss", "fleck", "bluck", "submitially", "legume", "gluent", "gnome", "rat", "sympatico", "speculus", "effluvia", "tempest", "ariona", "borealis", "ruck", "bogden", "ash", "briar", "blint", "clang"]
 concepts = [
     "static", "teeth", "whispers", "fractals", "mold",  
-    "glass", "void", "laughter", "rot", "nails",  
+    "glass", "the void", "laughter", "rot", "nails",  
     "moths", "blood", "milk", "salt", "ash",  
-    "dust", "echo", "worms", "ink", "rust",  
+    "dust", "echoes", "worms", "ink", "rust",  
     "smoke", "amber", "veins", "honey", "lichen",  
-    "shadow", "glitch", "thorns", "piss", "moonlight",  
-    "static", "teeth", "whispers", "fractals", "mold",  
-    "glass", "void", "laughter", "rot", "nails",  
-    "moths", "blood", "milk", "salt", "ash",  
-    "dust", "echo", "worms", "ink", "rust",  
-    "smoke", "amber", "veins", "honey", "lichen",  
-    "shadow", "glitch", "thorns", "piss", "moonlight",  
+    "a shadow", "a glitch", "thorns", "piss", "moonlight",
     "guilt", "chaos", "ignorance", "hate"
 ]
 

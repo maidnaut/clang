@@ -21,7 +21,7 @@ bot = commands.Bot(command_prefix="!", activity=activity, help_command=None, int
 console = Console(force_terminal=True, markup=True)
 print = console.print
 
-# Custim sleep function
+# Custom sleep function
 async def random_decimal_sleep(min_sleep, max_sleep):
     sleep_time = random.uniform(min_sleep, max_sleep)
     await asyncio.sleep(sleep_time)

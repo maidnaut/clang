@@ -6,22 +6,24 @@ import random
 import asyncio
 import sqlite3
 import discord
+from inc.db import *
 from pathlib import Path
 from discord.ext import commands
-from inc.db import *
 from rich.console import Console
 
 version = "0.3"
 
+# Pycord stuff
 activity = discord.Game(name="!help")
 bot = commands.Bot(command_prefix="!", activity=activity, help_command=None, intents=discord.Intents.all())
 
+# Pretty print
 console = Console(force_terminal=True, markup=True)
 print = console.print
 
-# Custom async function to sleep for a random decimal between min_sleep and max_sleep
+# Custim sleep function
 async def random_decimal_sleep(min_sleep, max_sleep):
-    sleep_time = random.uniform(min_sleep, max_sleep)  # Generate a random float between min_sleep and max_sleep
+    sleep_time = random.uniform(min_sleep, max_sleep)
     await asyncio.sleep(sleep_time)
 
 # global dict
@@ -38,15 +40,15 @@ async def start_bot():
     # Check for token
     bot.globals["TOKEN"] = await check_for_token()
 
+    min_wait = 0
+    max_wait = 0.1
+
     print("__________________________________________________________________________\n")
     await random_decimal_sleep(0.1, 0.3)
     print("[bold red]Cosmic Arp © 2025[/bold red] - maidnaut@gnamil.com\n\n")
     await random_decimal_sleep(0.1, 0.3)
 
     # CLANG
-    min_wait = 0
-    max_wait = 0.1
-
     print('''     √√√√∞√√√≈÷      ''')
     await random_decimal_sleep(min_wait, max_wait)
     print('''  ×√√≈√√√√√√√  √     ''')
@@ -79,7 +81,6 @@ async def start_bot():
     # Now start the bot
     bot_token = db_read("bot_token", ["bot_token:*"])
     TOKEN = bot_token[0][1]
-
     await bot.start(bot.globals["TOKEN"])
 
 @bot.event
@@ -88,7 +89,7 @@ async def on_ready():
     # Check environment variables
     await check_env()
 
-    # Load plugins first
+    # Load plugins
     await load_plugins()
 
     # Start the shell
@@ -98,6 +99,8 @@ async def on_ready():
 # Check for token
 #################################################################################
 async def check_for_token():
+
+    # Check for the bot token in the database. Can't run without it
 
     if not table_exists("bot_token"):
         new_db("bot_token", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("bot_token", "TEXT")])
@@ -120,6 +123,9 @@ async def check_for_token():
 # Connect to database
 #################################################################################
 async def connect():
+
+    # Database setup
+
     bot.globals["init_db"] = False
 
     await random_decimal_sleep(0.4,0.8)
@@ -148,12 +154,14 @@ async def connect():
 # Check environment variables
 #################################################################################
 async def check_env():
-    # Check if environment variables exist, and if not run init setup
-    if not table_exists("env"):
-        new_db("env", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("key", "TEXT"), ("value", "TEXT")])
 
-    env_check = db_read("config", ["*:*"])
-    if not env_check:
+    # Check if environment variables exist
+
+    if not table_exists("config"):
+        new_db("config", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("command", "TEXT"), ("enabled", "INTEGER")])
+
+    config_check = db_read("config", ["*:*"])
+    if not config_check:
 
         print(f"[bold cyan]==>[/bold cyan] Environment variables not found. Entering setup\n")
         await random_decimal_sleep(0.8,1.2)
@@ -201,6 +209,8 @@ async def get_numeric_input(prompt, allow_empty=True, default="0"):
 
 async def setup_guild_config(guild_id, guild_name):
 
+    # Setup questions
+
     print(f"\n[bold magenta]--- Setup for {guild_name} ---[/bold magenta]\n")
 
     console.print("[bold yellow][?][/bold yellow] Enable generic commands? Ex: !whois !clang etc (Y/n): ", end="", highlight=False)
@@ -233,13 +243,11 @@ async def setup_guild_config(guild_id, guild_name):
         submod_enabled = "n"
         elevation_enabled ="n"
 
-    # Set up the db
+    # Do a whole bunch of stuff to set up the db here
 
     try:
         print("[bold cyan]==>[/bold cyan] Creating databases...")
         await random_decimal_sleep(0,0.3)
-        if not table_exists("config"):
-            new_db("config", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("command", "TEXT"), ("enabled", "INTEGER")])
         if use_cookies == "y":
             new_db("cookies", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("user_id", "TEXT"), ("cookies", "INTEGER")])
         new_db("channelperms", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("channelperm", "TEXT")])
@@ -280,7 +288,7 @@ async def setup_guild_config(guild_id, guild_name):
         print("[bold green][✔][/bold green] Roles registered.")
         await random_decimal_sleep(0,0.3)
 
-        print("Finalizing...\n") # I know this does nothing but the aesthetics are cool
+        print("[bold cyan]==>[/bold cyan] Finalizing...\n") # I know this does nothing but the aesthetics are cool
         await random_decimal_sleep(0.8,1.4)
 
         bot.globals["init_db"] = True
@@ -293,17 +301,17 @@ async def setup_guild_config(guild_id, guild_name):
 # Check for  guilds
 #################################################################################
 async def check_guilds():
+
     # Update guilds table if it doesn't exist
+
     if not table_exists("guilds"):
         new_db("guilds", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_name", "TEXT"), ("guild_id", "TEXT")])
 
-    # Get the current guild IDs that the bot is part of
+    # Fetch guilds
     current_guild_ids = [str(guild.id) for guild in bot.guilds]
+    existing_guilds = db_read("guilds", ["guild_id:*"])
 
-    # Fetch the existing guilds from the database (no condition, fetch all)
-    existing_guilds = db_read("guilds", ["guild_id:*"])  # Fetch all guilds (using * to select everything)
-
-    # Prepare a list of guilds that need to be deleted (guilds the bot is no longer part of)
+    # Prep guilds list
     guilds_to_delete = []
     if existing_guilds:
         for guild_data in existing_guilds:
@@ -317,20 +325,16 @@ async def check_guilds():
             db_delete("guilds", [f"guild_id:{guild_id}"])
             print(f"[bold cyan]==>[/bold cyan] Deleted guild {guild_id} from the database. Clang is no longer there.")
 
-    # Update the database with any new guilds the bot is part of
+    # Update the database with any new guilds
     for guild in bot.guilds:
-        guild_data = [guild.name, str(guild.id)]  # List of guild name and id
+        guild_data = [guild.name, str(guild.id)]
         
-        # Check if the guild already exists in the database
-        existing_guild = db_read("guilds", [f"guild_id:{guild.id}"])  # Query by guild_id
+        existing_guild = db_read("guilds", [f"guild_id:{guild.id}"])
 
-        # If the guild is not in the database, add it
         if not existing_guild:
-            db_insert("guilds", ["guild_name", "guild_id"], guild_data)  # Pass guild_data directly
+            db_insert("guilds", ["guild_name", "guild_id"], guild_data)
             print(f'Added guild "{guild.name}" to the database. ({guild.id}).')
 
-        
-        # Store the guild data in the globals
         bot.globals["guilds"].append([guild.name, str(guild.id)])
         
     for guild in bot.guilds:
@@ -342,6 +346,8 @@ async def check_guilds():
 #################################################################################
 async def load_plugins():
 
+    # Search all plugins in /plugins and gracefully fail on any errors
+
     for filename in os.listdir("./plugins"):
         if filename.endswith(".py"):
             try:
@@ -351,8 +357,8 @@ async def load_plugins():
             except Exception as e:
                 print(f"[bold red][X][/bold red] Failed to load plugin {filename}: {e}")
                 await random_decimal_sleep(0, 0.4)
+                
     print("\n")
-
     await random_decimal_sleep(0.8, 1.2)
 
     if bot.globals["init_db"]:

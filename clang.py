@@ -11,7 +11,7 @@ from pathlib import Path
 from discord.ext import commands
 from rich.console import Console
 
-version = "0.3"
+version = "0.3a"
 
 # Pycord stuff
 activity = discord.Game(name="!help")

@@ -24,64 +24,17 @@ class TerminalCommands(commands.Cog):
             parts  = command.strip().split(maxsplit=2)
             match parts:
                 case ["help"]:
-                    console.print("Available commands: help, reload, restart, say, clear, init, exit\n")
+                    console.print("Available commands: help, reload, restart, say, clear, reset, exit\n")
 
                 case ["help", cmd]:
-                    if   cmd == "help":    console.print("Prints the available commands\n")
-                    elif cmd == "reload":  console.print("Reloads all plugins. This doesn't seem to work well\n")
-                    elif cmd == "restart": console.print("Restarts Clang\n")
-                    elif cmd == "say":     console.print("Usage: say <channel_id> <message>\n")
-                    elif cmd == "clear":   console.print("Clears the screen\n")
-                    elif cmd == "init":    console.print("Reinitializes the database (drops all tables) Cannot be undone\n")
-                    elif cmd == "exit":    console.print("Attempts to shut down Clang gracefully\n")
-
-                case ["exit"]:
-                    console.print("Shutting down...")
-                    await self.bot.close()
-                    if self.bot.http._session:
-                        await self.bot.http._session.close()
-                    await self.bot.loop.shutdown_asyncgens()
-                    sys.exit(0)
-
-                case ["say", channel_id_str, message]:
-                    try:
-                        cid = int(channel_id_str)
-                        chan = self.bot.get_channel(cid)
-                        if not chan:
-                            console.print(f"Error: Channel {cid} not found.\n")
-                            continue
-                        await chan.send(message)
-                        console.print(f"Sent to #{chan.name}: {message}\n")
-                    except ValueError:
-                        console.print("Error: Invalid channel ID.\n")
-                    except Exception as e:
-                        console.print(f"Error: {e}\n")
-
-                case ["clear"]:
-                    os.system("cls" if os.name == "nt" else "clear")
-
-                case ["restart"]:
-                    os.system("cls" if os.name == "nt" else "clear")
-                    os.execv(sys.executable, [sys.executable] + sys.argv)
-
-                case ["init"]:
-                    console.print(
-                        "[bold yellow][?][/bold yellow] Are you sure you want to reinitialize the database? "
-                        "This will drop all tables and cannot be undone. (y/N): ",
-                        end="",
-                    )
-                    confirm = (await ainput("")).strip().lower() or "n"
-                    if confirm == "y":
-                        console.print("Okay, you asked for it. Reinitializing...", style="bold red")
-                        await random_decimal_sleep(1, 1)
-                        for tbl in ["config", "cookies", "channelperms", "guilds"]:
-                            drop_table(tbl)
-                            console.print(f"Dropped table '{tbl}'", style="bold cyan")
-                            await random_decimal_sleep(1, 1)
-                        console.print("Restarting Clang…", style="bold yellow")
-                        await random_decimal_sleep(1, 1)
-                        os.system("cls" if os.name == "nt" else "clear")
-                        os.execv(sys.executable, [sys.executable] + sys.argv)
+                    if   cmd == "help":     console.print("Prints the available commands\n")
+                    elif dmd == "config":   console.print("Configure plugins. Not implemented yet.")
+                    elif cmd == "reload":   console.print("Reloads all plugins. This doesn't seem to work well\n")
+                    elif cmd == "restart":  console.print("Restarts Clang\n")
+                    elif cmd == "say":      console.print("Usage: say <channel_id> <message>\n")
+                    elif cmd == "clear":    console.print("Clears the screen\n")
+                    elif cmd == "reset":    console.print("Reinitializes the database (drops all tables) Cannot be undone\n")
+                    elif cmd == "exit":     console.print("Attempts to shut down Clang gracefully\n")
 
                 case ["reload"]:
                     console.print("[bold yellow]Reloading all cogs…[/bold yellow]", style="yellow")
@@ -105,6 +58,54 @@ class TerminalCommands(commands.Cog):
                             await random_decimal_sleep(0, 0.4)
 
                     console.print("[bold cyan]==>[/bold cyan] Done.\n", style="bold")
+
+                case ["restart"]:
+                    os.system("cls" if os.name == "nt" else "clear")
+                    os.execv(sys.executable, [sys.executable] + sys.argv)
+
+                case ["say", channel_id_str, message]:
+                    try:
+                        cid = int(channel_id_str)
+                        chan = self.bot.get_channel(cid)
+                        if not chan:
+                            console.print(f"Error: Channel {cid} not found.\n")
+                            continue
+                        await chan.send(message)
+                        console.print(f"Sent to #{chan.name}: {message}\n")
+                    except ValueError:
+                        console.print("Error: Invalid channel ID.\n")
+                    except Exception as e:
+                        console.print(f"Error: {e}\n")
+
+                case ["clear"]:
+                    os.system("cls" if os.name == "nt" else "clear")
+
+                case ["reset"]:
+                    console.print(
+                        "[bold yellow][?][/bold yellow] Are you sure you want to reinitialize the database? "
+                        "This will drop ALL tables and cannot be undone. (y/N): ",
+                        end="",
+                    )
+                    confirm = (await ainput("")).strip().lower() or "n"
+                    if confirm == "y":
+                        console.print("Okay, you asked for it. Reinitializing...", style="bold red")
+                        await random_decimal_sleep(1, 1)
+                        for tbl in ["config", "cookies", "channelperms", "guilds"]:
+                            drop_table(tbl)
+                            console.print(f"Dropped table '{tbl}'", style="bold cyan")
+                            await random_decimal_sleep(1, 1)
+                        console.print("Restarting Clang…", style="bold yellow")
+                        await random_decimal_sleep(1, 1)
+                        os.system("cls" if os.name == "nt" else "clear")
+                        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+                case ["exit"]:
+                    console.print("Shutting down...")
+                    await self.bot.close()
+                    if self.bot.http._session:
+                        await self.bot.http._session.close()
+                    await self.bot.loop.shutdown_asyncgens()
+                    sys.exit(0)
 
 
 

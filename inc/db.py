@@ -25,7 +25,7 @@ def table_exists(table_name):
     conn.close()
     return exists
 
-# usage: db_insert(table, [("key1", "value1"), ("key2", "value2")])
+# usage: db_insert(table, [("key1":"value1"), ("key2":"value2")])
 def db_insert(table, keys, values):
     if isinstance(keys, list) and isinstance(values, list):
         if len(keys) != len(values):
@@ -46,51 +46,35 @@ def db_insert(table, keys, values):
         raise ValueError("keys and values must be lists.")
 
 # usage: db_read(table, [("key1", "key1")])
-def db_read(table, keys):
-    if not isinstance(keys, list):
-        raise ValueError("keys must be a list.")
-
-    # If keys indicate wildcard or all rows
-    if keys == ["*:*"] or keys == []:
-        query = f"SELECT * FROM {table}"
-        params = []
-    else:
-        where_clauses = []
-        params = []
-        for condition in keys:
-            if ":" not in condition:
-                raise ValueError(f"Invalid key condition: {condition}")
-            column, value = condition.split(":", 1)
-            if value == "*":
-                where_clauses.append(f"{column} IS NOT NULL")
-            else:
-                where_clauses.append(f"{column} = ?")
-                params.append(value)
-        where_sql = " AND ".join(where_clauses)
-        query = f"SELECT * FROM {table} WHERE {where_sql}"
-
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute(query, params)
-    result = c.fetchall()
-    conn.close()
-
-    return result if result else None
-
-# Read multiple entries, support multiple keys
-def db_get(table, keys):
+def db_read(table, conditions=None):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
 
     values = []
-    for key in keys:
-        k, v = key.split(":", 1)  # Split key:value
-        c.execute(f'SELECT cookies FROM {table} WHERE guild_id = ? AND user_id = ?', (v, k))
-        result = c.fetchone()
-        values.append(result)
-    
+
+    if conditions:
+        if conditions == ["*:*"]:
+            query = f"SELECT * FROM {table}"
+        else:
+            clauses = []
+            for cond in conditions:
+                if ':' in cond:
+                    key, val = cond.split(':', 1)
+                    if val == '*':
+                        clauses.append(f"{key} IS NOT NULL")
+                    else:
+                        clauses.append(f"{key} = ?")
+                        values.append(val)
+            where_clause = ' AND '.join(clauses)
+            query = f"SELECT * FROM {table} WHERE {where_clause}"
+    else:
+        query = f"SELECT * FROM {table}"
+
+    c.execute(query, values)
+    rows = c.fetchall()
     conn.close()
-    return values
+    return rows if rows else []
+
 
 # Update multiple entries, with checks
 def db_update(table, keys, values):
@@ -119,16 +103,19 @@ def db_update(table, keys, values):
     else:
         raise ValueError("keys and values must be lists.")
 
-# Delete entries based on multiple keys
-def db_delete(table, keys):
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
+# usage: db_delete(table, [("key":"value"}])
+def db_delete(table, keys, values):
+    if isinstance(keys, list) and isinstance(values, list):
+        if len(keys) != len(values):
+            raise ValueError("Key and value lists must be the same length.")
+        
+        conditions = ' AND '.join(f"{k} = ?" for k in keys)
+        query = f"DELETE FROM {table} WHERE {conditions}"
 
-    if isinstance(keys, list):
-        placeholders = ','.join('?' for _ in keys)
-        c.execute(f'DELETE FROM {table} WHERE key IN ({placeholders})', keys)
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute(query, values)
+        conn.commit()
+        conn.close()
     else:
-        c.execute(f'DELETE FROM {table} WHERE key = ?', (keys,))
-
-    conn.commit()
-    conn.close()
+        raise ValueError("keys and values must be lists.")

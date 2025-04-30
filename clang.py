@@ -86,6 +86,9 @@ async def start_bot():
 @bot.event
 async def on_ready():
 
+    # Check guilds
+    await check_guilds()
+
     # Check environment variables
     await check_env()
 
@@ -126,8 +129,6 @@ async def connect():
 
     # Database setup
 
-    bot.globals["init_db"] = False
-
     await random_decimal_sleep(0.4,0.8)
     print(f"[bold cyan]==>[/bold cyan] Connecting to database")
     await random_decimal_sleep(0.1,0.4)
@@ -146,9 +147,6 @@ async def connect():
             
     print(f"[bold cyan]==>[/bold cyan] Database connection established")
     await random_decimal_sleep(0.8,1.2)
-
-    await check_guilds()
-
 
 #################################################################################
 # Check environment variables
@@ -310,19 +308,18 @@ async def check_guilds():
     # Fetch guilds
     current_guild_ids = [str(guild.id) for guild in bot.guilds]
     existing_guilds = db_read("guilds", ["guild_id:*"])
-
+    
     # Prep guilds list
     guilds_to_delete = []
-    if existing_guilds:
-        for guild_data in existing_guilds:
-            # Assuming guild_data[1] is the guild_id column (index 1)
-            if guild_data[1] not in current_guild_ids:
-                guilds_to_delete.append(guild_data[1])
+    for guild_data in existing_guilds:
+        db_guild_id = guild_data[2]  # Correct: "guild_id" is at index 2
+        if db_guild_id not in current_guild_ids:
+            guilds_to_delete.append(db_guild_id)
 
     # Delete guilds from the database that the bot is no longer part of
     if guilds_to_delete:
         for guild_id in guilds_to_delete:
-            db_delete("guilds", [f"guild_id:{guild_id}"])
+            db_delete("guilds", ["guild_id"], [guild_id])
             print(f"[bold cyan]==>[/bold cyan] Deleted guild {guild_id} from the database. Clang is no longer there.")
 
     # Update the database with any new guilds
@@ -338,7 +335,7 @@ async def check_guilds():
         bot.globals["guilds"].append([guild.name, str(guild.id)])
         
     for guild in bot.guilds:
-        print(f"[bold cyan]==>[/bold cyan] Clang exists in {guild.name} ({guild.id}).")
+        print(f"[bold cyan]==>[/bold cyan] Clang exists in {guild.name}.")
         await random_decimal_sleep(0.1, 0.3)
 
 #################################################################################

@@ -93,7 +93,7 @@ async def on_ready():
     await load_plugins()
 
     # Start the shell
-    await bot.get_cog("TerminalCommands").process_terminal_input()  # Start the terminal command loop
+    await bot.get_cog("TerminalCommands").process_terminal_input()
 
 #################################################################################
 # Check for token
@@ -357,7 +357,7 @@ async def load_plugins():
             except Exception as e:
                 print(f"[bold red][X][/bold red] Failed to load plugin {filename}: {e}")
                 await random_decimal_sleep(0, 0.4)
-                
+
     print("\n")
     await random_decimal_sleep(0.8, 1.2)
 

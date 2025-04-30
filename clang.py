@@ -95,8 +95,14 @@ async def on_ready():
     # Load plugins
     await load_plugins()
 
-    # Start the shell
-    await bot.get_cog("TerminalCommands").process_terminal_input()
+    # Ensure the cog is loaded
+    terminal = bot.get_cog("TerminalCommands")
+    
+    if terminal:
+        # Start the shell loop once the cog is loaded
+        await terminal.process_terminal_input()
+    else:
+        print("[bold red][X][/bold red] TerminalCommands cog could not load.")
 
 #################################################################################
 # Check for token
@@ -346,7 +352,7 @@ async def load_plugins():
     # Search all plugins in /plugins and gracefully fail on any errors
 
     for filename in os.listdir("./plugins"):
-        if filename.endswith(".py"):
+        if filename.endswith(".py") and filename != "__init__.py":
             try:
                 bot.load_extension(f"plugins.{filename[:-3]}")
                 print(f"[bold green][✔][/bold green] Loaded plugin/{filename}")
@@ -354,7 +360,7 @@ async def load_plugins():
             except Exception as e:
                 print(f"[bold red][X][/bold red] Failed to load plugin {filename}: {e}")
                 await random_decimal_sleep(0, 0.4)
-
+                
     print("\n")
     await random_decimal_sleep(0.8, 1.2)
 
@@ -366,4 +372,6 @@ async def load_plugins():
     await random_decimal_sleep(0.4, 0.8)
 
 # Run the bot
-asyncio.run(start_bot())
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(start_bot())

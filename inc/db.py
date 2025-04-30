@@ -16,6 +16,17 @@ def new_db(table, columns):
     else:
         raise ValueError("columns must be a list.")
 
+# Delete a whole table
+def drop_table(table):
+    if not isinstance(table, str) or not table.isidentifier():
+        raise ValueError("Invalid table name.")
+
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute(f"DROP TABLE IF EXISTS {table}")
+    conn.commit()
+    conn.close()
+
 # usage: table_exists("table_name") returns true:false
 def table_exists(table_name):
     conn = sqlite3.connect(DB_FILE)

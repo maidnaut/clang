@@ -1,6 +1,7 @@
 import os
 import discord
 from discord.ext import commands
+from inc.permissions import has_elevated_permissions
 
 # Elevated permission roles
 roles = db_read("channelperms", "[roles:*]")

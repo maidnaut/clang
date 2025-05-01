@@ -3,7 +3,7 @@ import sqlite3
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-from permissions import has_elevated_permissions
+from inc.permissions import has_elevated_permissions
 
 # Load env vars
 load_dotenv()

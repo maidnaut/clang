@@ -1,30 +1,25 @@
-import os
-import sys
-import time
-import json
-import random
-import asyncio
-import sqlite3
-import discord
+import os, sys, time, random, asyncio, discord
 from inc.db import *
 from pathlib import Path
 from discord.ext import commands
 from rich.console import Console
+from inc.terminal import ClangShell
+from inc.utils import *
 
-version = "0.3a"
+version = "0.4.1a"
+
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
+try:
+    TOKEN = loop.run_until_complete(check_for_token())
+finally:
+    pass
 
 # Pycord stuff
 activity = discord.Game(name="!help")
 bot = commands.Bot(command_prefix="!", activity=activity, help_command=None, intents=discord.Intents.all())
-
-# Pretty print
-console = Console(force_terminal=True, markup=True)
-print = console.print
-
-# Custom sleep function
-async def random_decimal_sleep(min_sleep, max_sleep):
-    sleep_time = random.uniform(min_sleep, max_sleep)
-    await asyncio.sleep(sleep_time)
+bot.add_cog(ClangShell(bot))
 
 # global dict
 bot.globals = {}
@@ -72,7 +67,7 @@ async def start_bot():
     await random_decimal_sleep(0.2, 0.5)
     print("__________________________________________________________________________\n")
     await random_decimal_sleep(0.4, 0.8)
-    print(f"\n[bold cyan]==>[/bold cyan] Clang [cyan]v{version}[/cyan] is starting...")
+    print(f"\n[bold cyan]==>[/bold cyan] Clang [cyan]v{version}[/cyan] is starting...", highlight=False)
     await random_decimal_sleep(0.4, 0.8)
 
     # Connect to database
@@ -80,7 +75,7 @@ async def start_bot():
 
     # Now start the bot
     bot_token = db_read("bot_token", ["bot_token:*"])
-    TOKEN = bot_token[0][1]
+    bot.globals["TOKEN"] = bot_token[0][1]
     await bot.start(bot.globals["TOKEN"])
 
 @bot.event
@@ -92,41 +87,24 @@ async def on_ready():
     # Check environment variables
     await check_env()
 
+    # Check for shell
+    shell = bot.get_cog("ClangShell")
+    if shell:
+        print("[bold cyan]==>[/bold cyan] Shell interface initialized")
+        await random_decimal_sleep(0.1,0.4)
+    else:
+        print("[bold red][X][/bold red] Shell could not start")
+        return
+
     # Load plugins
+    print("[bold cyan]==>[/bold cyan] Loading plugins...", highlight=False)
+    await random_decimal_sleep(0.1,0.4)
+    print ("\n")
     await load_plugins()
-
-    # Ensure the cog is loaded
-    terminal = bot.get_cog("TerminalCommands")
     
-    if terminal:
-        # Start the shell loop once the cog is loaded
-        await terminal.process_terminal_input()
-    else:
-        print("[bold red][X][/bold red] TerminalCommands cog could not load.")
-
-#################################################################################
-# Check for token
-#################################################################################
-async def check_for_token():
-
-    # Check for the bot token in the database. Can't run without it
-
-    if not table_exists("bot_token"):
-        new_db("bot_token", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("bot_token", "TEXT")])
-
-    token_check = db_read("bot_token", ["bot_token:*"])
-    
-    if not token_check:
-        console.print("[bold yellow][?][/bold yellow] What is your bot token? (Clang will not work without this):", end="")
-        bot_token = (await ainput(" ")).strip()
-        db_insert("bot_token", ["bot_token"], [bot_token])
-
-        print(f"[bold green][✔][/bold green] Token registered successfully.\n")
-        await random_decimal_sleep(0.8,1.2)
-
-        return bot_token
-    else:
-        return token_check[0][1]
+    # Schedule a task for the shell or it won't work
+    if shell:
+        bot.loop.create_task(shell.process_terminal_input())
 
 #################################################################################
 # Connect to database
@@ -140,7 +118,7 @@ async def connect():
     await random_decimal_sleep(0.1,0.4)
 
     if not os.path.exists(DB_FILE):
-        print(f"[bold cyan]==>[/bold cyan] Database doesn't exist. Creating...")
+        print(f"[bold cyan]==>[/bold cyan] Database doesn't exist. Creating...", highlight=False)
         await random_decimal_sleep(0.1,0.4)
         try:
             open(DB_FILE, "x").close()
@@ -157,7 +135,20 @@ async def connect():
 #################################################################################
 # Check environment variables
 #################################################################################
+def load_plugins():
+    plugins_path = Path("plugins")
+    for file in plugins_path.glob("*.py"):
+        if file.name.startswith("_"):
+            continue
+        module_name = f"plugins.{file.stem}"
+        try:
+            importlib.import_module(module_name)
+        except Exception as e:
+            continue
+
 async def check_env():
+
+    plugins = load_plugins()
 
     # Check if environment variables exist
 
@@ -170,6 +161,10 @@ async def check_env():
         print(f"[bold cyan]==>[/bold cyan] Environment variables not found. Entering setup\n")
         await random_decimal_sleep(0.8,1.2)
 
+        PLUGINS = {}
+        def register_plugins(name: str, func: callable):
+            PLUGINS[name] = func
+
         for guild in bot.guilds:
             gid = str(guild.id)
             name = guild.name
@@ -178,47 +173,30 @@ async def check_env():
             response = (await ainput("")).strip().lower() or "y"
 
             if response == "y":
-                await setup_guild_config(gid, name)
+                await install(gid, name)
         
-        print("\nSetup complete. Edit the configs at any time by running `config` in the terminal.\n")
+        print("\nSetup complete. Edit the configs at any time in the terminal.\n")
         await random_decimal_sleep(0.4,0.8)
     
     else:
-        print(f"[bold cyan]==>[/bold cyan] Loaded environment variables\n")
+        print(f"[bold cyan]==>[/bold cyan] Loaded environment variables")
         await random_decimal_sleep(0.1, 0.4)
 
 #################################################################################
 # Run the init
 #################################################################################
-async def ainput(prompt):
-    return await asyncio.to_thread(input, prompt)
 
-async def get_numeric_input(prompt, allow_empty=True, default="0"):
-    while True:
-        console.print(prompt, end="", highlight=False)
-
-        val = (await ainput("")).strip()
-
-        if allow_empty and val == "":
-            return default
-
-        if val.isdigit():
-            return val
-
-        console.print("[bold red][X][/bold red] Please enter a valid numeric ID.")
-        await asyncio.sleep(0.1)
-
-#prompt = "[bold yellow][?][/bold yellow] Sub Mod role ID: "
-#submod_role = await get_numeric_input(prompt)
-
-async def setup_guild_config(guild_id, guild_name):
+async def install(guild_id, guild_name):
 
     # Setup questions
 
     print(f"\n[bold magenta]--- Setup for {guild_name} ---[/bold magenta]\n")
 
-    console.print("[bold yellow][?][/bold yellow] Enable generic commands? Ex: !whois !clang etc (Y/n): ", end="", highlight=False)
-    use_generic = (await ainput("")).strip().lower() or "y"
+    console.print("[bold yellow][?][/bold yellow] Enable fun commands? Ex: !clang !fortune etc (Y/n): ", end="", highlight=False)
+    use_fun = (await ainput("")).strip().lower() or "y"
+
+    console.print("[bold yellow][?][/bold yellow] Enable utility commands? Ex: !whois !serverinfo etc (Y/n): ", end="", highlight=False)
+    use_utils = (await ainput("")).strip().lower() or "y"
 
     console.print("[bold yellow][?][/bold yellow] Enable the moderation suite? (Y/n): ", end="", highlight=False)
     use_mod = (await ainput("")).strip().lower() or "y"
@@ -250,21 +228,29 @@ async def setup_guild_config(guild_id, guild_name):
     # Do a whole bunch of stuff to set up the db here
 
     try:
-        print("[bold cyan]==>[/bold cyan] Creating databases...")
+        print("[bold cyan]==>[/bold cyan] Creating databases...", highlight=False)
         await random_decimal_sleep(0,0.3)
         if use_cookies == "y":
             new_db("cookies", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("user_id", "TEXT"), ("cookies", "INTEGER")])
         new_db("channelperms", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("channelperm", "TEXT")])
+        new_db("commands", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), {"plugin", "TEXT"}, ("name", "TEXT"), ("enabled", "TEXT")])
 
-        print("[bold cyan]==>[/bold cyan] Databases created. Populating...")
+        print("[bold cyan]==>[/bold cyan] Databases created. Populating...", highlight=False)
         await random_decimal_sleep(0,0.3)
 
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_generic", use_generic])
+        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_fun", use_generic])
+        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_utils", use_utils])
         db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_mod", use_mod])
         db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_tickets", use_tickets])
         db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_logging", use_logging])
         db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_notes", use_notes])
         db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_cookies", use_cookies])
+
+        db_insert("commands", ["guild_id", "utils" "command", "enabled"], [guild_id, "fun", "clang", "1"])
+        db_insert("commands", ["guild_id", "utils" "command", "enabled"], [guild_id, "fun", "fortune", "1"])
+        db_insert("commands", ["guild_id", "utils" "command", "enabled"], [guild_id, "fun", "flip", "1"])
+        db_insert("commands", ["guild_id", "utils" "command", "enabled"], [guild_id, "fun", "roll", "1"])
+
         print("[bold green][✔][/bold green] Use flags set.")
         await random_decimal_sleep(0,0.3)
 
@@ -292,7 +278,7 @@ async def setup_guild_config(guild_id, guild_name):
         print("[bold green][✔][/bold green] Roles registered.")
         await random_decimal_sleep(0,0.3)
 
-        print("[bold cyan]==>[/bold cyan] Finalizing...\n") # I know this does nothing but the aesthetics are cool
+        print("[bold cyan]==>[/bold cyan] Finalizing...\n", highlight=False) # I know this does nothing but the aesthetics are cool
         await random_decimal_sleep(0.8,1.4)
 
         bot.globals["init_db"] = True
@@ -341,7 +327,7 @@ async def check_guilds():
         bot.globals["guilds"].append([guild.name, str(guild.id)])
         
     for guild in bot.guilds:
-        print(f"[bold cyan]==>[/bold cyan] Clang exists in {guild.name}.")
+        print(f"[bold cyan]==>[/bold cyan] Clang is present in {guild.name}")
         await random_decimal_sleep(0.1, 0.3)
 
 #################################################################################
@@ -350,6 +336,8 @@ async def check_guilds():
 async def load_plugins():
 
     # Search all plugins in /plugins and gracefully fail on any errors
+
+    await random_decimal_sleep(0, 0.4)
 
     for filename in os.listdir("./plugins"):
         if filename.endswith(".py") and filename != "__init__.py":
@@ -365,13 +353,11 @@ async def load_plugins():
     await random_decimal_sleep(0.8, 1.2)
 
     if bot.globals["init_db"]:
-        print("[bold red]Clang is alive.[/bold red] (Hint: run `help`)\n")
+        print("Clang is alive. (Hint: run `help`)\n")
     else:
-        print(f"[bold red]Clang is awake.[/bold red] (Hint: run 'help')\n")
+        print(f"Clang is awake. (Hint: run 'help')\n")
     
-    await random_decimal_sleep(0.4, 0.8)
+    await random_decimal_sleep(0.8, 1.2)
 
-# Run the bot
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(start_bot())
+    loop.run_until_complete(start_bot())

@@ -1,40 +1,78 @@
-import os
-import sys
-import asyncio
-import logging
-import importlib.util
+import os, sys, importlib, asyncio, traceback
 from rich.console import Console
+from rich.markup import escape
 from discord.ext import commands
-from inc.db import drop_table
-from clang import random_decimal_sleep, ainput
+from pathlib import Path
+from inc.db import *
+from inc.utils import *
 
 # Pretty console
 console = Console(force_terminal=True, markup=True)
-
 importlib.invalidate_caches()
 
-class TerminalCommands(commands.Cog):
+# Register Plugins
+PLUGIN: dict[str, dict[str, any]] = {}
+def register_plugin(name: str, help: str, func: callable):
+    """
+    Register a shell command with its help text and handler.
+    """
+    PLUGIN[name] = {
+        "help": help.strip(),
+        "func": func
+    }
+
+class ClangShell(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def load_plugins(self):
+        plugins_path = Path("plugins")
+        for file in plugins_path.glob("*.py"):
+            if file.name.startswith("_"):
+                continue
+            module_name = f"plugins.{file.stem}"
+            try:
+                importlib.import_module(module_name)
+            except Exception as e:
+                continue
+
     async def process_terminal_input(self):
-        loop = asyncio.get_event_loop()
+        # Scrapes the help data from each plugin
+        self.load_plugins()
+
         while True:
-            command = await loop.run_in_executor(None, input, "☠ -> ")
-            parts  = command.strip().split(maxsplit=2)
+            command = await asyncio.get_event_loop().run_in_executor(
+                 None, console.input, "[bold]☠ -> [/bold]"
+            )
+            parts = command.strip().split()
             match parts:
                 case ["help"]:
-                    console.print("Available commands: help, reload, restart, say, clear, reset, exit\n")
+                    all_cmds = "help, restart, say, clear, reset, exit, "
+                    all_cmds += ', '.join(sorted(PLUGIN.keys()))
+                    all_cmds = ",".join(f"[cyan]{cmd}[/cyan]" for cmd in all_cmds.split(","))
+                    console.print(f"Available commands: {all_cmds}\n", highlight=False)
 
                 case ["help", cmd]:
-                    if   cmd == "help":     console.print("Prints the available commands\n")
-                    elif dmd == "config":   console.print("Configure plugins. Not implemented yet.")
-                    elif cmd == "reload":   console.print("Reloads all plugins. This doesn't seem to work well\n")
-                    elif cmd == "restart":  console.print("Restarts Clang\n")
-                    elif cmd == "say":      console.print("Usage: say <channel_id> <message>\n")
-                    elif cmd == "clear":    console.print("Clears the screen\n")
-                    elif cmd == "reset":    console.print("Reinitializes the database (drops all tables) Cannot be undone\n")
-                    elif cmd == "exit":     console.print("Attempts to shut down Clang gracefully\n")
+                    if cmd == "help":
+                        console.print("'help <command;': Prints the available commands\n", highlight=False)
+                    elif cmd == "man":
+                        console.print("'man <command': Prints the available manual pages for a command\n", highlight=False)
+                    elif cmd == "restart":
+                        console.print("'restart': Restarts Clang\n", highlight=False)
+                    elif cmd == "say":
+                        console.print("'say <channel_id> <message>': Sends a message to the specified channel\n", highlight=False)
+                    elif cmd == "clear":
+                        console.print("'clear': Clears the screen\n", highlight=False)
+                    elif cmd == "reset":
+                        console.print("'reset': Reinitializes the database (drops all tables) Cannot be undone\n", highlight=False)
+                    elif cmd == "exit":
+                        console.print("'exit': Attempts to shut down Clang gracefully\n", highlight=False)
+                    else:
+                        info = PLUGIN.get(cmd)
+                        if info:
+                            console.print(f"{escape(info['help'])}\n", highlight=False)
+                        else:
+                            console.print(f"No help entry for '{cmd}'\n", highlight=False)
 
                 case ["reload"]:
                     console.print("[bold yellow]Reloading all cogs…[/bold yellow]", style="yellow")
@@ -107,14 +145,13 @@ class TerminalCommands(commands.Cog):
                     await self.bot.loop.shutdown_asyncgens()
                     sys.exit(0)
 
+                case [cmd, *args]:
+                    command = PLUGIN.get(cmd)
+                    if command:
+                        command["func"](args)
+                    else:
+                        console.print(f"Clang: Command not found: '{cmd}'")
 
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        # Ensure the bot is actually ready
-        console.print("[bold green]Bot is ready! Starting the terminal input...[/bold green]", style="bold green")
-        # start shell loop once
-        self.bot.loop.create_task(self.process_terminal_input())
 
 def setup(bot):
-    bot.add_cog(TerminalCommands(bot))
+    bot.add_cog(ClangShell(bot))

@@ -1,7 +1,7 @@
 import discord
 import os
 from discord.ext import commands
-from permissions import has_elevated_permissions
+from inc.permissions import has_elevated_permissions
 
 # Elevated permission roles
 MODERATOR_ROLE = int(os.getenv("moderatorRole"))

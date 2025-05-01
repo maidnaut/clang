@@ -5,7 +5,15 @@ import sqlite3
 from discord.ext import commands
 from db import init_db, db_create, db_read, db_update
 from dotenv import load_dotenv
-from permissions import has_elevated_permissions
+from inc.permissions import has_elevated_permissions
+
+register_command(
+    name="cookies",
+    help="cookies help",
+    man="""
+this is an example of the cookies man page
+    """
+)
 
 # Load env vars
 load_dotenv()

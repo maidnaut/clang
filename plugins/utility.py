@@ -75,7 +75,6 @@ def setup(bot):
                 print(f"Setting role '{_role}' on module '{module}' {target}\n")
                 return
 
-            # enable/disable logic
             if extras:
                 module = extras[0]
                 if module not in MODULES:

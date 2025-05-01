@@ -37,6 +37,7 @@ class ClangShell(commands.Cog):
                 continue
 
     async def process_terminal_input(self):
+        
         # Scrapes the help data from each plugin
         self.load_plugins()
 
@@ -73,29 +74,6 @@ class ClangShell(commands.Cog):
                             console.print(f"{escape(info['help'])}\n", highlight=False)
                         else:
                             console.print(f"No help entry for '{cmd}'\n", highlight=False)
-
-                case ["reload"]:
-                    console.print("[bold yellow]Reloading all cogs…[/bold yellow]", style="yellow")
-                    await random_decimal_sleep(0, 0.4)
-
-                    # Iterate over every Python file in /plugins folder
-                    for filename in os.listdir("./plugins"):
-                        if filename.endswith(".py") and filename != "__init__.py":
-                            ext_name = f"plugins.{filename[:-3]}"  # Remove .py extension
-                            try:
-                                if ext_name in self.bot.extensions:
-                                    self.bot.unload_extension(ext_name)  # Unload before reloading
-                                    console.print(f"[bold cyan][-][/bold cyan] Unloaded {ext_name}")
-                                    await random_decimal_sleep(0, 0.4)
-                                self.bot.load_extension(ext_name)  # Load the extension
-                                console.print(f"[bold green][✔][/bold green] Reloaded {ext_name}")
-                                await random_decimal_sleep(0, 0.4)
-                            except Exception as e:
-                                console.print(f"[bold red][X][/bold red] Failed to reload {ext_name}: {e}")
-                                await random_decimal_sleep(0, 0.4)
-                            await random_decimal_sleep(0, 0.4)
-
-                    console.print("[bold cyan]==>[/bold cyan] Done.\n", style="bold")
 
                 case ["restart"]:
                     os.system("cls" if os.name == "nt" else "clear")

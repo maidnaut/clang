@@ -1,10 +1,17 @@
-import os, sys, importlib, asyncio, traceback
+import os
+import sys
+import importlib
+import asyncio
+import traceback
+import subprocess
+import json
 from rich.console import Console
 from rich.markup import escape
 from discord.ext import commands
 from pathlib import Path
 from inc.db import *
 from inc.utils import *
+from importlib.metadata import distributions
 
 # Pretty console
 console = Console(force_terminal=True, markup=True)
@@ -33,14 +40,39 @@ class ClangShell(commands.Cog):
             module_name = f"plugins.{file.stem}"
             try:
                 importlib.import_module(module_name)
-            except Exception as e:
+            except Exception:
                 continue
 
-    async def process_terminal_input(self):
-        
-        # Scrapes the help data from each plugin
-        self.load_plugins()
+    def get_clean_dependencies(self):
+        try:
+            raw = subprocess.check_output(
+                [sys.executable, "-m", "pipdeptree", "--json-tree"],
+                stderr=subprocess.DEVNULL
+            )
+            tree = json.loads(raw)
+        except Exception:
+            tree = []
 
+        exclude: set[str] = set()
+        def collect(pkg):
+            key = pkg["package"]["key"]
+            if key in exclude:
+                return
+            exclude.add(key)
+            for dep in pkg.get("dependencies", []):
+                collect(dep)
+
+        for pkg in tree:
+            if pkg["package"]["key"] in ("py-cord", "pycord", "discord.py", "discord"):
+                collect(pkg)
+
+        all_keys = {d.metadata["Name"].lower() for d in distributions()}
+        clean = sorted(all_keys - exclude)
+
+        return ["python", "pycord"] + clean
+
+    async def process_terminal_input(self):
+        self.load_plugins()
         while True:
             command = await asyncio.get_event_loop().run_in_executor(
                  None, console.input, "[bold]☠ -> [/bold]"
@@ -48,16 +80,14 @@ class ClangShell(commands.Cog):
             parts = command.strip().split()
             match parts:
                 case ["help"]:
-                    all_cmds = "help, restart, say, clear, reset, exit, "
+                    all_cmds = "help, restart, say, clear, reset, deps, exit, "
                     all_cmds += ', '.join(sorted(PLUGIN.keys()))
                     all_cmds = ",".join(f"[cyan]{cmd}[/cyan]" for cmd in all_cmds.split(","))
                     console.print(f"Available commands: {all_cmds}\n", highlight=False)
 
                 case ["help", cmd]:
                     if cmd == "help":
-                        console.print("'help <command;': Prints the available commands\n", highlight=False)
-                    elif cmd == "man":
-                        console.print("'man <command': Prints the available manual pages for a command\n", highlight=False)
+                        console.print("'help <command>': Prints the available commands\n", highlight=False)
                     elif cmd == "restart":
                         console.print("'restart': Restarts Clang\n", highlight=False)
                     elif cmd == "say":
@@ -66,6 +96,8 @@ class ClangShell(commands.Cog):
                         console.print("'clear': Clears the screen\n", highlight=False)
                     elif cmd == "reset":
                         console.print("'reset': Reinitializes the database (drops all tables) Cannot be undone\n", highlight=False)
+                    elif cmd == "deps":
+                        console.print("'deps': Lists all of Clang's dependencies.\n", highlight=False)
                     elif cmd == "exit":
                         console.print("'exit': Attempts to shut down Clang gracefully\n", highlight=False)
                     else:
@@ -102,18 +134,25 @@ class ClangShell(commands.Cog):
                         "This will drop ALL tables and cannot be undone. (y/N): ",
                         end="",
                     )
-                    confirm = (await ainput("")).strip().lower() or "n"
+                    confirm = (await asyncio.get_event_loop().run_in_executor(None, console.input)).strip().lower() or "n"
                     if confirm == "y":
                         console.print("Okay, you asked for it. Reinitializing...", style="bold red")
-                        await random_decimal_sleep(1, 1)
+                        await asyncio.sleep(1)
                         for tbl in ["config", "cookies", "channelperms", "guilds"]:
                             drop_table(tbl)
                             console.print(f"Dropped table '{tbl}'", style="bold cyan")
-                            await random_decimal_sleep(1, 1)
+                            await asyncio.sleep(1)
                         console.print("Restarting Clang…", style="bold yellow")
-                        await random_decimal_sleep(1, 1)
+                        await asyncio.sleep(1)
                         os.system("cls" if os.name == "nt" else "clear")
                         os.execv(sys.executable, [sys.executable] + sys.argv)
+
+                case ["deps"]:
+                    deps = self.get_clean_dependencies()
+                    console.print("[", highlight=False)
+                    for dep in deps:
+                        console.print(f"    '{dep}',", highlight=False)
+                    console.print("]", highlight=False)
 
                 case ["exit"]:
                     console.print("Shutting down...")

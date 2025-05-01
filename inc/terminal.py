@@ -69,7 +69,7 @@ class ClangShell(commands.Cog):
         all_keys = {d.metadata["Name"].lower() for d in distributions()}
         clean = sorted(all_keys - exclude)
 
-        return ["python", "pycord"] + clean
+        return clean
 
     async def process_terminal_input(self):
         self.load_plugins()

@@ -4,130 +4,25 @@ from discord.ext import commands
 from inc.utils import *
 
 #################################################################################
-# Handle shell commands and help page
+# Init
 #################################################################################
 
 def setup(bot):
     
-    def handle_utils(args: list[str]):
-        console = Console()
-        USAGE = "Usage: utils [-e | -d [module] | -s [module] [role]] [guild_id]"
-        MODULES = ["ping", "serverinfo", "avatar", "whois"]
-        ROLES = ["e", "s", "m", "a", "everyone", "submod", "mod", "admin"]
-        ROLE_NAMES = {"e": "everyone", "s": "submod", "m": "mod", "a": "admin"}
-
-        def print_status(guild=None):
-            header = f"Utils are enabled in {'guild ' + guild if guild else 'your server'}"
-            print(f"""[bold cyan]---[/bold cyan] {header} [bold cyan]---[/bold cyan]
-
-[bold green][E][/bold green] -- [bold]ping[/bold] is enabled, [bold]everyone[/bold] can use it
-[bold green][E][/bold green] -- [bold]serverinfo[/bold] is enabled, [bold]everyone[/bold] can use it
-[bold red][X][/bold red] -- [bold]ping[/bold] is disabled
-[bold green][E][/bold green] -- [bold]whois[/bold] is enabled, submod can use it
-    """, highlight=False)
-
-        if not args:
-            print_status()
-            return
-
-        first = args[0]
-
-        if first.startswith("-"):
-            action_map = {
-                "-e": "enable", "--enable": "enable",
-                "-d": "disable", "--disable": "disable",
-                "-s": "set", "--set": "set"
-            }
-            action = action_map.get(first)
-            if not action:
-                print(f"Error: unrecognized argument '{first}'\n{USAGE}\n", markup=False)
-                return
-
-            extras = args[1:]
-            module = role = guild = None
-
-            if action == "set":
-                if len(extras) < 1:
-                    print(f"Error: '-s' requires a module\n{USAGE}\n", markup=False)
-                    return
-                module = extras[0]
-                if module not in MODULES:
-                    print(f"Error: That module doesn't exist\n{USAGE}\n", markup=False)
-                    return
-
-                if len(extras) < 2:
-                    print(f"Error: '-s' requires a role - [(e)veryone, (s)ubmod), (m)od, (a)dmin]\n")
-                    return
-                role = extras[1]
-                if role not in ROLES:
-                    print(f"Error: Incorrect role - [(e)veryone, (s)ubmod), (m)od, (a)dmin]\n")
-                    return
-
-                if len(extras) > 2:
-                    if extras[2].isdigit():
-                        guild = extras[2]
-                    else:
-                        print(f"Error: Invalid guild ID '{extras[2]}'\n{USAGE}\n", markup=False)
-                        return
-
-                _role = ROLE_NAMES.get(role, role)
-                target = f"for guild {guild}" if guild else "in utils"
-                print(f"Setting role '{_role}' on module '{module}' {target}\n")
-                return
-
-            if extras:
-                module = extras[0]
-                if module not in MODULES:
-                    print(f"Error: That module doesn't exist\n{USAGE}\n", markup=False)
-                    return
-                if len(extras) > 1:
-                    if extras[1].isdigit():
-                        guild = extras[1]
-                    else:
-                        print(f"Error: Invalid guild ID '{extras[1]}'\n{USAGE}\n", markup=False)
-                        return
-
-            target = f"module '{module}' for guild {guild}" if guild and module else \
-                    f"module '{module}' in utils" if module else "utils globally"
-            print(f"{action.capitalize()}ing {target}\n")
-            return
-
-        if first.isdigit():
-            print_status(guild=first)
-        else:
-            print(f"Error: unrecognized argument '{first}'\n{USAGE}\n", markup=False)
-
-    # Help page & register
-    register_plugin(
-        name="utils",
-        help="""
-utilities: utils [[-set] [-e] [-d]] [module] [guild:optional]
-    Edit the utilities configuration.
-
-    Options:
-        --enable         Enables the module
-        --disable         Disables the module
-        --set            Updates the config for the module to the specified role
-
-    The default command without any options shows the status and configs of all modules inside the plugin.
-    Enabling/disabling without the module specified will toggle the status of the whole plugin.
-    Note: If Clang is in multiple servers, specifying the guild is required otherwise it'll complain at you.
-
-    Modules: ping, avatar, serverinfo, whois
-
-    Usage:
-        utils [-e/-d] [module] [guild:optional]
-        utils [-set] [module] [everyone / submod / mods / admins] [guild:optional]
-
-
-""",
-        func=handle_utils
-    )
+    init_term()
 
     # Cogs
     bot.add_cog(PingCog(bot))
     bot.add_cog(ServerInfoCog(bot))
     bot.add_cog(AvatarCog(bot))
+
+
+
+
+#################################################################################
+
+
+
 
 #################################################################################
 # !ping
@@ -236,3 +131,139 @@ class AvatarCog(commands.Cog):
 
         embed.set_image(url=user.avatar.url)
         await ctx.send(embed=embed)
+
+
+
+
+#################################################################################
+
+
+
+
+#################################################################################
+# Handle shell commands and help page
+#################################################################################
+def init_term():
+
+    # Init some text we'll use later
+    usage = "utils [-e | -d [module] | -s [module] [role]] [guild_id:optional]"
+    
+    example = """
+    utils [-e/-d] [module] [guild:optional]
+    utils [-set] [module] [everyone / submod / mods / admins] [guild:optional]
+    """
+
+    modules = ["ping", "serverinfo", "avatar", "whois"]
+    roles = ["e", "s", "m", "a", "everyone", "submod", "mod", "admin"]
+    role_names = {"e": "everyone", "s": "submod", "m": "mod", "a": "admin"}
+
+    def function(args: list[str]):
+
+        # Default option if no arguments are provided, 
+        def print_status(guild=None):
+            header = f"Utils are enabled in {'guild ' + guild if guild else 'your server'}"
+            print(f"""[bold cyan]---[/bold cyan] {header} [bold cyan]---[/bold cyan]
+
+[bold green][E][/bold green] -- [bold]ping[/bold] is enabled, [bold]everyone[/bold] can use it
+[bold green][E][/bold green] -- [bold]serverinfo[/bold] is enabled, [bold]everyone[/bold] can use it
+[bold red][X][/bold red] -- [bold]ping[/bold] is disabled
+[bold green][E][/bold green] -- [bold]whois[/bold] is enabled, submod can use it
+    """, highlight=False)
+
+        if not args:
+            print_status()
+            return
+
+        first = args[0]
+
+        if first.startswith("-"):
+            action_map = {
+                "-e": "enable", "--enable": "enable",
+                "-d": "disable", "--disable": "disable",
+                "-s": "set", "--set": "set"
+            }
+            action = action_map.get(first)
+            if not action:
+                print(f"Error: unrecognized argument '{first}'\nUsage: {usage}\n", markup=False)
+                return
+
+            extras = args[1:]
+            module = role = guild = None
+
+            if action == "set":
+                if len(extras) < 1:
+                    print(f"Error: '-s' requires a module\nUsage: {usage}\n", markup=False)
+                    return
+                module = extras[0]
+                if module not in modules:
+                    module_list = ", ".join(modules)
+                    print(f"Error: That module doesn't exist. Modules: {module_list}\n", markup=False)
+                    return
+
+                if len(extras) < 2:
+                    print(f"Error: '-s' requires a role - [(e)veryone, (s)ubmod), (m)od, (a)dmin]\n")
+                    return
+                role = extras[1]
+                if role not in roles:
+                    print(f"Error: Incorrect role - [(e)veryone, (s)ubmod), (m)od, (a)dmin]\n")
+                    return
+
+                if len(extras) > 2:
+                    if extras[2].isdigit():
+                        guild = extras[2]
+                    else:
+                        print(f"Error: Invalid guild ID '{extras[2]}'\nUsage: {usage}\n", markup=False)
+                        return
+
+                _role = role_names.get(role, role)
+                target = f"for guild {guild}" if guild else "in utils"
+                print(f"Setting role '{_role}' on module '{module}' {target}\n")
+                return
+
+            if extras:
+                module = extras[0]
+                if module not in modules:
+                    print(f"Error: That module doesn't exist\nUsage: {usage}\n", markup=False)
+                    return
+                if len(extras) > 1:
+                    if extras[1].isdigit():
+                        guild = extras[1]
+                    else:
+                        print(f"Error: Invalid guild ID '{extras[1]}'\nUsage: {usage}\n", markup=False)
+                        return
+
+            target = f"module '{module}' for guild {guild}" if guild and module else \
+                    f"module '{module}' in utils" if module else "utils globally"
+            print(f"{action.capitalize()}ing {target}\n")
+            return
+
+        if first.isdigit():
+            print_status(guild=first)
+        else:
+            print(f"Error: unrecognized argument '{first}'\nUsage: {usage}\n", markup=False)
+
+    # Help page & register
+    register_plugin(
+        name="utils",
+        help=f"""
+utilities: {usage}
+    Edit the utilities configuration.
+
+    Options:
+        --enable         Enables the module
+        --disable        Disables the module
+        --set            Updates the config for the module to the specified role
+
+    The default command without any options shows the status and configs of all modules inside the plugin.
+    Enabling/disabling without the module specified will toggle the status of the whole plugin.
+    Note: If Clang is in multiple servers, specifying the guild is required otherwise it'll complain at you.
+
+    Modules: ping, avatar, serverinfo, whois
+
+    Usage:
+{example}
+
+
+""",
+        func=function
+    )

@@ -17,31 +17,17 @@ from importlib.metadata import distributions
 console = Console(force_terminal=True, markup=True)
 importlib.invalidate_caches()
 
-# Register Plugins
-PLUGIN: dict[str, dict[str, any]] = {}
-def register_plugin(name: str, help: str, func: callable):
-    """
-    Register a shell command with its help text and handler.
-    """
-    PLUGIN[name] = {
-        "help": help.strip(),
-        "func": func
-    }
-
 class ClangShell(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     def load_plugins(self):
-        plugins_path = Path("plugins")
-        for file in plugins_path.glob("*.py"):
-            if file.name.startswith("_"):
-                continue
-            module_name = f"plugins.{file.stem}"
-            try:
-                importlib.import_module(module_name)
-            except Exception:
-                continue
+        for filename in os.listdir("./plugins"):
+            if filename.endswith(".py") and not filename.startswith("_"):
+                try:
+                    module_name = f"plugins.{file.stem}"
+                except Exception as e:
+                    continue
 
     def get_clean_dependencies(self):
         try:

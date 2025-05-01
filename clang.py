@@ -340,7 +340,7 @@ async def load_plugins():
     await random_decimal_sleep(0, 0.4)
 
     for filename in os.listdir("./plugins"):
-        if filename.endswith(".py") and filename != "__init__.py":
+        if filename.endswith(".py") and not filename.startswith("_"):
             try:
                 bot.load_extension(f"plugins.{filename[:-3]}")
                 print(f"[bold green][✔][/bold green] Loaded plugin/{filename}")

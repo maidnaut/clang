@@ -6,14 +6,17 @@ from rich.console import Console
 console = Console(force_terminal=True, markup=True)
 print = console.print
 
+# Decimal sleep
 async def random_decimal_sleep(min_sleep: float, max_sleep: float):
     await asyncio.sleep(random.uniform(min_sleep, max_sleep))
 
+# Shell inputs
 async def ainput(prompt: str = "") -> str:
     import asyncio
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, input, prompt)
 
+# Numeric inputs
 async def get_numeric_input(prompt, allow_empty=True, default="0"):
     while True:
         console.print(prompt, end="", highlight=False)
@@ -29,6 +32,7 @@ async def get_numeric_input(prompt, allow_empty=True, default="0"):
         console.print("[bold red][X][/bold red] Please enter a valid numeric ID.")
         await asyncio.sleep(0.1)
 
+# Check for the bot token in the database, if it doesn't exist then ask for it
 async def check_for_token():
     """Prompt for or fetch the bot token from the DB."""
     if not table_exists("bot_token"):
@@ -51,7 +55,13 @@ async def check_for_token():
 
     return rows[0][1]
 
-
-
-#prompt = "[bold yellow][?][/bold yellow] Sub Mod role ID: "
-#submod_role = await get_numeric_input(prompt)
+# Register Plugins
+PLUGIN: dict[str, dict[str, any]] = {}
+def register_plugin(name: str, help: str, func: callable):
+    """
+    Register a shell command with its help text and handler.
+    """
+    PLUGIN[name] = {
+        "help": help.strip(),
+        "func": func
+    }

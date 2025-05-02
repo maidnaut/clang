@@ -66,22 +66,19 @@ class CookieCog(commands.Cog):
 
     # Make sure the cookies for the user exists and return an amouunt
     def check_cookies(self, guild_id, user_id):
-        # Read from database
         result = db_read("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"])
         
-        if not result:  # No record exists
+        if not result:
             try:
                 db_insert("cookies", 
                         ["user_id", "guild_id", "cookies"],
                         [user_id, guild_id, 0])
                 return 0
             except sqlite3.IntegrityError:
-                # Handle rare case where record was created between read and insert
                 result = db_read("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"])
                 return result[0][3] if result else 0
         
-        # Assuming columns are: id, guild_id, user_id, cookies
-        return result[0][3]  # Return cookies value from 4th column
+        return result[0][3]
 
     # !coomies
     @commands.command()
@@ -116,25 +113,21 @@ class CookieCog(commands.Cog):
 
         sender_id = str(ctx.author.id)
         receiver_id = str(user.id)
-        guild_id = str(ctx.guild.id)  # Ensure this is string to match DB
+        guild_id = str(ctx.guild.id)
 
         if sender_id == receiver_id:
             return await ctx.send("You can't send a cookie to yourself!")
 
-        # Get current counts
         sender_cookies = self.check_cookies(guild_id, sender_id)
         receiver_cookies = self.check_cookies(guild_id, receiver_id)
 
         if sender_cookies < 1:
             return await ctx.send("You don't have any cookies to give!")
 
-        # Update database - PROPER FORMAT:
-        # Update sender
         db_update("cookies",
                 [f"user_id:{sender_id}", f"guild_id:{guild_id}"],
                 [("cookies", sender_cookies - 1)])
         
-        # Update receiver
         db_update("cookies",
                 [f"user_id:{receiver_id}", f"guild_id:{guild_id}"],
                 [("cookies", receiver_cookies + 1)])
@@ -163,12 +156,10 @@ class CookieCog(commands.Cog):
 
         receiver_cookies = self.check_cookies(guild_id, receiver_id)
 
-        # Update sender
         db_update("cookies", 
                 [f"user_id:{sender_id}", f"guild_id:{guild_id}"], 
                 [("cookies", sender_cookies - amount)])
         
-        # Update receiver
         db_update("cookies", 
                 [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], 
                 [("cookies", receiver_cookies + amount)])
@@ -190,7 +181,6 @@ class CookieCog(commands.Cog):
             return
 
         guild_id = ctx.guild.id
-        # Update cookie_rate table instead of cookies table
         db_update("cookie_rate", 
                 [f"guild_id:{guild_id}"], 
                 [("rate", rate)])
@@ -265,7 +255,6 @@ class CookieCog(commands.Cog):
                             [f"user_id:{uid}", f"guild_id:{guild_id}"],
                             [("cookies", current + 1)])
                 
-                # Send response
                 if len(thanked_users) == 1:
                     await message.channel.send(f"{thanked_users[0].mention} received a thank you cookie!")
                 else:

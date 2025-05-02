@@ -279,7 +279,6 @@ async def install(guild_id, guild_name):
         db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "elev_mod_role", ""])
         db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "admin_role", ""])
         db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "elev_admin_role", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "server_owner", ""])
         print("[bold green][✔][/bold green] Roles registered.")
         await random_decimal_sleep(0,0.3)
 

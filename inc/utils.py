@@ -69,29 +69,64 @@ def register_plugin(name: str, help: str, func: callable):
 # Permission system
 async def has_perms(ctx):
 
-    elevation_config = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled", "enabled:*"])
-    elevation_enabled = elevation_config[0][1]
+    elevation_enabled = "y"
 
-    roles = db_read("channelperms", [f"guild_id:{ctx.guild.id}", "*:*"])
+    submod = int(1361154018281259150)
+    mod = int(1359684990421696663)
+    op = int(1365193194257776755)
+    admin = int(1272571028542984282)
+    root = int(1365193064947126362)
+    owner = "0" #int(ctx.guild.owner)
 
-    return True
-
-    if any(row[1] != str(ctx.guild.id) for row in roles):
-
-        submod = roles[0][3]
-        mod = roles[0][3]
-        op = roles[0][3]
-        admin = roles[0][3]
-        root = roles[0][3]
-        owner = roles[0][3]
-
-        if elevation_enabled == "y":
-            if any(role.id in [op, root, owner] for role in ctx.author.roles):
-                return True
-            else:
-                await ctx.send("!op?")
-                return False
-        elif any(role.id in [mod, admin, owner] for role in ctx.author.roles):
+    if elevation_enabled == "y":
+        if any(role.id in [op, root, owner] for role in ctx.author.roles):
             return True
         else:
+            await ctx.send("!op?")
             return False
+    elif any(role.id in [mod, admin, owner] for role in ctx.author.roles):
+        return True
+    else:
+        return False
+        
+    ### update this later
+
+    try:
+        elevation_config = db_read("config", [
+            f"guild_id:{ctx.guild.id}", 
+            "name:elevation_enabled"
+        ])
+        
+        elevation_enabled = "n"
+        if elevation_config and len(elevation_config[0]) > 3:
+            elevation_enabled = elevation_config[0][3]
+
+        roles = db_read("channelperms", [f"guild_id:{ctx.guild.id}"])
+        
+        if not roles:
+            return False
+            
+        role_ids = {
+            "submod": int(roles[0][3]),
+            "mod": int(roles[1][3]),
+            "op": int(roles[2][3]), 
+            "admin": int(roles[3][3]),
+            "root": int(roles[4][3]),
+            "owner": int(roles[5][3])
+        }
+        
+        print(f"Extracted Role IDs: {role_ids}")
+        
+        if elevation_enabled.lower() == "y":
+            required_roles = [role_ids["op"], role_ids["root"], role_ids["owner"]]
+            if any(role.id in required_roles for role in ctx.author.roles):
+                return True
+            await ctx.send(f"🔒 Requires: <@&{role_ids['op']}>+ role")
+            return False
+        else:
+            required_roles = [role_ids["mod"], role_ids["admin"], role_ids["owner"]]
+            return any(role.id in required_roles for role in ctx.author.roles)
+            
+    except Exception as e:
+        print(f"Permission check error: {e}")
+        return False

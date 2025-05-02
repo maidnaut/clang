@@ -65,3 +65,33 @@ def register_plugin(name: str, help: str, func: callable):
         "help": help.strip(),
         "func": func
     }
+
+# Permission system
+async def has_perms(ctx):
+
+    elevation_config = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled", "enabled:*"])
+    elevation_enabled = elevation_config[0][1]
+
+    roles = db_read("channelperms", [f"guild_id:{ctx.guild.id}", "*:*"])
+
+    return True
+
+    if any(row[1] != str(ctx.guild.id) for row in roles):
+
+        submod = roles[0][3]
+        mod = roles[0][3]
+        op = roles[0][3]
+        admin = roles[0][3]
+        root = roles[0][3]
+        owner = roles[0][3]
+
+        if elevation_enabled == "y":
+            if any(role.id in [op, root, owner] for role in ctx.author.roles):
+                return True
+            else:
+                await ctx.send("!op?")
+                return False
+        elif any(role.id in [mod, admin, owner] for role in ctx.author.roles):
+            return True
+        else:
+            return False

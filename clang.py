@@ -6,7 +6,7 @@ from rich.console import Console
 from inc.terminal import ClangShell
 from inc.utils import *
 
-version = "0.4.2a"
+version = "0.4.3a"
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -258,8 +258,8 @@ async def install(guild_id, guild_name):
         await random_decimal_sleep(0,0.3)
 
         if use_cookies == "y":
-            new_db("cookie_rate", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("rate", "TEXT")])
-            db_insert("cookie_rate", ["guild_id", "rate"], [guild_id, "100"])
+            new_db("cookie_rate", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("rate", "INTEGER")])
+            db_insert("cookie_rate", ["guild_id", "rate"], [guild_id, 100])
             print("[bold green][✔][/bold green] Default random chance of cookie drops set to 1 in 100 messages.")
             await random_decimal_sleep(0,0.3)
 

@@ -49,8 +49,7 @@ def db_insert(table, keys, values):
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
 
-        # Fix: Pass the values list directly, not wrapped in another list
-        c.execute(query, values)  # This is the correct usage
+        c.execute(query, values)
         conn.commit()
         conn.close()
     else:
@@ -69,6 +68,8 @@ def db_read(table, conditions=None):
         else:
             clauses = []
             for cond in conditions:
+                if cond == "*:*":
+                    continue  # skip this invalid clause
                 if ':' in cond:
                     key, val = cond.split(':', 1)
                     if val == '*':
@@ -76,6 +77,7 @@ def db_read(table, conditions=None):
                     else:
                         clauses.append(f"{key} = ?")
                         values.append(val)
+
             where_clause = ' AND '.join(clauses)
             query = f"SELECT * FROM {table} WHERE {where_clause}"
     else:
@@ -87,32 +89,26 @@ def db_read(table, conditions=None):
     return rows if rows else []
 
 
-# Update multiple entries, with checks
-def db_update(table, keys, values):
-    if isinstance(keys, list) and isinstance(values, list):
-        if len(values) != 1:
-            raise ValueError("There must be exactly one value to update.")
-        
-        # Prepare the column names and their corresponding values
-        column_values = []
-        where_clauses = []
-        
-        for key in keys:
-            column, value = key.split(":", 1)  # Split the key into column name and value
-            where_clauses.append(f"{column} = ?")
-            column_values.append(value)
-        
-        # The SET clause for updating cookies
-        query = f'UPDATE {table} SET cookies = ? WHERE ' + ' AND '.join(where_clauses)
-
-        # Execute the query
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute(query, [values[0]] + column_values)  # First value is the new cookies value, then the keys
-        conn.commit()
-        conn.close()
-    else:
-        raise ValueError("keys and values must be lists.")
+# usage: db_update("table", [f"guild_id:{guild_id}"], [("rate", rate)])
+def db_update(table, conditions, updates):
+    set_clause = ", ".join(f"{field} = ?" for field, _ in updates)
+    where_parts = []
+    where_values = []
+    
+    for cond in conditions:
+        if ':' in cond:
+            col, val = cond.split(':', 1)
+            where_parts.append(f"{col} = ?")
+            where_values.append(val)
+    
+    query = f"UPDATE {table} SET {set_clause} WHERE {' AND '.join(where_parts)}"
+    values = [val for _, val in updates] + where_values
+    
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute(query, values)
+    conn.commit()
+    conn.close()
 
 # usage: db_delete(table, [("key":"value"}])
 def db_delete(table, keys, values):

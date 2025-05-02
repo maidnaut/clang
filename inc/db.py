@@ -36,7 +36,7 @@ def table_exists(table_name):
     conn.close()
     return exists
 
-# usage: db_insert(table, [("key1":"value1"), ("key2":"value2")])
+# usage: db_insert("table_name", [("name1", "type1"), ("name2", "type2")])
 def db_insert(table, keys, values):
     if isinstance(keys, list) and isinstance(values, list):
         if len(keys) != len(values):

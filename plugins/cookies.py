@@ -1,63 +1,32 @@
-import os
-import random
-import discord
-import sqlite3
+import discord, os, asyncio, argparse
+from inc.terminal import register_plugin
 from discord.ext import commands
-from db import init_db, db_create, db_read, db_update
-from dotenv import load_dotenv
-from inc.permissions import has_elevated_permissions
+from inc.utils import *
 
-register_command(
-    name="cookies",
-    help="cookies help",
-    man="""
-this is an example of the cookies man page
-    """
-)
+#################################################################################
+# Handle shell commands and help page
+#################################################################################
 
-# Load env vars
-load_dotenv()
-def get_int_env_var(var_name):
-    value = os.getenv(var_name)
-    if value is None:
-        raise ValueError(f"Missing {var_name} in .env file")
-    return int(value)
-
-# Load role IDs dynamically from .env file
-MODERATOR_ROLE = get_int_env_var("moderatorRole")
-ADMIN_ROLE = get_int_env_var("adminRole")
-OPERATOR_ROLE = get_int_env_var("operatorRole")
-ROOT_ROLE = get_int_env_var("rootRole")
-
-# Database field for storing the cookie rate
-DB_FILE = 'bot_data.db'
-
-# Ensure the rate exists in the database (create if missing)
-def ensure_rate_exists(guild_id):
-
-    init_db("cookie_rate", f"guild_id:{guild_id}", 10)
-
-    rate = db_read("cookie_rate", [f"guild_id:{guild_id}"])
-    if rate is None:
-        return 10
-    return int(rate)
-
-# Ensure cookies exist and the table is initialized if needed
-def ensure_cookies_exists(guild_id, user_id):
-    # Make sure the table exists before accessing it
-    init_db("cookies", [("guild_id", "TEXT"), ("user_id", "TEXT"), ("cookies", "INTEGER")])
+def setup(bot):
     
-    # Now, try to read the record
-    cookie_table = db_read("cookies", [f"guild_id:{guild_id}"])
-    
-    # If the table doesn't contain the cookie entry, initialize it with defaults
-    if cookie_table is None:
-        db_create("cookies", 
-            ["user_id", "guild_id", "cookies"], 
-            [user_id, guild_id, 0])  # Initialize with default values
+    init_term()
 
-# Create the CookieCog class
+    # Cogs
+    bot.add_cog(CookieCog(bot))
+
+
+
+
+#################################################################################
+
+
+
+
+#################################################################################
+# !cookies command suite
+#################################################################################
 class CookieCog(commands.Cog):
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -95,19 +64,43 @@ class CookieCog(commands.Cog):
             },
         }
 
+    # Ensure the rate exists in the database (create if missing)
+    def ensure_rate_exists(self, guild_id):
+
+        if not table_exists("cookie_rate"):
+            new_db("cookie_rate", f"guild_id:{guild_id}", 10)
+
+            rate = db_read("cookie_rate", [f"guild_id:{guild_id}"])
+            if rate is None:
+                return 10
+            return int(rate)
+
+    # Ensure cookies exist and the table is initialized if needed
+    def ensure_cookies_exists(self, guild_id, user_id):
+
+        if not table_exists("cookies"):
+            
+            cookies = db_read("cookies", [f"guild_id:{guild_id}", (f"user_id:{user_id}")])
+
+            if cookies is None:
+                db_insert("cookies", ["user_id", "guild_id", "cookies"], [user_id, guild_id, "0"])
+
+
     # Command to show cookies and usage
     @commands.command()
     async def cookies(self, ctx):
         user_id = str(ctx.author.id)
         guild_id = ctx.guild.id
 
-        ensure_cookies_exists(guild_id, user_id)
+        self.ensure_cookies_exists(guild_id, user_id)
 
         cookies = db_read("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"])
 
-        if cookies[0] is None or cookies[1] is None:
+        cookies_exist = cookies[1:]
+
+        if len(cookies_exist) < 1:
             # Initialize with default cookies value
-            db_update("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"], [0])
+            db_insert("cookies", ["user_id", "guild_id", "cookies"], [user_id, guild_id, "0"])
             cookies = 0
         else:
             cookies = cookies[0][0]
@@ -119,6 +112,9 @@ class CookieCog(commands.Cog):
     async def nom(self, ctx):
         guild_id = ctx.guild.id
         user_id = str(ctx.author.id)
+
+        self.ensure_cookies_exists(guild_id, user_id)
+
         cookies = db_read("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"])
         if cookies is None or int(cookies) <= 0:
             await ctx.send("You don't have any cookies to eat!")
@@ -141,6 +137,8 @@ class CookieCog(commands.Cog):
         receiver_id = str(user.id)
         guild_id = ctx.guild.id
 
+        self.ensure_cookies_exists(guild_id, receiver_id)
+
         if sender_id == receiver_id:
             await ctx.send("You can't send cookies to yourself!")
             return
@@ -152,11 +150,11 @@ class CookieCog(commands.Cog):
 
         receiver_cookies = db_read("cookies", [f"user_id:{receiver_id}", f"guild_id:{guild_id}"])
         if receiver_cookies is None:
-            ensure_cookies_exists(guild_id, receiver_id)
+            self.ensure_cookies_exists(guild_id, receiver_id)
             receiver_cookies = 0
 
-        db_update("cookies", [f"user_id:{sender}", f"guild_id:{guild_id}"], int(sender_cookies) - 1)
-        db_update("cookies", [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], int(receiver_cookes) + 1)
+        db_update("cookies", [f"user_id:{sender_id}", f"guild_id:{guild_id}"], int(sender_cookies) - 1)
+        db_update("cookies", [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], int(receiver_cookies) + 1)
 
         await ctx.send(f"{user.name} received a cookie!")
 
@@ -174,6 +172,8 @@ class CookieCog(commands.Cog):
         sender_id = str(ctx.author.id)
         receiver_id = str(user.id)
         guild_id = ctx.guild.id
+
+        self.ensure_cookies_exists(guild_id, sender_id)
 
         sender_cookies = db_read("cookies", [f"user_id:{sender_id}", f"guild_id:{guild_id}"])
         if sender_cookies is None or int(sender_cookies) < amount:
@@ -206,7 +206,7 @@ class CookieCog(commands.Cog):
 
         # Update rate in database
         guild_id = ctx.guild.id
-        db_update("cookies", [f"guild_id:{guild_id}", [rate]])
+        db_update("cookie_rate", [(f"guild_id:{guild_id}", f"rate:{rate}")])
         await ctx.send(f"The cookie rate has been set to 1 in {rate} messages.")
 
     # Command to spawn cookies out of thin air and give them to a user
@@ -237,7 +237,7 @@ class CookieCog(commands.Cog):
         if user_cookies is None:
 
             db_update("cookies", [f"guild_id:{guild_id}", [rate]])
-            ensure_cookies_exists(user_id, guild_ud)
+            self.ensure_cookies_exists(user_id, guild_id)
             user_cookies = 0
 
         db_update("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"], user_cookies + amount)
@@ -253,64 +253,57 @@ class CookieCog(commands.Cog):
 
         # Ensure rate exists in the database
         guild_id = ctx.guild.id
-        rate = ensure_rate_exists(guild_id, user_id)
+        rate = await ensure_rate_exists(guild_id, user_id)
 
         # 1 in X chance based on the rate value
         if random.randint(1, rate) == 1:
-            user_cookies = db_read(user_id)
+            user_cookies = db_read("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"])
             if user_cookies is None:
-                ensure_cookies_exists(user_id, guild_id)
+                self.ensure_cookies_exists(guild_id, user_id)
                 user_cookies = 0
             db_update("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"], [user_cookies + 1]);
 
-# Initialize Cookie
-def setup(bot):
-    bot.add_cog(CookieCog(bot))
 
-#######################################################
 
-class ThankListener(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        """
-        Listen for replies containing the word 'thank' and give a free cookie to the recipient.
-        """
-        # Ensure the bot does not respond to its own messages
-        if message.author == self.bot.user:
-            return
+#################################################################################
 
-        # Check if the message is a reply (it has a reference)
-        if message.reference:
-            try:
-                # Fetch the original message being replied to
-                original_message = await message.channel.fetch_message(message.reference.message_id)
 
-                # Check if "thank" is in the reply (case-insensitive)
-                if "thank" in message.content.lower():
-                    # Give a free cookie to the user who was replied to (original_message.author)
-                    await self.give_cookie(original_message.author, message.channel)
-            except discord.NotFound:
-                # In case the original message is deleted
-                return
 
-    async def give_cookie(self, user, channel):
-        receiver_id = str(user.id)
 
-        # Check if the receiver exists in the database, otherwise create it
-        receiver_cookies = db_read(receiver_id)
-        if receiver_cookies is None:
-            db_create(receiver_id, 0)  # Create receiver's entry if it doesn't exist
-            receiver_cookies = 0
+#################################################################################
+# Register terminal stuff
+#################################################################################
+def init_term():
 
-        # Update the database
-        db_update(receiver_id, int(receiver_cookies) + 1)
+    # Init some text we'll use later
+    usage = "command_name [-args] [guild_id:optional]"
+    
+    example = """
+    Usage example goes here
+    """
 
-        # Send a message to the channel notifying the recipient
-        await channel.send(f"{user.name} recieved a thank you cookie!")
+    def function(args: list[str]):
 
-# Initialize thanks cog
-def setup(bot):
-    bot.add_cog(ThankListener(bot))
+        # Put the terminal response function here
+        print("todo")
+
+    # Help page & register
+    register_plugin(
+        name="template",
+        help=f"""
+template: {usage}
+    Put the description here
+
+    Options:
+        --args           Explanation of arg
+
+    Extra information here
+
+    Usage:
+{example}
+
+
+""",
+        func=function
+    )

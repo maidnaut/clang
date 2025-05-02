@@ -6,7 +6,7 @@ from rich.console import Console
 from inc.terminal import ClangShell
 from inc.utils import *
 
-version = "0.4.1a"
+version = "0.4.2a"
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -130,7 +130,7 @@ async def connect():
             return
             
     print(f"[bold cyan]==>[/bold cyan] Database connection established")
-    await random_decimal_sleep(0.8,1.2)
+    await random_decimal_sleep(0.4,0.8)
 
 #################################################################################
 # Check environment variables
@@ -148,12 +148,15 @@ def load_plugins():
 
 async def check_env():
 
-    plugins = load_plugins()
-
     # Check if environment variables exist
 
     if not table_exists("config"):
-        new_db("config", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("command", "TEXT"), ("enabled", "INTEGER")])
+        new_db("config", [
+            ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+            ("guild_id", "TEXT"),
+            ("name", "TEXT"),
+            ("enabled", "TEXT")
+        ])
 
     config_check = db_read("config", ["*:*"])
     if not config_check:
@@ -233,28 +236,30 @@ async def install(guild_id, guild_name):
         if use_cookies == "y":
             new_db("cookies", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("user_id", "TEXT"), ("cookies", "INTEGER")])
         new_db("channelperms", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("channelperm", "TEXT")])
-        new_db("commands", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), {"plugin", "TEXT"}, ("name", "TEXT"), ("enabled", "TEXT")])
+        new_db("commands", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("enabled", "TEXT")])
 
         print("[bold cyan]==>[/bold cyan] Databases created. Populating...", highlight=False)
         await random_decimal_sleep(0,0.3)
 
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_fun", use_generic])
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_utils", use_utils])
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_mod", use_mod])
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_tickets", use_tickets])
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_logging", use_logging])
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_notes", use_notes])
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "use_cookies", use_cookies])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_fun", use_fun])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_utils", use_utils])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_mod", use_mod])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_tickets", use_tickets])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_logging", use_logging])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_notes", use_notes])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_cookies", use_cookies])
 
-        db_insert("commands", ["guild_id", "utils" "command", "enabled"], [guild_id, "fun", "clang", "1"])
-        db_insert("commands", ["guild_id", "utils" "command", "enabled"], [guild_id, "fun", "fortune", "1"])
-        db_insert("commands", ["guild_id", "utils" "command", "enabled"], [guild_id, "fun", "flip", "1"])
-        db_insert("commands", ["guild_id", "utils" "command", "enabled"], [guild_id, "fun", "roll", "1"])
+        db_insert("commands", ["guild_id", "name", "enabled"], [guild_id, "clang", "1"])
+        db_insert("commands", ["guild_id", "name", "enabled"], [guild_id, "fortune", "1"])
+        db_insert("commands", ["guild_id", "name", "enabled"], [guild_id, "flip", "1"])
+        db_insert("commands", ["guild_id", "name", "enabled"], [guild_id, "roll", "1"])
 
         print("[bold green][✔][/bold green] Use flags set.")
         await random_decimal_sleep(0,0.3)
 
         if use_cookies == "y":
+            new_db("cookie_rate", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("rate", "TEXT")])
+            db_insert("cookie_rate", ["guild_id", "rate"], [guild_id, "100"])
             print("[bold green][✔][/bold green] Default random chance of cookie drops set to 1 in 100 messages.")
             await random_decimal_sleep(0,0.3)
 
@@ -267,8 +272,8 @@ async def install(guild_id, guild_name):
         print("[bold green][✔][/bold green] Logging channels registered.")
         await random_decimal_sleep(0,0.3)
 
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "submod_enabled", submod_enabled])
-        db_insert("config", ["guild_id", "command", "enabled"], [guild_id, "elevation_enabled", elevation_enabled])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "submod_enabled", submod_enabled])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "elevation_enabled", elevation_enabled])
         db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "submod_role", ""])
         db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "mod_role", ""])
         db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "elev_mod_role", ""])
@@ -322,7 +327,7 @@ async def check_guilds():
 
         if not existing_guild:
             db_insert("guilds", ["guild_name", "guild_id"], guild_data)
-            print(f'Added guild "{guild.name}" to the database. ({guild.id}).')
+            print(f'[bold cyan]==>[/bold cyan] Added guild "{guild.name}" to the database. ({guild.id}).')
 
         bot.globals["guilds"].append([guild.name, str(guild.id)])
         

@@ -6,7 +6,7 @@ from rich.console import Console
 from inc.terminal import ClangShell
 from inc.utils import *
 
-version = "0.4.3a"
+version = "0.6a"
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -18,7 +18,7 @@ finally:
 
 # Pycord stuff
 activity = discord.Game(name="!help")
-bot = commands.Bot(command_prefix="!", activity=activity, help_command=None, intents=discord.Intents.all())
+bot = ClangBot(command_prefix="!", activity=activity, help_command=None, intents=discord.Intents.all())
 bot.add_cog(ClangShell(bot))
 
 # global dict
@@ -171,12 +171,7 @@ async def check_env():
         for guild in bot.guilds:
             gid = str(guild.id)
             name = guild.name
-
-            console.print(f"[bold yellow][?][/bold yellow] Setup configuration for {name}? (Y/n): ", end="", highlight=False)
-            response = (await ainput("")).strip().lower() or "y"
-
-            if response == "y":
-                await install(gid, name)
+            await install(gid, name)
         
         print("\nSetup complete. Edit the configs at any time in the terminal.\n")
         await random_decimal_sleep(0.4,0.8)
@@ -193,97 +188,49 @@ async def install(guild_id, guild_name):
 
     # Setup questions
 
-    print(f"\n[bold magenta]--- Setup for {guild_name} ---[/bold magenta]\n")
+    print(f"[bold cyan]==>[/bold cyan] Setting up {guild_name}...")
 
-    console.print("[bold yellow][?][/bold yellow] Enable fun commands? Ex: !clang !fortune etc (Y/n): ", end="", highlight=False)
-    use_fun = (await ainput("")).strip().lower() or "y"
-
-    console.print("[bold yellow][?][/bold yellow] Enable utility commands? Ex: !whois !serverinfo etc (Y/n): ", end="", highlight=False)
-    use_utils = (await ainput("")).strip().lower() or "y"
-
-    console.print("[bold yellow][?][/bold yellow] Enable the moderation suite? (Y/n): ", end="", highlight=False)
-    use_mod = (await ainput("")).strip().lower() or "y"
-
-    console.print("[bold yellow][?][/bold yellow] Enable ticket functionality? (Y/n): ", end="", highlight=False)
-    use_tickets = (await ainput("")).strip().lower() or "y"
-
-    console.print("[bold yellow][?][/bold yellow] Enable logging functionality? (Y/n): ", end="", highlight=False)
-    use_logging = (await ainput("")).strip().lower() or "y"
-
-    console.print("[bold yellow][?][/bold yellow] Enable user notes? (Y/n): ", end="", highlight=False)
-    use_notes = (await ainput("")).strip().lower() or "y"
-
-    console.print("[bold yellow][?][/bold yellow] Enable cookies? (Y/n): ", end="", highlight=False)
-    use_cookies = (await ainput("")).strip().lower() or "y"
-
-    if use_mod == "y":
-
-        console.print("[bold yellow][?][/bold yellow] Enable the use of a sub_mod with limited permissions? (Y/n): ", end="", highlight=False)
-        submod_enabled = (await ainput("")).strip().lower() or "y"
-
-        console.print("[bold yellow][?][/bold yellow] Enable elevated permission functionality? (Y/n): ", end="", highlight=False)
-        elevation_enabled = (await ainput("")).strip().lower() or "y"
-
-    else:
-        submod_enabled = "n"
-        elevation_enabled ="n"
 
     # Do a whole bunch of stuff to set up the db here
 
     try:
         print("[bold cyan]==>[/bold cyan] Creating databases...", highlight=False)
         await random_decimal_sleep(0,0.3)
-        if use_cookies == "y":
-            new_db("cookies", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("user_id", "TEXT"), ("cookies", "INTEGER")])
-        new_db("channelperms", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("channelperm", "TEXT")])
+        new_db("loggingchannels", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("channelperm", "TEXT")])
         new_db("commands", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("enabled", "TEXT")])
+        new_db("cookies", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("user_id", "TEXT"), ("cookies", "INTEGER")])
+        new_db("cookie_rate", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("rate", "INTEGER")])
+        new_db("roles", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("role", "TEXT")])
 
         print("[bold cyan]==>[/bold cyan] Databases created. Populating...", highlight=False)
         await random_decimal_sleep(0,0.3)
 
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_fun", use_fun])
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_utils", use_utils])
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_mod", use_mod])
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_tickets", use_tickets])
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_logging", use_logging])
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_notes", use_notes])
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "use_cookies", use_cookies])
-
-        db_insert("commands", ["guild_id", "name", "enabled"], [guild_id, "clang", "1"])
-        db_insert("commands", ["guild_id", "name", "enabled"], [guild_id, "fortune", "1"])
-        db_insert("commands", ["guild_id", "name", "enabled"], [guild_id, "flip", "1"])
-        db_insert("commands", ["guild_id", "name", "enabled"], [guild_id, "roll", "1"])
-
-        print("[bold green][✔][/bold green] Use flags set.")
+        db_insert("cookie_rate", ["guild_id", "rate"], [guild_id, 100])
+        print("[bold green][✔][/bold green] Default random chance of cookie drops set to 1 in 100 messages.")
         await random_decimal_sleep(0,0.3)
 
-        if use_cookies == "y":
-            new_db("cookie_rate", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("rate", "INTEGER")])
-            db_insert("cookie_rate", ["guild_id", "rate"], [guild_id, 100])
-            print("[bold green][✔][/bold green] Default random chance of cookie drops set to 1 in 100 messages.")
-            await random_decimal_sleep(0,0.3)
-
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "ticket_category", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "join_channel", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "log_channel", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "modlog_channel", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "ticketlog_channel", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "adminticketlog_channel", ""])
+        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "ticket_category", ""])
+        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "join_channel", ""])
+        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "log_channel", ""])
+        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "modlog_channel", ""])
+        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "ticketlog_channel", ""])
+        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "adminticketlog_channel", ""])
         print("[bold green][✔][/bold green] Logging channels registered.")
         await random_decimal_sleep(0,0.3)
 
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "submod_enabled", submod_enabled])
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "elevation_enabled", elevation_enabled])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "submod_role", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "mod_role", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "elev_mod_role", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "admin_role", ""])
-        db_insert("channelperms", ["guild_id", "name", "channelperm"], [guild_id, "elev_admin_role", ""])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "submod_enabled", "y"])
+        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "elevation_enabled", "y"])
+
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "submod_role", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "mod_role", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "op_role", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "admin_role", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "root_role", ""])
         print("[bold green][✔][/bold green] Roles registered.")
         await random_decimal_sleep(0,0.3)
 
-        print("[bold cyan]==>[/bold cyan] Finalizing...\n", highlight=False) # I know this does nothing but the aesthetics are cool
-        await random_decimal_sleep(0.8,1.4)
+        print(f"[bold green][✔][/bold green] Use flags for {guild_name} set.\n")
+        await random_decimal_sleep(0,0.3)
 
         bot.globals["init_db"] = True
 

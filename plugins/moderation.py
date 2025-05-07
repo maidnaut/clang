@@ -39,7 +39,7 @@ class ModerationCog(commands.Cog):
                 "desc": "Issues and dm's a warning to a user.",
                 "perm": ["submod", "mod", "admin"]
             },
-            "warn": {
+            "silentwarn": {
                 "args": "<user> <reason>",
                 "desc": "Silently issues a warning to a user without a dm.",
                 "perm": ["submod", "mod", "admin"]
@@ -244,31 +244,3 @@ class ModerationCog(commands.Cog):
         await self._handle_warning(ctx, user, reason, silent=True)
 
 
-
-
-    @commands.command()
-    async def removewarn(self, ctx, user: discord.Member, warn_id: int):
-        """Remove a specific warning from a user"""
-        # First check if warning exists
-        warnings = db_read("warnings", 
-                        [f"user_id:{user.id}", f"guild_id:{ctx.guild.id}", f"warn_id:{warn_id}"])
-        
-        if not warnings:
-            await ctx.send(f"No warning found with ID {warn_id} for {user.mention}")
-            return
-        
-        # Delete the warning
-        db_delete("warnings", 
-                ["user_id", "guild_id", "warn_id"],
-                [user.id, ctx.guild.id, warn_id])
-        
-        modlog = await self.get_modlog_channel(ctx.guild)
-        if modlog:
-            embed = discord.Embed(
-                title="❌ Warning Removed",
-                description=f"**User:** {user.mention}\n**Moderator:** {ctx.author.mention}\n**Warning ID:** {warn_id}",
-                color=discord.Color.green()
-            )
-            await modlog.send(embed=embed)
-        
-        await ctx.send(f"Removed warning {warn_id} from {user.mention}")

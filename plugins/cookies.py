@@ -84,7 +84,6 @@ class CookieCog(commands.Cog):
         return result[0][3]
 
     async def membercheck(self, ctx, user_input: str) -> discord.Member:
-        """Handle user lookup from various input types"""
         try:
             # Use pycord's converter to check for the member
             return await commands.MemberConverter().convert(ctx, user_input)

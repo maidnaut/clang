@@ -66,26 +66,28 @@ class ClangShell(commands.Cog):
             parts = command.strip().split()
             match parts:
                 case ["help"]:
-                    all_cmds = "help, restart, say, clear, reset, deps, exit, "
+                    all_cmds = "help, restart, setrole, setchannel, say, clear, deps, exit, "
                     all_cmds += ', '.join(sorted(PLUGIN.keys()))
                     all_cmds = ",".join(f"[cyan]{cmd}[/cyan]" for cmd in all_cmds.split(","))
-                    console.print(f"Available commands: {all_cmds}\n", highlight=False)
+                    print(f"Available commands: {all_cmds}\n", highlight=False)
 
                 case ["help", cmd]:
                     if cmd == "help":
-                        console.print("'help <command>': Prints the available commands\n", highlight=False)
-                    elif cmd == "restart":
-                        console.print("'restart': Restarts Clang\n", highlight=False)
+                        print("'help <command>': Prints the available commands\n", highlight=False)
+                    elif cmd == "setrole":
+                        print("'setrole [role] [id] [guild_id]': Sets the id for the specified role\n", highlight=False)
+                    elif cmd == "setchannel":
+                        print("'setchannel <channel> <id>': Sets the id for the specified channel or category\n", highlight=False)
                     elif cmd == "say":
-                        console.print("'say <channel_id> <message>': Sends a message to the specified channel\n", highlight=False)
+                        print("'say <channel_id> <message>': Sends a message to the specified channel\n", highlight=False)
                     elif cmd == "clear":
-                        console.print("'clear': Clears the screen\n", highlight=False)
-                    elif cmd == "reset":
-                        console.print("'reset': Reinitializes the database (drops all tables) Cannot be undone\n", highlight=False)
+                        print("'clear': Clears the screen\n", highlight=False)
+                    elif cmd == "restart":
+                        print("'restart': Restarts Clang\n", highlight=False)
                     elif cmd == "deps":
-                        console.print("'deps': Lists all of Clang's dependencies.\n", highlight=False)
+                        print("'deps': Lists all of Clang's dependencies.\n", highlight=False)
                     elif cmd == "exit":
-                        console.print("'exit': Attempts to shut down Clang gracefully\n", highlight=False)
+                        print("'exit': Attempts to shut down Clang gracefully\n", highlight=False)
                     else:
                         info = PLUGIN.get(cmd)
                         if info:
@@ -97,48 +99,38 @@ class ClangShell(commands.Cog):
                     os.system("cls" if os.name == "nt" else "clear")
                     os.execv(sys.executable, [sys.executable] + sys.argv)
 
-                case ["say", channel_id_str, message]:
+                case ["say", channel_id_str, *message_parts]:
                     try:
                         cid = int(channel_id_str)
-                        chan = self.bot.get_channel(cid)
-                        if not chan:
-                            console.print(f"Error: Channel {cid} not found.\n")
+                        chan = await self.bot.fetch_channel(cid)
+                        message = " ".join(message_parts)
+                        
+                        if not message:
+                            print("Error: Message cannot be empty\n")
                             continue
+                            
                         await chan.send(message)
-                        console.print(f"Sent to #{chan.name}: {message}\n")
+                        print(f"Sent to #{chan.name}: {message}\n")
                     except ValueError:
-                        console.print("Error: Invalid channel ID.\n")
+                        print("Error: Invalid channel ID format\n")
+                    except discord.Forbidden:
+                        print(f"Error: Missing permissions in channel {cid}\n")
+                    except discord.NotFound:
+                        print(f"Error: Channel {cid} not found\n")
+                    except discord.HTTPException as e:
+                        print(f"Error: Discord API failure - {e}\n")
                     except Exception as e:
-                        console.print(f"Error: {e}\n")
+                        print(f"Unexpected error: {type(e).__name__} - {e}\n")
 
                 case ["clear"]:
                     os.system("cls" if os.name == "nt" else "clear")
 
-                case ["reset"]:
-                    console.print(
-                        "[bold yellow][?][/bold yellow] Are you sure you want to reinitialize the database? "
-                        "This will drop ALL tables and cannot be undone. (y/N): ",
-                        end="",
-                    )
-                    confirm = (await asyncio.get_event_loop().run_in_executor(None, console.input)).strip().lower() or "n"
-                    if confirm == "y":
-                        console.print("Okay, you asked for it. Reinitializing...", style="bold red")
-                        await asyncio.sleep(1)
-                        for tbl in ["config", "cookies", "channelperms", "guilds"]:
-                            drop_table(tbl)
-                            console.print(f"Dropped table '{tbl}'", style="bold cyan")
-                            await asyncio.sleep(1)
-                        console.print("Restarting Clang…", style="bold yellow")
-                        await asyncio.sleep(1)
-                        os.system("cls" if os.name == "nt" else "clear")
-                        os.execv(sys.executable, [sys.executable] + sys.argv)
-
                 case ["deps"]:
                     deps = self.get_clean_dependencies()
-                    console.print("[", highlight=False)
+                    print("[", highlight=False)
                     for dep in deps:
-                        console.print(f"    '{dep}',", highlight=False)
-                    console.print("]", highlight=False)
+                        print(f"    '{dep}',", highlight=False)
+                    print("]", highlight=False)
 
                 case ["exit"]:
                     console.print("Shutting down...")
@@ -148,12 +140,62 @@ class ClangShell(commands.Cog):
                     await self.bot.loop.shutdown_asyncgens()
                     sys.exit(0)
 
+                case ["setrole", *args]:
+                    usage = "setrole [role] [id] [guild_id]"
+                    roles = ["s", "m", "o", "a", "r", "submod", "mod", "op", "admin", "root"]
+
+                    while True:
+                        if not args:
+                            print(f"Sets the id for each role - Roles: (s)ubmod, (m)od, (o)p, (a)dmin, (r)oot \nUsage: {usage}\n", markup=False, highlight=False)
+                            break
+                            
+                        first = args[0]
+                        if first not in roles:
+                            print(f"[bold red][X][/bold red] Error: Unknown role '{first}'\nUsage: {usage}\n", markup=False, highlight=False)
+                            break
+
+                        if len(args) < 2:
+                            print(f"[bold red][X][/bold red] Error: Missing role ID\nUsage: {usage}\n", markup=False, highlight=False)
+                            break
+
+                        role_id = args[1]
+                        guild_id = args[2] if len(args) > 2 else None
+
+                        role = args[0]
+                        if role == "s": role = "submod"
+                        if role == "m": role = "mod"
+                        if role == "o": role = "op"
+                        if role == "a": role = "admin"
+                        if role == "r": role = "root"
+
+                        if not role_id.isdigit():
+                            print(f"[bold red][X][/bold red] Error: Invalid role ID '{role_id}'\nUsage: {usage}\n", markup=False, highlight=False)
+                            break
+
+                        if guild_id and not guild_id.isdigit():
+                            print(f"[bold red][X][/bold red] Error: Invalid guild ID '{guild_id}'\nUsage: {usage}\n", markup=False, highlight=False)
+                            break
+
+                        shorthand_map = {
+                            "s": "submod", "m": "mod", "o": "op",
+                            "a": "admin", "r": "root"
+                        }
+                        role_name = shorthand_map.get(first, first)
+
+                        if not guild_id:
+                            print("[bold red][X][/bold red] Error: No guild ID provided\nUsage: {usage}\n", markup=False, highlight=False)
+                            break
+
+                        db_update("roles", [f"guild_id:{guild_id}", f"name:{role}_role"], [("role", role_id)])
+                        print(f"[bold green][✔][/bold green]  Updated role '{role_name}_role' with ID {role_id} for guild {guild_id}")
+                        break
+
                 case [cmd, *args]:
                     command = PLUGIN.get(cmd)
                     if command:
                         command["func"](args)
                     else:
-                        console.print(f"Clang: Command not found: '{cmd}'")
+                        print(f"Clang: Command not found: '{cmd}'")
 
 
 def setup(bot):

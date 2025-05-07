@@ -1,10 +1,25 @@
 import random, asyncio
 from inc.db import *
 from rich.console import Console
+from discord.ext import commands
+from discord.ext.commands import CommandNotFound
 
 # Pretty print
 console = Console(force_terminal=True, markup=True)
 print = console.print
+
+# Error ignorer
+class ClangBot(commands.Bot):
+    def dispatch(self, event_name, *args, **kwargs):
+        if event_name == "on_command_error":
+            ctx, error = args
+            return super().dispatch(event_name, *args, **kwargs)
+        return super().dispatch(event_name, *args, **kwargs)
+
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, CommandNotFound):
+            return
+        raise error
 
 # Decimal sleep
 async def random_decimal_sleep(min_sleep: float, max_sleep: float):
@@ -66,67 +81,77 @@ def register_plugin(name: str, help: str, func: callable):
         "func": func
     }
 
-# Permission system
+# Get role level
+async def get_level(ctx):
+
+    roles = {}
+    role_list = db_read("roles", [f"guild_id:{ctx.guild.id}", "role:*"])
+
+    for row in role_list:
+        name_col, id_col = row[2], row[3]
+        if id_col:
+            key = name_col.removesuffix("_role")
+            roles[key] = int(id_col)
+
+    author_roles = [r.id for r in ctx.author.roles]
+
+    matched = "everyone"
+    for name, r_id in roles.items():
+        if r_id in author_roles:
+            matched = name
+            break
+
+    if   matched == "everyone": level = 0
+    elif matched == "submod":   level = 1
+    elif matched == "mod":      level = 2
+    elif matched == "op":       level = 3
+    elif matched == "admin":    level = 4
+    elif matched == "root":     level = 5
+    else:                       level = 0
+
+    elevation = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled"])
+    if elevation and elevation[0][0] == "n":
+        if level == 2: level = 3
+        if level == 4: level = 5
+
+    return level
+
 async def has_perms(ctx):
-
-    elevation_enabled = "y"
-
-    submod = int(1361154018281259150)
-    mod = int(1359684990421696663)
-    op = int(1365193194257776755)
-    admin = int(1272571028542984282)
-    root = int(1365193064947126362)
-    owner = "0" #int(ctx.guild.owner)
-
-    if elevation_enabled == "y":
-        if any(role.id in [op, root, owner] for role in ctx.author.roles):
-            return True
-        else:
-            await ctx.send("!op?")
-            return False
-    elif any(role.id in [mod, admin, owner] for role in ctx.author.roles):
-        return True
-    else:
-        return False
-        
-    ### update this later
-
     try:
         elevation_config = db_read("config", [
             f"guild_id:{ctx.guild.id}", 
             "name:elevation_enabled"
         ])
         
-        elevation_enabled = "n"
-        if elevation_config and len(elevation_config[0]) > 3:
-            elevation_enabled = elevation_config[0][3]
+        elevation_enabled = "y"
+        if elevation_config:
+            elevation_enabled = elevation_config[0][3].lower()
 
-        roles = db_read("channelperms", [f"guild_id:{ctx.guild.id}"])
-        
-        if not roles:
-            return False
-            
-        role_ids = {
-            "submod": int(roles[0][3]),
-            "mod": int(roles[1][3]),
-            "op": int(roles[2][3]), 
-            "admin": int(roles[3][3]),
-            "root": int(roles[4][3]),
-            "owner": int(roles[5][3])
-        }
-        
-        print(f"Extracted Role IDs: {role_ids}")
-        
-        if elevation_enabled.lower() == "y":
-            required_roles = [role_ids["op"], role_ids["root"], role_ids["owner"]]
-            if any(role.id in required_roles for role in ctx.author.roles):
+        roles = {}
+        role_list = db_read("roles", [f"guild_id:{ctx.guild.id}", "role:*"])
+        for row in role_list:
+            name_col, id_col = row[2], row[3]
+            if id_col:
+                roles[name_col] = int(id_col)
+
+        user_roles = {role.id for role in ctx.author.roles}
+
+        if elevation_enabled == "y":
+            if roles.get("submod_role") in user_roles or roles.get("op_role") in user_roles or roles.get("root_role") in user_roles:
                 return True
-            await ctx.send(f"🔒 Requires: <@&{role_ids['op']}>+ role")
-            return False
-        else:
-            required_roles = [role_ids["mod"], role_ids["admin"], role_ids["owner"]]
-            return any(role.id in required_roles for role in ctx.author.roles)
             
+            if "mod_role" in roles or "admin_role" in roles:
+                await ctx.send("!op?")
+            
+            return False
+
+        else:
+            if roles.get("submod_role") in user_roles or roles.get("mod_role") in user_roles or roles.get("admin_role") in user_roles:
+                return True
+            
+            await ctx.send("You need mod privileges for this command")
+            return False
+
     except Exception as e:
         print(f"Permission check error: {e}")
         return False

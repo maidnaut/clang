@@ -162,13 +162,7 @@ def init_term():
         # Default option if no arguments are provided, 
         def print_status(guild=None):
             header = f"Utils are enabled in {'guild ' + guild if guild else 'your server'}"
-            print(f"""[bold cyan]---[/bold cyan] {header} [bold cyan]---[/bold cyan]
-
-[bold green][E][/bold green] -- [bold]ping[/bold] is enabled, [bold]everyone[/bold] can use it
-[bold green][E][/bold green] -- [bold]serverinfo[/bold] is enabled, [bold]everyone[/bold] can use it
-[bold red][X][/bold red] -- [bold]ping[/bold] is disabled
-[bold green][E][/bold green] -- [bold]whois[/bold] is enabled, submod can use it
-    """, highlight=False)
+            print(f"{usage}\n", highlight=False)
 
         if not args:
             print_status()

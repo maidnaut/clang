@@ -6,7 +6,6 @@ import random
 from discord.ext import commands
 from db import db_create, db_read, db_update
 
-# Elevated permission roles
 ALUMNI_ROLE = int(os.getenv("alumniRole"))
 MODERATOR_ROLE = int(os.getenv("moderatorRole"))
 ADMIN_ROLE = int(os.getenv("adminRole"))
@@ -17,13 +16,7 @@ class WhoisCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        # Help info
         self.__help__ = {
-            "whois": {
-                "args": "<user:optional>",
-                "desc": "Displays user data",
-                "perm": "everyone"
-            }
         }
 
     @commands.command()
@@ -36,15 +29,13 @@ class WhoisCog(commands.Cog):
         
         user = None
 
-        # First, check if there's a mention
         if ctx.message.mentions:
             user = ctx.message.mentions[0]
 
-        # Second, if it's all digits, try to fetch by user ID
         elif user_input.isdigit():
             try:
                 user = await self.bot.fetch_user(int(user_input))
-                member = ctx.guild.get_member(user.id)  # Check if they're in the guild
+                member = ctx.guild.get_member(user.id)
                 if member:
                     user = member
             except discord.NotFound:
@@ -56,12 +47,10 @@ class WhoisCog(commands.Cog):
             await ctx.send(f"I have no record for that user.")
             return
         
-        # Permission check
         author_roles = [role.id for role in author.roles]
         elevated_roles = (ALUMNI_ROLE, MODERATOR_ROLE, OPERATOR_ROLE, ADMIN_ROLE, ROOT_ROLE)
 
-        # Initial embed setup
-        member = ctx.guild.get_member(user.id) or user  # Use member if possible
+        member = ctx.guild.get_member(user.id) or user
         display_name = ""
         join_date = member.joined_at.strftime("%Y-%m-%d") if isinstance(member, discord.Member) and member.joined_at else "N/A"
         created_at = user.created_at.strftime("%Y-%m-%d")
@@ -94,7 +83,7 @@ class WhoisCog(commands.Cog):
                 description=f"Warnings"
             )
 
-            if not results:  # correct check for an empty list
+            if not results:
                 embed = discord.Embed(
                     color=discord.Color.blurple(),
                 )

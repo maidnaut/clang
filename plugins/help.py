@@ -1,85 +1,79 @@
-import os
 import discord
 from discord.ext import commands
-from inc.permissions import has_elevated_permissions
-
-# Elevated permission roles
-roles = db_read("channelperms", "[roles:*]")
+from inc.utils import db_read, get_level
 
 class HelpCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def help(self, ctx):
-        author_roles = [role.id for role in ctx.author.roles]
+    @commands.command(name="help")
+    async def help_cmd(self, ctx):
+        user_level = await get_level(ctx)
+        print(user_level)
 
-        def get_level():
-            if roles[4] in author_roles:
-                return "root"
-            elif roles[3] in author_roles:
-                return "op"
-            elif roles[2] in author_roles:
-                return "admin"
-            elif roles[1] in author_roles:
-                return "mod"
-            elif roles[0] in author_roles:
-                return "alumni"
-            return "everyone"
-
-        ROLE_LEVELS = {
-            "everyone": 0,
-            "alumni": 1,
-            "mod": 2,
-            "admin": 3,
-            "op": 4,
-            "root": 5
-        }
-
-        level_names = {
-            0: "Everyone",
-            1: "Alumni",
-            2: "Moderators",
-            3: "Admins",
-            4: "Operators",
-            5: "Root"
-        }
-
-        user_level = ROLE_LEVELS[get_level()]
-        sorted_help = {level: [] for level in range(6)}
-
+        # Setup bucketized responses, so we (hopefully) don't go over the character limit
+        buckets = {i: [] for i in range(6)}
         for cog in self.bot.cogs.values():
             help_info = getattr(cog, "__help__", None)
-            if help_info:
-                for cmd, meta in help_info.items():
-                    args = meta.get("args", "")
-                    desc = meta.get("desc", "")
-                    perms = meta.get("perm", "everyone")
+            if not help_info:
+                continue
 
-                    if isinstance(perms, str):
-                        perms = [perms]
+            # Gather all the help data
+            for cmd, meta in help_info.items():
+                args = meta.get("args", "")
+                desc = meta.get("desc", "")
+                raw  = meta.get("perm", "everyone")
+                perms = [raw] if isinstance(raw, str) else raw
+                perm  = perms[0].strip().lower()
 
-                    required_level = min(ROLE_LEVELS.get(p, 99) for p in perms)
-                    if user_level >= required_level:
-                        cmd_line = f"``!{cmd} {args}`` — {desc}" if args else f"``!{cmd}`` — {desc}"
-                        sorted_help[required_level].append(cmd_line)
+                # Get the required perm level
+                if   perm == "everyone": req = 0
+                elif perm == "submod":   req = 1
+                elif perm == "mod":      req = 2
+                elif perm == "op":       req = 3
+                elif perm == "admin":    req = 4
+                elif perm == "root":     req = 5
+                else:                    req = 0
 
-        embed = discord.Embed(
-            title="Available Commands",
-            color=discord.Color.blurple()
-        )
+                # If we meet the level requirements, add it to the list
+                if user_level >= req:
+                    line = f"``!{cmd} {args}`` — {desc}" if args else f"``!{cmd}`` — {desc}"
+                    buckets[req].append(line)
 
-        for level in sorted(sorted_help.keys()):
-            if sorted_help[level]:
-                embed.add_field(
-                    name=level_names[level],
-                    value="\n".join(sorted_help[level]),
-                    inline=False
-                )
+        everyone_cmds = buckets[0]
+        your_cmds = []
+        for lvl in range(1, 6):
+            your_cmds.extend(buckets[lvl])
 
-        await ctx.send(embed=embed)
+        # Do some magic to build the buckets
+        def chunk_lines(lines):
+            pages = []
+            current = []
+            length = 0
+            for line in lines:
+                if length + len(line) + 1 > 1024:
+                    pages.append("\n".join(current))
+                    current = [line]
+                    length = len(line) + 1
+                else:
+                    current.append(line)
+                    length += len(line) + 1
+            if current:
+                pages.append("\n".join(current))
+            return pages
 
+        # @everyone commands list
+        for page in chunk_lines(everyone_cmds):
+            e = discord.Embed(title="@Everyone Commands", color=discord.Color.blurple())
+            e.description = page
+            await ctx.send(embed=e)
 
-# This setup function adds the cog to the bot
+        # your elevated commands list
+        if your_cmds:
+            for page in chunk_lines(your_cmds):
+                e = discord.Embed(title="Your Commands", color=discord.Color.blurple())
+                e.description = page
+                await ctx.send(embed=e)
+
 def setup(bot):
     bot.add_cog(HelpCog(bot))

@@ -4,6 +4,9 @@ DB_FILE = './inc/database.db'
 
 # usage: new_db("table_name", [("name1", "type1"), ("name2", "type2")])
 def new_db(table, columns):
+    if not isinstance(table, str) or not table.isidentifier():
+        raise ValueError("Invalid table name.")
+
     if isinstance(columns, list):
         column_defs = ', '.join(f'{name} {type}' for name, type in columns)
         query = f'CREATE TABLE IF NOT EXISTS {table} ({column_defs})'
@@ -27,17 +30,23 @@ def drop_table(table):
     conn.commit()
     conn.close()
 
-# usage: table_exists("table_name") returns true:false
-def table_exists(table_name):
+# usage: table_exists("table") returns true:false
+def table_exists(table):
+    if not isinstance(table, str) or not table.isidentifier():
+        raise ValueError("Invalid table name.")
+
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+    c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table,))
     exists = c.fetchone() is not None
     conn.close()
     return exists
 
 # usage: db_insert("table_name", [("name1", "type1"), ("name2", "type2")])
 def db_insert(table, keys, values):
+    if not isinstance(table, str) or not table.isidentifier():
+        raise ValueError("Invalid table name.")
+
     if isinstance(keys, list) and isinstance(values, list):
         if len(keys) != len(values):
             raise ValueError("Key and value lists must be the same length.")
@@ -57,6 +66,9 @@ def db_insert(table, keys, values):
 
 # usage: db_read(table, [("key1", "key1")])
 def db_read(table, conditions=None):
+    if not isinstance(table, str) or not table.isidentifier():
+        raise ValueError("Invalid table name.")
+
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
 
@@ -91,6 +103,9 @@ def db_read(table, conditions=None):
 
 # usage: db_update("table", [f"guild_id:{guild_id}"], [("rate", rate)])
 def db_update(table, conditions, updates):
+    if not isinstance(table, str) or not table.isidentifier():
+        raise ValueError("Invalid table name.")
+
     set_clause = ", ".join(f"{field} = ?" for field, _ in updates)
     where_parts = []
     where_values = []
@@ -112,6 +127,9 @@ def db_update(table, conditions, updates):
 
 # usage: db_delete(table, [("key":"value"}])
 def db_delete(table, keys, values):
+    if not isinstance(table, str) or not table.isidentifier():
+        raise ValueError("Invalid table name.")
+        
     if isinstance(keys, list) and isinstance(values, list):
         if len(keys) != len(values):
             raise ValueError("Key and value lists must be the same length.")

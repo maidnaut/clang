@@ -6,7 +6,7 @@ from rich.console import Console
 from inc.terminal import ClangShell
 from inc.utils import *
 
-version = "0.6a"
+version = "0.7a"
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -15,6 +15,7 @@ try:
     TOKEN = loop.run_until_complete(check_for_token())
 finally:
     pass
+
 
 # Pycord stuff
 activity = discord.Game(name="!help")
@@ -31,7 +32,6 @@ bot.globals["init_db"] = False
 # Start Clang
 #################################################################################
 async def start_bot():
-
     # Check for token
     bot.globals["TOKEN"] = await check_for_token()
 
@@ -70,10 +70,8 @@ async def start_bot():
     print(f"\n[bold cyan]==>[/bold cyan] Clang [cyan]v{version}[/cyan] is starting...", highlight=False)
     await random_decimal_sleep(0.4, 0.8)
 
-    # Connect to database
     await connect()
 
-    # Now start the bot
     bot_token = db_read("bot_token", ["bot_token:*"])
     bot.globals["TOKEN"] = bot_token[0][1]
     await bot.start(bot.globals["TOKEN"])
@@ -91,17 +89,42 @@ async def on_ready():
     shell = bot.get_cog("ClangShell")
     if shell:
         print("[bold cyan]==>[/bold cyan] Shell interface initialized")
-        await random_decimal_sleep(0.1,0.4)
+        await random_decimal_sleep(0.1, 0.4)
     else:
         print("[bold red][X][/bold red] Shell could not start")
-        return
 
     # Load plugins
     print("[bold cyan]==>[/bold cyan] Loading plugins...", highlight=False)
-    await random_decimal_sleep(0.1,0.4)
-    print ("\n")
+    await random_decimal_sleep(0.1, 0.4)
+    print("\n")
+
     await load_plugins()
-    
+
+    # Sync the slash commands
+    synced = True
+    for guild in bot.guilds:
+        try:
+            await bot.sync_commands(guild_ids=[guild.id])
+        except Exception as e:
+            print(f"[bold red][X][/bold red] Failed to sync for {guild.name} ({guild.id}): {e}")
+            await random_decimal_sleep(0.1, 0.4)
+            synced = False
+
+    if synced:
+        print(f"[bold green][✔][/bold green] Synced slash commands to all servers")
+        await random_decimal_sleep(0.1, 0.4)
+
+
+    print("\n")
+
+    # Good morning Clang
+    if bot.globals["init_db"]:
+        print("Clang is alive. (Hint: run `help`)\n")
+    else:
+        print(f"Clang is awake. (Hint: run 'help')\n")
+
+    await random_decimal_sleep(0.1, 0.4)
+
     # Schedule a task for the shell or it won't work
     if shell:
         bot.loop.create_task(shell.process_terminal_input())
@@ -110,44 +133,32 @@ async def on_ready():
 # Connect to database
 #################################################################################
 async def connect():
-
     # Database setup
 
-    await random_decimal_sleep(0.4,0.8)
+    await random_decimal_sleep(0.4, 0.8)
     print(f"[bold cyan]==>[/bold cyan] Connecting to database")
-    await random_decimal_sleep(0.1,0.4)
+    await random_decimal_sleep(0.1, 0.4)
 
     if not os.path.exists(DB_FILE):
         print(f"[bold cyan]==>[/bold cyan] Database doesn't exist. Creating...", highlight=False)
-        await random_decimal_sleep(0.1,0.4)
+        await random_decimal_sleep(0.1, 0.4)
         try:
             open(DB_FILE, "x").close()
             print(f"[bold cyan]==>[/bold cyan] Database created successfully.")
-            await random_decimal_sleep(0.8,1.2)
+            await random_decimal_sleep(0.8, 1.2)
 
         except Exception as e:
             print(f"[bold red][X] ERROR:[/bold red] Could not create database: {e}")
             return
             
     print(f"[bold cyan]==>[/bold cyan] Database connection established")
-    await random_decimal_sleep(0.4,0.8)
+    await random_decimal_sleep(0.4, 0.8)
 
 #################################################################################
 # Check environment variables
 #################################################################################
-def load_plugins():
-    plugins_path = Path("plugins")
-    for file in plugins_path.glob("*.py"):
-        if file.name.startswith("_"):
-            continue
-        module_name = f"plugins.{file.stem}"
-        try:
-            importlib.import_module(module_name)
-        except Exception as e:
-            continue
 
 async def check_env():
-
     # Check if environment variables exist
 
     if not table_exists("config"):
@@ -162,7 +173,7 @@ async def check_env():
     if not config_check:
 
         print(f"[bold cyan]==>[/bold cyan] Environment variables not found. Entering setup\n")
-        await random_decimal_sleep(0.8,1.2)
+        await random_decimal_sleep(0.8, 1.2)
 
         PLUGINS = {}
         def register_plugins(name: str, func: callable):
@@ -174,7 +185,7 @@ async def check_env():
             await install(gid, name)
         
         print("\nSetup complete. Edit the configs at any time in the terminal.\n")
-        await random_decimal_sleep(0.4,0.8)
+        await random_decimal_sleep(0.4, 0.8)
     
     else:
         print(f"[bold cyan]==>[/bold cyan] Loaded environment variables")
@@ -195,42 +206,45 @@ async def install(guild_id, guild_name):
 
     try:
         print("[bold cyan]==>[/bold cyan] Creating databases...", highlight=False)
-        await random_decimal_sleep(0,0.3)
-        new_db("loggingchannels", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("channelperm", "TEXT")])
+        await random_decimal_sleep(0, 0.3)
+        new_db("logchans", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("channel", "TEXT")])
         new_db("commands", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("enabled", "TEXT")])
         new_db("cookies", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("user_id", "TEXT"), ("cookies", "INTEGER")])
         new_db("cookie_rate", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("rate", "INTEGER")])
         new_db("roles", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_id", "TEXT"), ("name", "TEXT"), ("role", "TEXT")])
 
         print("[bold cyan]==>[/bold cyan] Databases created. Populating...", highlight=False)
-        await random_decimal_sleep(0,0.3)
+        await random_decimal_sleep(0, 0.3)
 
         db_insert("cookie_rate", ["guild_id", "rate"], [guild_id, 100])
         print("[bold green][✔][/bold green] Default random chance of cookie drops set to 1 in 100 messages.")
-        await random_decimal_sleep(0,0.3)
+        await random_decimal_sleep(0, 0.3)
 
-        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "ticket_category", ""])
-        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "join_channel", ""])
-        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "log_channel", ""])
-        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "modlog_channel", ""])
-        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "ticketlog_channel", ""])
-        db_insert("loggingchannels", ["guild_id", "name", "channelperm"], [guild_id, "adminticketlog_channel", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "ticket_category", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "joinlog", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "logs", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "modlog", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "ticketlog", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "admin_ticketlog", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "jail_category", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "jaillog", ""])
         print("[bold green][✔][/bold green] Logging channels registered.")
-        await random_decimal_sleep(0,0.3)
+        await random_decimal_sleep(0, 0.3)
 
-        db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "submod_enabled", "y"])
         db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "elevation_enabled", "y"])
 
-        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "submod_role", ""])
-        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "mod_role", ""])
-        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "op_role", ""])
-        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "admin_role", ""])
-        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "root_role", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "jail", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "submod", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "mod", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "op", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "admin", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "root", ""])
+        db_insert("roles", ["guild_id", "name", "role"], [guild_id, "bots", ""])
         print("[bold green][✔][/bold green] Roles registered.")
-        await random_decimal_sleep(0,0.3)
+        await random_decimal_sleep(0, 0.3)
 
         print(f"[bold green][✔][/bold green] Use flags for {guild_name} set.\n")
-        await random_decimal_sleep(0,0.3)
+        await random_decimal_sleep(0, 0.3)
 
         bot.globals["init_db"] = True
 
@@ -239,12 +253,10 @@ async def install(guild_id, guild_name):
         return
 
 #################################################################################
-# Check for  guilds
+# Check for guilds
 #################################################################################
 async def check_guilds():
-
-    # Update guilds table if it doesn't exist
-
+    
     if not table_exists("guilds"):
         new_db("guilds", [("id", "INTEGER PRIMARY KEY AUTOINCREMENT"), ("guild_name", "TEXT"), ("guild_id", "TEXT")])
 
@@ -285,7 +297,7 @@ async def check_guilds():
 # Load plugins
 #################################################################################
 async def load_plugins():
-
+    
     # Search all plugins in /plugins and gracefully fail on any errors
 
     await random_decimal_sleep(0, 0.4)
@@ -300,15 +312,11 @@ async def load_plugins():
                 print(f"[bold red][X][/bold red] Failed to load plugin {filename}: {e}")
                 await random_decimal_sleep(0, 0.4)
                 
-    print("\n")
     await random_decimal_sleep(0.8, 1.2)
 
-    if bot.globals["init_db"]:
-        print("Clang is alive. (Hint: run `help`)\n")
-    else:
-        print(f"Clang is awake. (Hint: run 'help')\n")
-    
-    await random_decimal_sleep(0.8, 1.2)
+#################################################################################
+# Main loop
+#################################################################################
 
 if __name__ == "__main__":
     loop.run_until_complete(start_bot())

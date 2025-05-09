@@ -64,6 +64,26 @@ def db_insert(table, keys, values):
     else:
         raise ValueError("keys and values must be lists.")
 
+# usage: db_remove("table_name", [("name1", "type1"), ("name2", "type2")])
+def db_remove(table, keys, values):
+    if not isinstance(table, str) or not table.isidentifier():
+        raise ValueError("Invalid table name.")
+
+    if isinstance(keys, list) and isinstance(values, list):
+        if len(keys) != len(values):
+            raise ValueError("Key and value lists must be the same length.")
+        
+        conditions = ' AND '.join(f"{key} = ?" for key in keys)
+        query = f'DELETE FROM {table} WHERE {conditions}'
+
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute(query, values)
+        conn.commit()
+        conn.close()
+    else:
+        raise ValueError("keys and values must be lists.")
+
 # usage: db_read(table, [("key1", "key1")])
 def db_read(table, conditions=None):
     if not isinstance(table, str) or not table.isidentifier():
@@ -124,23 +144,3 @@ def db_update(table, conditions, updates):
     c.execute(query, values)
     conn.commit()
     conn.close()
-
-# usage: db_delete(table, [("key":"value"}])
-def db_delete(table, keys, values):
-    if not isinstance(table, str) or not table.isidentifier():
-        raise ValueError("Invalid table name.")
-        
-    if isinstance(keys, list) and isinstance(values, list):
-        if len(keys) != len(values):
-            raise ValueError("Key and value lists must be the same length.")
-        
-        conditions = ' AND '.join(f"{k} = ?" for k in keys)
-        query = f"DELETE FROM {table} WHERE {conditions}"
-
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute(query, values)
-        conn.commit()
-        conn.close()
-    else:
-        raise ValueError("keys and values must be lists.")

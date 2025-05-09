@@ -83,38 +83,37 @@ def register_plugin(name: str, help: str, func: callable):
 
 # Get role level
 async def get_level(ctx):
+    role_levels = {
+        "everyone": 0,
+        "submod": 1,
+        "mod": 2,
+        "op": 3,
+        "admin": 4,
+        "root": 5,
+    }
 
     roles = {}
     role_list = db_read("roles", [f"guild_id:{ctx.guild.id}", "role:*"])
-
     for row in role_list:
         name_col, id_col = row[2], row[3]
         if id_col:
-            key = name_col.removesuffix("_role")
-            roles[key] = int(id_col)
+            roles[name_col] = int(id_col)
 
     author_roles = [r.id for r in ctx.author.roles]
 
-    matched = "everyone"
+    highest = 0
     for name, r_id in roles.items():
-        if r_id in author_roles:
-            matched = name
-            break
-
-    if   matched == "everyone": level = 0
-    elif matched == "submod":   level = 1
-    elif matched == "mod":      level = 2
-    elif matched == "op":       level = 3
-    elif matched == "admin":    level = 4
-    elif matched == "root":     level = 5
-    else:                       level = 0
+        if r_id in author_roles and name in role_levels:
+            level = role_levels[name]
+            if level > highest:
+                highest = level
 
     elevation = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled"])
     if elevation and elevation[0][0] == "n":
-        if level == 2: level = 3
-        if level == 4: level = 5
+        if highest == 2: highest = 3
+        if highest == 4: highest = 5
 
-    return level
+    return highest
 
 async def has_perms(ctx):
     try:
@@ -123,7 +122,6 @@ async def has_perms(ctx):
             "name:elevation_enabled"
         ])
         
-        elevation_enabled = "y"
         if elevation_config:
             elevation_enabled = elevation_config[0][3].lower()
 
@@ -137,21 +135,21 @@ async def has_perms(ctx):
         user_roles = {role.id for role in ctx.author.roles}
 
         if elevation_enabled == "y":
-            if roles.get("submod_role") in user_roles or roles.get("op_role") in user_roles or roles.get("root_role") in user_roles:
+            if roles.get("submod") in user_roles or roles.get("op") in user_roles or roles.get("root") in user_roles:
                 return True
             
-            if "mod_role" in roles or "admin_role" in roles:
+            if "mod" in roles or "admin" in roles:
                 await ctx.send("!op?")
             
             return False
 
         else:
-            if roles.get("submod_role") in user_roles or roles.get("mod_role") in user_roles or roles.get("admin_role") in user_roles:
+            if roles.get("submod") in user_roles or roles.get("mod") in user_roles or roles.get("admin") in user_roles:
                 return True
             
             await ctx.send("You need mod privileges for this command")
             return False
 
     except Exception as e:
-        print(f"Permission check error: {e}")
+        await ctx.send(f"Permission check error: {e}")
         return False

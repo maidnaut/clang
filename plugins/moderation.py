@@ -271,7 +271,7 @@ class ModerationCog(commands.Cog):
     async def _handle_warning(self, ctx, user_str: str = None, reason: str = None, silent: bool = False):
 
         user_level = await get_level(ctx)
-        if user_level < 1: # Submod or higher
+        if user_level < 1:
             return
 
         if not user_str:

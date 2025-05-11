@@ -1,4 +1,5 @@
 import discord, os, asyncio, argparse
+from datetime import datetime
 from inc.terminal import register_plugin
 from discord.ext import commands
 from inc.utils import *
@@ -12,10 +13,7 @@ def setup(bot):
     init_term()
 
     # Cogs
-    bot.add_cog(WhoisCog(bot))
-    bot.add_cog(PingCog(bot))
-    bot.add_cog(ServerInfoCog(bot))
-    bot.add_cog(AvatarCog(bot))
+    bot.add_cog(UtilsCog(bot))
 
 
 
@@ -26,9 +24,9 @@ def setup(bot):
 
 
 #################################################################################
-# !whois
+# Utils
 #################################################################################
-class WhoisCog(commands.Cog):
+class UtilsCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -40,7 +38,41 @@ class WhoisCog(commands.Cog):
                 "desc": "Displays user data",
                 "perm": "everyone"
             },
+            "ping": {
+                "args": "",
+                "desc": "Check Clang's latency",
+                "perm": "everyone"
+            },
+            "avatar": {
+                "args": "<user:optional>",
+                "desc": "Displays an avatar",
+                "perm": "everyone"
+            },
+            "serverinfo": {
+                "args": "",
+                "desc": "Displays server data",
+                "perm": "everyone"
+            }
         }
+
+        if not table_exists("warnings"):
+            new_db("warnings", [
+                ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+                ("guild_id", "INTEGER"),
+                ("user_id", "INTEGER"),
+                ("warn_id", "INTEGER"),
+                ("reason", "TEXT"),
+                ("moderator_id", "INTEGER"),
+                ("warn_date", "TEXT"),
+            ])
+
+
+
+
+#################################################################################
+# !whois
+#################################################################################
+
     @commands.command()
     async def whois(self, ctx, *, user_input: str = None):
         author = ctx.author
@@ -92,23 +124,16 @@ class WhoisCog(commands.Cog):
 
         if user_level >= 1:
 
-            warnings = db_read("warnings", [f"user_id:{user.id}", f"guild_id:{ctx.guild.id}"])
+            warnings = db_read("warnings", [f"guild_id:{ctx.guild.id}", f"user_id:{user.id}"])
 
             await ctx.send(embed=embed)
 
-            warnings_text = f"{member.mention if isinstance(member, discord.Member) else user.mention}'s Warnings\n\n"
-            embed2 = discord.Embed(
-                color=discord.Color.blurple(),
-                description=f"Warnings"
-            )
+            warnings_text = f"{member.mention if isinstance(member, discord.Member) else user.mention}'s Warnings:\n"
 
             if not warnings:
-                embed = discord.Embed(
-                    color=discord.Color.blurple(),
-                )
-                embed.add_field(name="", value="No warnings found for this user.", inline=True)
+                warnings_text += "No warnings found for this user."
 
-                await ctx.send(embed=embed)
+                await ctx.send(warnings_text)
 
                 return
 
@@ -119,12 +144,12 @@ class WhoisCog(commands.Cog):
                 author_id = result[5]
                 reason = result[4]
 
-                date = full_date.split(" ")[0]
+                dt = datetime.fromisoformat(full_date)
+                date = dt.strftime("%B %d, %Y")
 
-                warnings_text += f"**{note_id})** by <@{author_id}> on {date}  — {reason}\n"
+                warnings_text += f"**{note_id})** {date}, by <@{author_id}>  — {reason}\n"
 
-            embed2.description = warnings_text.strip()
-            await ctx.send(embed=embed2)
+            await ctx.send(warnings_text.strip())
 
         else:
             await ctx.send(embed=embed)
@@ -136,45 +161,15 @@ class WhoisCog(commands.Cog):
 #################################################################################
 # !ping
 #################################################################################
-import discord
-from discord.ext import commands
-
-class PingCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-        # !help info
-        self.__help__ = {
-            "ping": {
-                "args": "",
-                "desc": "Check Clang's latency",
-                "perm": "everyone"
-            }
-        }
 
     @commands.command()
     async def ping(self, ctx):
         latency_ms = round(self.bot.latency * 1000, 2)
         await ctx.send(f"Pong! `{latency_ms}ms`")
 
-def setup(bot):
-    bot.add_cog(PingCog(bot))
-
 #################################################################################
 # !serverinfo
 #################################################################################
-class ServerInfoCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-        # !help info
-        self.__help__ = {
-            "serverinfo": {
-                "args": "",
-                "desc": "Displays server data",
-                "perm": "everyone"
-            }
-        }
 
     @commands.command()
     async def serverinfo(self, ctx):
@@ -202,19 +197,6 @@ class ServerInfoCog(commands.Cog):
 #################################################################################
 # !avatar
 #################################################################################
-class AvatarCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-        # !help info
-        self.__help__ = {
-            "avatar": {
-                "args": "<user:optional>",
-                "desc": "Displays an avatar",
-                "perm": "everyone"
-            }
-        }
-
     @commands.command()
     async def avatar(self, ctx, *, user_input: str = None):
         if user_input is None:

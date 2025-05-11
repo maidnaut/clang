@@ -184,8 +184,6 @@ class JailCog(commands.Cog):
         mentions = ", ".join(m.mention for m in members)
         await jail_channel.send(f"{mentions}, you have been jailed. Please wait for a staff member.")
 
-        print(f"jail_category: {jail_category} (ID: {jail_category.id if jail_category else 'None'})")
-
     # !release command
     @commands.command(name="release")
     async def release(self, ctx, *args):

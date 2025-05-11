@@ -29,7 +29,7 @@ class ClangShell(commands.Cog):
                 except Exception as e:
                     continue
 
-    def get_clean_dependencies(self):
+    def get_deps(self):
         try:
             raw = subprocess.check_output(
                 [sys.executable, "-m", "pipdeptree", "--json-tree"],
@@ -126,7 +126,7 @@ class ClangShell(commands.Cog):
                     os.system("cls" if os.name == "nt" else "clear")
 
                 case ["deps"]:
-                    deps = self.get_clean_dependencies()
+                    deps = self.get_deps()
                     print("[", highlight=False)
                     for dep in deps:
                         print(f"    '{dep}',", highlight=False)

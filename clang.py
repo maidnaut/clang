@@ -6,7 +6,7 @@ from rich.console import Console
 from inc.terminal import ClangShell
 from inc.utils import *
 
-version = "0.7a"
+version = "0.1b"
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -105,9 +105,20 @@ async def on_ready():
     for guild in bot.guilds:
         try:
             await bot.sync_commands(guild_ids=[guild.id])
-        except Exception as e:
-            print(f"[bold red][X][/bold red] Failed to sync for {guild.name} ({guild.id}): {e}")
-            await random_decimal_sleep(0.1, 0.4)
+
+        except discord.Forbidden:
+            print(f"[bold red][X][/bold red] Missing permissions to sync commands for {guild.name} ({guild.id}).")
+            await random_decimal_sleep(0.1, 0.4)   
+            synced = False
+
+        except discord.HTTPException as e:
+            print(f"[bold red][X][/bold red] HTTP error while syncing for {guild.name} ({guild.id}): {e}")
+            await random_decimal_sleep(0.1, 0.4)   
+            synced = False
+
+        except discord.ClientException as e:
+            print(f"[bold red][X][/bold red] Client error during sync for {guild.name} ({guild.id}): {e}")
+            await random_decimal_sleep(0.1, 0.4)   
             synced = False
 
     if synced:
@@ -147,8 +158,12 @@ async def connect():
             print(f"[bold cyan]==>[/bold cyan] Database created successfully.")
             await random_decimal_sleep(0.8, 1.2)
 
-        except Exception as e:
-            print(f"[bold red][X] ERROR:[/bold red] Could not create database: {e}")
+        except PermissionError:
+            print(f"[bold red][X] ERROR:[/bold red] Permission denied while creating database.")
+            return
+
+        except OSError as e:
+            print(f"[bold red][X] ERROR:[/bold red] OS error while creating database: {e}")
             return
             
     print(f"[bold cyan]==>[/bold cyan] Database connection established")
@@ -248,8 +263,24 @@ async def install(guild_id, guild_name):
 
         bot.globals["init_db"] = True
 
-    except Exception as e:
-        print(f"[bold red][X][/bold red] Failed to initialize: {e}")
+    except sqlite3.IntegrityError as e:
+        print(f"[bold red][X][/bold red] Integrity error: {e}")
+        return
+
+    except sqlite3.OperationalError as e:
+        print(f"[bold red][X][/bold red] Operational error: {e}")
+        return
+
+    except sqlite3.ProgrammingError as e:
+        print(f"[bold red][X][/bold red] Programming error: {e}")
+        return
+
+    except sqlite3.DatabaseError as e:
+        print(f"[bold red][X][/bold red] General database error: {e}")
+        return
+
+    except (TypeError, ValueError) as e:
+        print(f"[bold red][X][/bold red] Invalid data passed to db functions: {e}")
         return
 
 #################################################################################
@@ -308,8 +339,17 @@ async def load_plugins():
                 bot.load_extension(f"plugins.{filename[:-3]}")
                 print(f"[bold green][✔][/bold green] Loaded plugin/{filename}")
                 await random_decimal_sleep(0, 0.4)
-            except Exception as e:
-                print(f"[bold red][X][/bold red] Failed to load plugin {filename}: {e}")
+
+            except commands.NoEntryPointError:
+                print(f"[bold red][X][/bold red] Plugin {filename} missing setup() function.")
+                await random_decimal_sleep(0, 0.4)
+
+            except commands.ExtensionFailed as e:
+                print(f"[bold red][X][/bold red] Plugin {filename} raised an error during setup: {e}")
+                await random_decimal_sleep(0, 0.4)
+
+            except commands.ExtensionError as e:
+                print(f"[bold red][X][/bold red] Extension error in plugin {filename}: {e}")
                 await random_decimal_sleep(0, 0.4)
                 
     await random_decimal_sleep(0.8, 1.2)

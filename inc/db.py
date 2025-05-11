@@ -1,4 +1,4 @@
-import sqlite3
+import sqlite3, re
 
 DB_FILE = './inc/database.db'
 
@@ -86,6 +86,7 @@ def db_remove(table, keys, values):
 
 # usage: db_read(table, [("key1", "key1")])
 def db_read(table, conditions=None):
+    import re
     if not isinstance(table, str) or not table.isidentifier():
         raise ValueError("Invalid table name.")
 
@@ -93,32 +94,46 @@ def db_read(table, conditions=None):
     c = conn.cursor()
 
     values = []
+    query = f"SELECT * FROM {table}"
 
     if conditions:
         if conditions == ["*:*"]:
-            query = f"SELECT * FROM {table}"
+            pass  # no WHERE clause needed
         else:
             clauses = []
             for cond in conditions:
                 if cond == "*:*":
-                    continue  # skip this invalid clause
-                if ':' in cond:
-                    key, val = cond.split(':', 1)
-                    if val == '*':
-                        clauses.append(f"{key} IS NOT NULL")
-                    else:
-                        clauses.append(f"{key} = ?")
-                        values.append(val)
+                    continue
+
+                if ':' not in cond:
+                    raise ValueError(f"Malformed condition: {cond}")
+
+                key, val = cond.split(':', 1)
+
+                if val == '*':
+                    clauses.append(f"{key} IS NOT NULL")
+                else:
+                    # Match optional operator and value
+                    match = re.match(r'^([<>]=?|=)?(.+)$', val)
+                    if not match:
+                        raise ValueError(f"Invalid condition value: {val}")
+
+                    operator, real_val = match.groups()
+                    operator = operator or '='
+                    if operator not in ['=', '<', '>', '<=', '>=']:
+                        raise ValueError(f"Unsupported operator: {operator}")
+
+                    clauses.append(f"{key} {operator} ?")
+                    values.append(real_val)
 
             where_clause = ' AND '.join(clauses)
-            query = f"SELECT * FROM {table} WHERE {where_clause}"
-    else:
-        query = f"SELECT * FROM {table}"
+            query += f" WHERE {where_clause}"
 
     c.execute(query, values)
     rows = c.fetchall()
     conn.close()
     return rows if rows else []
+
 
 
 # usage: db_update("table", [f"guild_id:{guild_id}"], [("rate", rate)])

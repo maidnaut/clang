@@ -160,9 +160,14 @@ class CookieCog(commands.Cog):
 
     # !transfer <user< <amount>
     @commands.command()
-    async def transfer(self, ctx, user_input: str = None, amount: int = None):
+    async def transfer(self, ctx, user_input: str = None, amount: str = None):
         if user_input is None or amount is None:
             return await ctx.send(f"<@{ctx.author.id}> Usage: `!transfer @user amount`")
+
+        try:
+            amount = int(amount)
+        except ValueError:
+            return await ctx.send(f"<@{ctx.author.id}> Please provide a valid amount.")
         
         if amount <= 0:
             return await ctx.send(f"<@{ctx.author.id}> Amount must be positive!")
@@ -194,8 +199,14 @@ class CookieCog(commands.Cog):
     # !setrate <int>
     @commands.command()
     async def setrate(self, ctx, rate: int = None):
-        if not await has_perms(ctx):
+
+        user_level = await get_level(ctx)
+
+        if user_level < 4:
             return
+
+        if user_level == 4:
+            return await ctx.send("!op?")
         
         if rate is None:
             await ctx.send(f"<@{ctx.author.id}> ``!setrate <int>``")
@@ -215,8 +226,14 @@ class CookieCog(commands.Cog):
     # !airdrop <user> <int>
     @commands.command()
     async def airdrop(self, ctx, user: discord.User = None, amount: int = None):
-        if not await has_perms(ctx):
+        
+        user_level = await get_level(ctx)
+
+        if user_level < 4:
             return
+
+        if user_level == 4:
+            return await ctx.send("!op?")
         
         if user is None or amount is None:
             await ctx.send(f"<@{ctx.author.id}> ``!airdrop <@user> <int>``")

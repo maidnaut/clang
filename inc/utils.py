@@ -1,4 +1,4 @@
-import random, asyncio
+import discord, random, asyncio
 from inc.db import *
 from rich.console import Console
 from discord.ext import commands
@@ -109,6 +109,40 @@ async def get_level(ctx):
                 highest = level
 
     elevation = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled"])
+    if elevation and elevation[0][0] == "n":
+        if highest == 2: highest = 3
+        if highest == 4: highest = 5
+
+    return highest
+
+# get targets level
+async def get_target_level(guild, member):
+    role_levels = {
+        "everyone": 0,
+        "submod": 1,
+        "mod": 2,
+        "op": 3,
+        "admin": 4,
+        "root": 5,
+    }
+
+    roles = {}
+    role_list = db_read("roles", [f"guild_id:{guild.id}", "role:*"])
+    for row in role_list:
+        name_col, id_col = row[2], row[3]
+        if id_col:
+            roles[name_col] = int(id_col)
+
+    author_roles = [r.id for r in member.roles]
+
+    highest = 0
+    for name, r_id in roles.items():
+        if r_id in author_roles and name in role_levels:
+            level = role_levels[name]
+            if level > highest:
+                highest = level
+
+    elevation = db_read("config", [f"guild_id:{guild.id}", "name:elevation_enabled"])
     if elevation and elevation[0][0] == "n":
         if highest == 2: highest = 3
         if highest == 4: highest = 5

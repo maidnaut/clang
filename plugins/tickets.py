@@ -33,11 +33,6 @@ class TicketsCog(commands.Cog):
         self.bot = bot
         self.bot.add_application_command(ticket)
 
-    def level_required(min_level: int):
-        async def level_check(ctx):
-            return await get_level(ctx) >= min_level
-        return commands.check(level_check)
-
     def format_date(self, date):
         suffix = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
         day = date.day
@@ -108,7 +103,7 @@ class TicketsCog(commands.Cog):
         overwrites = {
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             ctx.author: discord.PermissionOverwrite(read_messages=True),
-            ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
+            ctx.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_messages=True),
         }
 
         roles = {}
@@ -137,7 +132,13 @@ class TicketsCog(commands.Cog):
 
         base_name = f"-{ticket_id}"
         channel_name = f"ticket-{base_name}"
-        ticket_channel = await ctx.guild.create_text_channel(channel_name, overwrites=overwrites, category=tickets_category)
+        ticket_channel = await ctx.guild.create_text_channel(
+            channel_name,
+            overwrites=overwrites,
+            category=tickets_category
+        )
+
+        await ticket_channel.edit(sync_permissions=False)
 
         mod_role = discord.utils.get(ctx.guild.roles, name="mods")
         mod_mention = mod_role.mention if mod_role else "@mods"
@@ -175,7 +176,6 @@ Use `/ticket add <user>` to add someone else to the ticket.
 
     # /ticket remove
     @ticket.command(name="remove", description="Remove a user from the ticket")
-    @level_required(1)
     async def add_user(ctx, user: discord.Member):
         if not ctx.channel.name.startswith("ticket-"):
             return await ctx.respond("This command can only be used inside a ticket channel.", ephemeral=True)
@@ -183,6 +183,20 @@ Use `/ticket add <user>` to add someone else to the ticket.
         user_level = await get_level(ctx)
         if user_level < 1:
             return await ctx.respond("You don't have permission to remove users from a ticket.", ephemeral=True)
+            return
+
+        target_level = await get_target_level(ctx.guild, user)
+        if user_level == 1 and target_level >= 1:
+            return await ctx.respond("You don't have permission to remove this user.", ephemeral=True)
+
+        if user_level in [2, 3] and target_level >= 2:
+            return await ctx.respond("You don't have permission to remove this user.", ephemeral=True)
+
+        if user_level >= 1 and target_level >= 4:
+            return await ctx.respond("You can't remove admins from tickets.", ephemeral=True)
+
+        if user == ctx.bot.user:
+            return await ctx.respond("You can't remove Clang from a ticket.", ephemeral=True)
             return
 
         overwrite = discord.PermissionOverwrite(
@@ -199,7 +213,6 @@ Use `/ticket add <user>` to add someone else to the ticket.
 
     # /ticket close
     @ticket.command(name="close", description="Close the ticket")
-    @level_required(1)
     async def close_ticket(ctx):
         if not ctx.channel.name.startswith("ticket-"):
             return await ctx.respond("This command can only be used inside a ticket channel.", ephemeral=True)

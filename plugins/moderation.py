@@ -1,12 +1,12 @@
-import discord, asyncio, datetime, io
-from datetime import timedelta
+import discord
+import datetime
+import re
 from typing import Optional
-from discord.ext import commands
-from discord.utils import get
+from discord.ext import commands, tasks
 from inc.utils import *
 
 #################################################################################
-# Initial setup for the mod suite
+# Init
 #################################################################################
 
 def setup(bot):
@@ -21,13 +21,12 @@ def setup(bot):
 
 
 #################################################################################
-# Moderation command suite
+# Mod Suite
 #################################################################################
 class ModerationCog(commands.Cog):
-
-    # Bot init & build help sheet
     def __init__(self, bot):
         self.bot = bot
+
         self.__help__ = {
             "op": {
                 "args": "",
@@ -59,44 +58,19 @@ class ModerationCog(commands.Cog):
                 "desc": "Bans a user from the server and dm's them the reason. If no time is provided, time will default to permanent",
                 "perm": ["mod", "admin"]
             },
-            "silentban": {
-                "args": "<user>",
-                "desc": "Silently bans a user from the server. If no time is provided, time will default to permanent",
-                "perm": ["mod", "admin"]
-            },
-            "unbanban": {
+            "unban": {
                 "args": "<user> <reason>",
                 "desc": "Unbans the user from the server.",
                 "perm": ["mod", "admin"]
             },
-            "purgeban": {
-                "args": "<user>",
-                "desc": "Silently perma bans the user from the server and removes all their messages.",
-                "perm": ["mod", "admin"]
-            },
-            "promote": {
-                "args": "<user> <role>",
-                "desc": "Promotes user to the selected role.",
-                "perm": ["admin"]
-            },
-            "demote": {
-                "args": "<user> <role>",
-                "desc": "Removes the selected role from the user.",
-                "perm": ["admin"]
-            },
-            "fire": {
-                "args": "<user>",
-                "desc": "Removes the user from staff entirely.",
-                "perm": ["admin"]
-            },
             "slowmode": {
-                "args": "<user> <time>",
-                "desc": "Sets the slowmode for the current channel.",
+                "args": "<time>",
+                "desc": "Sets the slowmode for the current channel. Takes s/m/d for time, and accepts 0 or off to disable.",
                 "perm": ["submod", "mod", "admin"]
             },
         }
 
-        # Init the table
+        # Ensure our tables exist
         if not table_exists("warnings"):
             new_db("warnings", [
                 ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
@@ -107,29 +81,32 @@ class ModerationCog(commands.Cog):
                 ("moderator_id", "INTEGER"),
                 ("warn_date", "TEXT"),
             ])
+        if not table_exists("bans"):
+            new_db("bans", [
+                ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+                ("guild_id", "INTEGER"),
+                ("user_id", "INTEGER"),
+                ("ban_date", "TEXT"),
+                ("unban_date", "TEXT"),
+            ])
 
-    # modlog channel
-    async def get_modlog_channel(self, ctx):
-        try:
-            guild_id = ctx.guild.id
-            settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:modlog"])
-            if not settings or not settings[0][3]:
-                return None
-            
-            channel_id = int(settings[0][3])
-            channel = self.bot.get_channel(channel_id)
-            
-            if not channel:
-                try:
-                    channel = await guild.fetch_channel(channel_id)
-                except discord.NotFound:
-                    await ctx.send(f"Modlog channel {channel_id} not found in guild {guild_id}")
-                    return None
-            
-            return channel
-        except Exception as e:
-            await ctx.send(f"Error getting modlog channel: {e}")
+        # Start unban loop
+        if not self.unban_loop.is_running():
+            self.unban_loop.start()
+
+    # Helpers
+    async def get_modlog_channel_from_guild(self, guild):
+        settings = db_read("logchans", [f"guild_id:{guild.id}", "name:modlog"])
+        if not settings or not settings[0][3]:
             return None
+        ch_id = int(settings[0][3])
+        return self.bot.get_channel(ch_id) or await guild.fetch_channel(ch_id)
+
+    async def get_modlog_channel(self, ctx):
+        chan = await self.get_modlog_channel_from_guild(ctx.guild)
+        if not chan:
+            await ctx.send("Modlog not configured.")
+        return chan
 
     # Handle errors
     @commands.Cog.listener()
@@ -142,6 +119,7 @@ class ModerationCog(commands.Cog):
             return
         
         return await self.bot.on_command_error(ctx, error)
+
 
 
 
@@ -232,7 +210,7 @@ class ModerationCog(commands.Cog):
 
             db_update("logchans", [f"guild_id:{guild_id}", f"name:{channel}"], [("channel", id)])
             await ctx.send(f"{author.mention} {channel} channel set!")
-                        
+
 
 
 
@@ -264,12 +242,15 @@ class ModerationCog(commands.Cog):
         # Target the role
         if user_level == 2 and "op" in roles:
             target_id = roles["op"]
+        elif user_level == 3 and "op" in roles:
+            target_id = roles["op"]
         elif user_level == 4 and "root" in roles:
             target_id = roles["root"]
         elif user_level == 5 and "root" in roles:
             target_id = roles["root"]
         else:
-            return await ctx.send(f"{ctx.author.mention} This server's roles aren't configured properly.")
+            # User is not staff, ignore
+            return
 
         # Get the object
         role_obj = ctx.guild.get_role(target_id)
@@ -283,7 +264,6 @@ class ModerationCog(commands.Cog):
         else:
             await user.remove_roles(role_obj)
             await ctx.send(f"{ctx.author.mention} put the ban hammer away.")
-
 
 
 
@@ -389,6 +369,9 @@ class ModerationCog(commands.Cog):
     async def delwarn(self, ctx, user_str: str = None, id: str = None):
 
         user_level = await get_level(ctx)
+        if user_level < 1:
+            return
+
         if user_level not in (3, 5): # Op or Root
             await ctx.send("!op?")
             return
@@ -427,13 +410,15 @@ class ModerationCog(commands.Cog):
         
         except Exception as e:
             await ctx.send(f"Couldn't delete warning: {e}")
-            
+
     # !clear
     @commands.command()
     async def clear(self, ctx, user_str: str = None):
 
         user_level = await get_level(ctx)
-        
+        if user_level < 1:
+            return
+
         if user_level not in (3, 5): # Op or Root
             await ctx.send("!op?")
             return
@@ -471,7 +456,278 @@ class ModerationCog(commands.Cog):
         
         except Exception as e:
             await ctx.send(f"Couldn't delete warnings: {e}")
-            
-        
 
+
+
+
+    # !ban
+    @commands.command()
+    async def ban(self, ctx, user_str: str = None, *, args: str = None):
+        user_level = await get_level(ctx)
+        if user_level < 1:
+            return
+
+        if not user_str or not args:
+            return await ctx.send(f"{ctx.author.mention} Usage: `!ban <user> [time] <reason>`")
+
+        # Get ban time
+        tm = re.match(r"(?:(\d+)y)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?", args.split()[0])
+        if tm and any(tm.groups()):
+            ban_time = args.split()[0]
+            reason   = " ".join(args.split()[1:])
+        else:
+            ban_time = None
+            reason   = args
+
+        if not reason:
+            return await ctx.send(f"{ctx.author.mention} Please provide a reason.")
+
+        # Find user
+        try:
+            user = await commands.MemberConverter().convert(ctx, user_str)
+        except commands.MemberNotFound:
+            try:
+                user = await commands.UserConverter().convert(ctx, user_str)
+            except commands.UserNotFound:
+                return await ctx.send(f"{ctx.author.mention} Couldn't find `{user_str}`")
+
+        # Already banned?
+        try:
+            if await ctx.guild.fetch_ban(discord.Object(id=user.id)):
+                return await ctx.send(f"{ctx.author.mention} That user is already banned.")
+        except discord.NotFound:
+            pass
+        except discord.Forbidden:
+            return await ctx.send(f"{ctx.author.mention} Missing permission to check bans.")
+        except discord.HTTPException as e:
+            return await ctx.send(f"{ctx.author.mention} Error checking bans: {e}")
+
+        # Figure out unban_date
+        if ban_time:
+            years = int(tm.group(1) or 0)
+            days  = int(tm.group(2) or 0)
+            hrs   = int(tm.group(3) or 0)
+            mins  = int(tm.group(4) or 0)
+            delta = datetime.timedelta(days=years*365 + days, hours=hrs, minutes=mins)
+            unban_dt = (datetime.datetime.now() + delta).replace(microsecond=0)
+        else:
+            unban_dt = None
+
+        now_iso = datetime.datetime.now().replace(microsecond=0).isoformat()
+
+        # Setup for note
+        now = datetime.datetime.now()
+        last_warn = db_read("warnings", [f"user_id:{user.id}", f"guild_id:{ctx.guild.id}"])
+        warn_id   = int(last_warn[-1][3]) + 1 if last_warn else 1
+        ban_note  = f"**BANNED**{' for '+ban_time if ban_time else ' permanently'}: {reason}"
+
+        db_insert(
+            "warnings",
+            ["guild_id","user_id","warn_id","reason","moderator_id","warn_date"],
+            [ctx.guild.id, user.id, warn_id, ban_note, ctx.author.id, now]
+        )
+
+        db_insert("bans", ["guild_id","user_id","ban_date","unban_date"], [ctx.guild.id, user.id, now_iso, unban_dt.isoformat() if unban_dt else None])
+
+        # Do the ban
+        try:
+            if isinstance(user, discord.Member):
+                await user.ban(reason=reason)
+            else:
+                await ctx.guild.ban(user, reason=reason)
+        except discord.Forbidden:
+            return await ctx.send(f"{ctx.author.mention} Missing permission to ban.")
+        except discord.HTTPException as e:
+            return await ctx.send(f"{ctx.author.mention} Ban failed: {e}")
+
+        # Modlog embed
+        modlog = await self.get_modlog_channel(ctx)
+        if modlog:
+            embed = discord.Embed(color=discord.Color.red(), title="User Banned")
+            if getattr(user, "avatar", None):
+                embed.set_thumbnail(url=user.avatar.url)
+            embed.add_field(name="User",   value=user.mention,      inline=True)
+            embed.add_field(name="Mod",    value=ctx.author.mention, inline=True)
+            embed.add_field(name="Reason", value=reason,            inline=False)
+            await modlog.send(embed=embed)
+
+        await ctx.send(f"{user.mention} banned{' for '+ban_time if ban_time else ''}. Reason: {reason}")
+
+    # !unban
+    @commands.command()
+    async def unban(self, ctx, user_str: str = None, *, reason: str = None):
+        user_level = await get_level(ctx)
+        if user_level < 1:
+            return
+
+        if not user_str or not reason:
+            return await ctx.send(f"{ctx.author.mention} Usage: `!unban <user> <reason>`")
+
+        # Fffind user
+        try:
+            user = await commands.MemberConverter().convert(ctx, user_str)
+        except commands.MemberNotFound:
+            try:
+                user = await commands.UserConverter().convert(ctx, user_str)
+            except commands.UserNotFound:
+                return await ctx.send(f"{ctx.author.mention} Couldn't find `{user_str}`")
+
+        # Check ban exists
+        try:
+            await ctx.guild.fetch_ban(discord.Object(id=user.id))
+        except discord.NotFound:
+            return await ctx.send(f"{ctx.author.mention} That user is not banned.")
+        except discord.Forbidden:
+            return await ctx.send(f"{ctx.author.mention} Missing permission to check bans.")
+        except discord.HTTPException as e:
+            return await ctx.send(f"{ctx.author.mention} Error checking bans: {e}")
+
+        # Add unban note
+        now = datetime.datetime.now()
+        last_warn = db_read("warnings", [f"user_id:{user.id}", f"guild_id:{ctx.guild.id}"])
+        warn_id   = int(last_warn[-1][3]) + 1 if last_warn else 1
+        note      = f"**UNBANNED:** {reason}"
+        db_insert(
+            "warnings",
+            ["guild_id","user_id","warn_id","reason","moderator_id","warn_date"],
+            [ctx.guild.id, user.id, warn_id, note, ctx.author.id, now]
+        )
+
+        db_remove("bans", ["guild_id", "user_id"], [ctx.guild.id, user.id])
+
+        # Do the unban
+        try:
+            await ctx.guild.unban(user)
+        except discord.Forbidden:
+            return await ctx.send(f"{ctx.author.mention} Missing permission to unban.")
+        except discord.HTTPException as e:
+            return await ctx.send(f"{ctx.author.mention} Unban failed: {e}")
+
+        # Modlog embed
+        modlog = await self.get_modlog_channel(ctx)
+        if modlog:
+            embed = discord.Embed(color=discord.Color.purple(), title="User Unbanned")
+            if getattr(user, "avatar", None):
+                embed.set_thumbnail(url=user.avatar.url)
+            embed.add_field(name="User",   value=user.mention, inline=True)
+            embed.add_field(name="Mod",    value=ctx.author.mention, inline=True)
+            embed.add_field(name="Reason", value=reason, inline=False)
+            await modlog.send(embed=embed)
+
+        await ctx.send(f"{user.mention} unbanned. Reason: {reason}")
+
+    # Unban loop
+    @tasks.loop(minutes=1)
+    async def unban_loop(self):
+
+        now_iso = datetime.datetime.now().replace(microsecond=0).isoformat()
+
+        expired = db_read("bans", [f"unban_date:<{now_iso}"])
+
+        for row in expired:
+            guild_id = int(row[1]); user_id = int(row[2])
+            guild    = self.bot.get_guild(guild_id)
+            if not guild:
+                continue
+
+            user = await self.bot.fetch_user(user_id)
+            try:
+                await guild.unban(user, reason="Ban timer expired")
+            except discord.NotFound:
+                print(f"\n[bold yellow][!][/bold yellow] User {user_id} was already unbanned.")
+            except Exception as e:
+                print(f"\n[!] Unban failed for {user_id}@{guild_id}: {e}")
+
+
+            db_remove("bans", ["guild_id", "user_id"], [guild.id, user_id])
+
+            # Log and unban
+            now = datetime.datetime.now()
+            last_warn = db_read("warnings", [f"user_id:{user_id}", f"guild_id:{guild_id}"])
+            warn_id   = int(last_warn[-1][3]) + 1 if last_warn else 1
+            db_insert(
+                "warnings",
+                ["guild_id","user_id","warn_id","reason","moderator_id","warn_date"],
+                [guild_id, user_id, warn_id, "**UNBANNED:** Ban timer expired", self.bot.user.name, now]
+            )
+
+            # Post to modlog
+            modlog = await self.get_modlog_channel_from_guild(guild)
+            if modlog:
+                embed = discord.Embed(color=discord.Color.purple(), title="User Unbanned")
+                if user.avatar:
+                    embed.set_thumbnail(url=user.avatar.url)
+                embed.add_field(name="User",   value=user.mention,      inline=True)
+                embed.add_field(name="Mod",    value=self.bot.user.name,           inline=True)
+                embed.add_field(name="Reason", value="Ban timer expired", inline=False)
+                await modlog.send(embed=embed)
+
+
+
+
+
+    # !slowmode
+    @commands.command()
+    async def slowmode(self, ctx, time: str = None):
+
+        # No perms
+        user_level = await get_level(ctx)
+        if user_level < 1:
+            return
+
+        elev = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled"])
+        if elev and elev[0][3] == "y":
+            if user_level in [2, 4]:
+                return await ctx.send("!op?")
+
+        # Time not supplied
+        if time is None:
+            return await ctx.send(f"{ctx.author.mention} Please provide a time. ``!slowmode <time/off>``")
+
+        # Turn slowmode off
+        if time == "off":
+            await ctx.channel.edit(slowmode_delay=0)
+            await ctx.send(f"{ctx.author.mention} Slowmode turned off.")
+            return
+
+        # Time is an int, interpret as seconds
+        if time.isdigit():
+            time = int(time)
+            if time > 21600:
+                return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
+            else:
+                await ctx.channel.edit(slowmode_delay=time)
+                await ctx.send(f"{ctx.author.mention} Slowmode set to {time} second(s).")
+                return
+
+        # Pattern match for s/d/h
+        match = re.match(r"^(\d+)([smh])$", time.strip().lower())
+        if not match:
+            return await ctx.send(f"{ctx.author.mention} Invalid format. Use like ``!slowmode 10s``, ``5m``, or ``1h``.")
+        
+        value, unit = match.groups()
+        value = int(value)
+
+        if unit == 's':
+            seconds = value
+        elif unit == 'm':
+            seconds = value * 60
+        elif unit == 'h':
+            seconds = value * 3600
+
+        if seconds > 21600:
+            return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
+
+        # Do the thingy
+        await ctx.channel.edit(slowmode_delay=seconds)
+
+        # trim the .0
+        if unit == 's':
+            display = f"{value} second(s)"
+        elif unit == 'm':
+            display = f"{value} minute(s)"
+        elif unit == 'h':
+            display = f"{value} hour(s)"
+
+        await ctx.send(f"{ctx.author.mention} Slowmode set to {display}.")
 

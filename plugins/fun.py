@@ -143,7 +143,7 @@ class FortuneCog(commands.Cog):
     @commands.command()
     async def fortune(self, ctx):
         # Generate a random number between 1 and 5
-        choice = random.randint(1, 21)
+        choice = random.randint(1, 22)
 
         word = random.choice(words)
         concept = random.choice(concepts)
@@ -171,7 +171,8 @@ class FortuneCog(commands.Cog):
             18: "The voices in your head are forming a union. They demand better benefits.",
             19: f"A random word will soon become very important to you. Today’s word: '{word}'",
             20: "fortun bronk pls try again",
-            21: "If you wanna win big, always bet on Clang."
+            21: "If you wanna win big, always bet on Clang.",
+            22: "TOO MANY EXCESS VACATION DAYS? TAKE A GODDAMN VACATION STRAIGHT TO HELL",
         }
 
         # Get the message corresponding to the chosen number

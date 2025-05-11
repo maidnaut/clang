@@ -158,7 +158,7 @@ class FortuneCog(commands.Cog):
             5: "Give Clang your cookies, and your fortunes will always be true.",
             6: "Your teeth are whispering secrets. If you listen closely, you can hear them.",
             7: "The air tastes purple today. Inhale cautiously.",
-            8: "Your next sneeze will summon something. Apologize in advance.",
+            8: "Your next sneeze will summon something. Apologies in advance.",
             9: "Your shadow has been seen in places you haven’t.",
             10: "The static is a language. Learn it.",
             11: "Your patience will be rewarded—just not in the way you expect.",

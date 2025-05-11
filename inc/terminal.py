@@ -22,8 +22,8 @@ class ClangShell(commands.Cog):
         self.bot = bot
 
     def load_plugins(self):
-        for filename in os.listdir("./plugins"):
-            if filename.endswith(".py") and not filename.startswith("_"):
+        for file in os.listdir("./plugins"):
+            if file.endswith(".py") and not file.startswith("_"):
                 try:
                     module_name = f"plugins.{file.stem}"
                 except Exception as e:

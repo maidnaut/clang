@@ -1,4 +1,4 @@
-import discord, os, random, asyncio, argparse, time
+import discord, os, random, asyncio, argparse, time, re
 from inc.terminal import register_plugin
 from discord.ext import commands
 from inc.utils import *
@@ -279,8 +279,8 @@ class CookieCog(commands.Cog):
                     [("cookies", current + 1)])
 
         # Thanks
-        thank_words = ["thank", "thx", "ty", "thanks", "tysm", "tyvm", "thnx"]
-        contains_thank = any(word in message.content.lower() for word in thank_words)
+        thank_words = r"\b(thank(?:s| you)?|thx|ty(?:sm|vm)?|thnx)\b"
+        contains_thank = bool(re.search(thank_words, message.content.lower()))
         
         if contains_thank:
             if guild_id not in self.thank_cooldowns:

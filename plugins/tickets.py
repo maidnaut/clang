@@ -144,7 +144,7 @@ class TicketsCog(commands.Cog):
         mod_mention = mod_role.mention if mod_role else "@mods"
 
         await ticket_channel.send(f"""
-**Title: {title}**
+# Title: {title}
 
 Hello {ctx.author.mention}, please be patient and wait for the {mod_mention}.
 

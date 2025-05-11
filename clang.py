@@ -40,7 +40,7 @@ async def start_bot():
 
     print("__________________________________________________________________________\n")
     await random_decimal_sleep(0.1, 0.3)
-    print("[bold red]Cosmic Arp © 2025[/bold red] - maidnaut@gnamil.com\n\n")
+    print("[bold red]Cosmic Arp © 2025[/bold red] - maidnaut@gmail.com\n\n")
     await random_decimal_sleep(0.1, 0.3)
 
     # CLANG

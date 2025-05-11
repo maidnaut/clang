@@ -173,7 +173,7 @@ class FortuneCog(commands.Cog):
             20: "fortun bronk pls try again",
             21: "If you wanna win big, always bet on Clang.",
             22: "TOO MANY EXCESS VACATION DAYS? TAKE A GODDAMN VACATION STRAIGHT TO HELL",
-            23: "NOW'S YOU CHANCE TO BE A [[BIGSHOT]]",
+            23: "NOW'S YOUR CHANCE TO BE A [[BIGSHOT]]",
             24: "[[HYPERLINK BLOCKED]]"
         }
 

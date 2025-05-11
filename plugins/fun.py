@@ -153,7 +153,7 @@ class FortuneCog(commands.Cog):
         messages = {
             1: "Your shadow has been gossiping about you.",
             2: "Something is looking back at you in the mirror. Wait, that's you.",
-            3: f"Tomorrow’s soup will taste like the concept of {concept}. Don't eat it. Do you eat soup or drink it?",
+            3: f"Tomorrow’s soup will taste like the concept of {concept}. Don't eat it. Do you eat soup or drink it? Probably best not to drink it either.",
             4: "Your left shoe is plotting something. Right shoe is in on it.",
             5: "Give Clang your cookies, and your fortunes will always be true.",
             6: "Your teeth are whispering secrets. If you listen closely, you can hear them.",

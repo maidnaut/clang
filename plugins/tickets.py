@@ -148,7 +148,7 @@ class TicketsCog(commands.Cog):
 
 Hello {ctx.author.mention}, please be patient and wait for the {mod_mention}.
 
-Please also provide message links, screenshots, and any context you think is relevant. Mods will cose the ticket when the isue is resolved, thank you!
+Please also provide message links, screenshots, and any context you think is relevant. Mods will close the ticket when the issue is resolved, thank you!
 
 Use `/ticket add <user>` to add someone else to the ticket.
 """)

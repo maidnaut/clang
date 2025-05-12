@@ -65,7 +65,7 @@ class ModerationCog(commands.Cog):
             },
             "slowmode": {
                 "args": "<time>",
-                "desc": "Sets the slowmode for the current channel. Takes s/m/d for time, and accepts 0 or off to disable.",
+                "desc": "Sets the slowmode for the current channel. Takes s/m/d for time, and accepts 0 or off to disable",
                 "perm": ["submod", "mod", "admin"]
             },
         }

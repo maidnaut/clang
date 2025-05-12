@@ -58,7 +58,7 @@ class ClangCog(commands.Cog):
             6: "who's clang",
             7: "FEED ME SPAGHETTI CLANG DEMANDS SPPGEAGEAHGFJ",
             8: "-# aaaaaa sneaky clang",
-            9: "Are you okay Clang? Clang once for yes, twice for no.",
+            9: "Are you okay, Clang? Clang once for yes, twice for no.",
             10: "WHAT'S THE WIFI PASSWORD???? CLANG NEED WIFI.",
             11: "If you stay here too long, you'll end up frying your brain.",
             12: "???AAAAAAA???",

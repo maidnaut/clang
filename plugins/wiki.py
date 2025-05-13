@@ -48,7 +48,7 @@ class WikiCog(commands.Cog):
             }
         }
 
-    search = discord.SlashCommandGroup("search", "Search related commands")
+    wiki = discord.SlashCommandGroup("wiki", "Wiki related commands")
 
 
 
@@ -175,8 +175,8 @@ class WikiCog(commands.Cog):
 
 
 
-    # /search archwiki    
-    @search.command(name="arch", description="Search the Arch Wiki")
+    # /wiki archwiki    
+    @wiki.command(name="arch", description="Search the Arch Wiki")
     async def search_aw(self, ctx, query: str):
         await self._search_wiki(
             ctx = ctx,
@@ -190,8 +190,8 @@ class WikiCog(commands.Cog):
             slashcommand = True
         )
 
-    # /search gentoowiki    
-    @search.command(name="gentoo", description="Search the Gentoo Wiki")
+    # /wiki gentoowiki    
+    @wiki.command(name="gentoo", description="Search the Gentoo Wiki")
     async def search_gw(self, ctx, query: str):
         await self._search_wiki(
             ctx = ctx,
@@ -205,7 +205,7 @@ class WikiCog(commands.Cog):
             slashcommand = True
         )
 
-    # /search proton   
-    @search.command(name="proton", description="Search the Proton DB")
+    # /wiki proton   
+    @wiki.command(name="proton", description="Search the Proton DB")
     async def search_proton(self, ctx, *, title: str):
         await self._search_proton(ctx, title, slashcommand = True)

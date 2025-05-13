@@ -78,26 +78,22 @@ class UtilsCog(commands.Cog):
         author = ctx.author
 
         if user_input is None:
-            await ctx.send("You must supply a target. ``!whois <@user/id>``")
-            return
-        
-        user = None
-
-        # Check for the user
-        if ctx.message.mentions:
-            user = ctx.message.mentions[0]
-        elif user_input.isdigit():
-            try:
-                user = await self.bot.fetch_user(int(user_input))
-                member = ctx.guild.get_member(user.id)
-                if member:
-                    user = member
-            except discord.NotFound:
-                user = None
-            except discord.HTTPException:
-                user = None
+            user = ctx.author
         else:
-            user = None
+            if ctx.message.mentions:
+                user = ctx.message.mentions[0]
+            elif user_input.isdigit():
+                try:
+                    user = await self.bot.fetch_user(int(user_input))
+                    member = ctx.guild.get_member(user.id)
+                    if member:
+                        user = member
+                except discord.NotFound:
+                    user = None
+                except discord.HTTPException:
+                    user = None
+            else:
+                user = None
 
         if user is None:
             await ctx.send(f"I have no record for that user.")
@@ -200,7 +196,7 @@ class UtilsCog(commands.Cog):
     @commands.command()
     async def avatar(self, ctx, *, user_input: str = None):
         if user_input is None:
-            return await ctx.send(f"{ctx.author.mention} Please provide a user. Usage: '!whois <@user/id>")
+            user = ctx.author
         else:
             if ctx.message.mentions:
                 user = ctx.message.mentions[0]

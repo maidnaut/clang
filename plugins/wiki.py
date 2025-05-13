@@ -76,7 +76,11 @@ class WikiCog(commands.Cog):
 
         top_result = search_results[0]
         title = top_result["title"]
-        page_url = f"{base_url}/wiki/{title.replace(' ', '_')}"
+
+        if wiki_name == "arch":
+            page_url = f"{base_url}/title/{title.replace(' ', '_')}"
+        else:
+            page_url = f"{base_url}/wiki/{title.replace(' ', '_')}"
 
         if query == "clang":
             await ctx.send(f"Yes hello, that's me. Also here's the search result:")
@@ -139,7 +143,7 @@ class WikiCog(commands.Cog):
         await self._search_wiki(
             ctx = ctx,
             query = query,
-            wiki_name = "Arch Wiki",
+            wiki_name = "arch",
             base_url = "https://wiki.archlinux.org",
             search_url = "https://wiki.archlinux.org/api.php",
             thumbnail = "https://i.imgur.com/iH8a5Bd.png",
@@ -156,7 +160,7 @@ class WikiCog(commands.Cog):
         await self._search_wiki(
             ctx = ctx,
             query = query,
-            wiki_name = "Gentoo Wiki",
+            wiki_name = "gentoo",
             base_url = "https://wiki.gentoo.org",
             search_url = "https://wiki.gentoo.org/api.php",
             thumbnail = "https://i.imgur.com/hnQbCSU.png",

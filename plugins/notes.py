@@ -242,3 +242,60 @@ class NotesCog(commands.Cog):
             except asyncio.TimeoutError:
                 await message.delete()
                 break
+
+
+
+    # List MY notes
+    @commands.command()
+    async def notes(self, ctx):
+
+        notes = db_read("notes", [f"guild:{ctx.guild.id}", f"author:{ctx.author.id}"])
+        if not notes:
+            await ctx.send("No notes saved.", delete_after=10)
+            return
+
+        per_page = 15
+        pages = math.ceil(len(notes) / per_page)
+        current = 0
+
+        def make_embed(page):
+            start = page * per_page
+            end = start + per_page
+            titles = [f"◆   ``#{note[0]} - {note[3]}``" for note in notes[start:end]]
+            embed = discord.Embed(
+                title=f"{ctx.author.name}'s notes (Page {page+1}/{pages})",
+                description="\n".join(titles),
+                color=0x00cc99
+            )
+            return embed
+
+        message = await ctx.send(embed=make_embed(current))
+
+        if pages == 1:
+            await asyncio.sleep(120)
+            await message.delete()
+            return
+
+        await message.add_reaction("⬅️")
+        await message.add_reaction("➡️")
+
+        def check(reaction, user):
+            return (
+                user == ctx.author
+                and str(reaction.emoji) in ["⬅️", "➡️"]
+                and reaction.message.id == message.id
+            )
+
+        while True:
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", timeout=120.0, check=check)
+                if str(reaction.emoji) == "➡️" and current < pages - 1:
+                    current += 1
+                    await message.edit(embed=make_embed(current))
+                elif str(reaction.emoji) == "⬅️" and current > 0:
+                    current -= 1
+                    await message.edit(embed=make_embed(current))
+                await message.remove_reaction(reaction, user)
+            except asyncio.TimeoutError:
+                await message.delete()
+                break

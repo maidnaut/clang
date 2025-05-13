@@ -40,36 +40,21 @@ class WikiCog(commands.Cog):
                 "args": "<query>",
                 "desc": "Searches the Gentoo Wiki",
                 "perm": "everyone"
+            },
+            "proton": {
+                "args": "<query>",
+                "desc": "Searches the ProtonDB",
+                "perm": "everyone"
             }
         }
 
-    @commands.command()
-    async def aw(self, ctx, *, query: str):
-        await self._search_wiki(
-            ctx = ctx,
-            query = query,
-            wiki_name = "Arch Wiki",
-            base_url = "https://wiki.archlinux.org",
-            search_url = "https://wiki.archlinux.org/api.php",
-            thumbnail = "https://i.imgur.com/iH8a5Bd.png",
-            fail_emoji = "<:bruh:1371231771462729730>",
-            embed_color = discord.Color.blue()
-        )
+    search = discord.SlashCommandGroup("search", "Search related commands")
 
-    @commands.command()
-    async def gw(self, ctx, *, query: str):
-        await self._search_wiki(
-            ctx = ctx,
-            query = query,
-            wiki_name = "Gentoo Wiki",
-            base_url = "https://wiki.gentoo.org",
-            search_url = "https://wiki.gentoo.org/api.php",
-            thumbnail = "https://i.imgur.com/hnQbCSU.png",
-            fail_emoji = "<:bruh:1371231771462729730>",
-            embed_color = discord.Color.from_rgb(230, 230, 230)
-        )
 
-    async def _search_wiki(self, ctx, query, wiki_name, base_url, search_url, thumbnail, fail_emoji, embed_color):
+
+
+    # Wiki Search
+    async def _search_wiki(self, ctx, query, wiki_name, base_url, search_url, thumbnail, fail_emoji, embed_color, slashcommand: bool = False):
         params = {
             "action": "query",
             "list": "search",
@@ -99,4 +84,129 @@ class WikiCog(commands.Cog):
         embed = discord.Embed(color=embed_color, title=f"{title}")
         embed.set_thumbnail(url=f"{thumbnail}")
         embed.add_field(name=f"",   value=f"{page_url}")
-        await ctx.send(embed=embed)
+
+        if slashcommand == True:
+            await ctx.respond(embed=embed, ephemeral=True)
+        else:
+            await ctx.send(embed=embed)
+
+    # Proton Search
+    async def _search_proton(self, ctx, title, slashcommand: bool = False):
+        fail_emoji = "<:bruh:1371231771462729730>"
+
+        steam_search_url = "https://store.steampowered.com/api/storesearch"
+        params = {"term": title, "cc": "us", "l": "en"}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(steam_search_url, params=params) as resp:
+                if resp.status != 200:
+                    await ctx.send(f"{ctx.author.mention} Couldn't search Steam. Status {resp.status} {fail_emoji}")
+                    return
+                data = await resp.json()
+
+        if not data.get("items"):
+            await ctx.send(f"{ctx.author.mention} No results found for `{title}` {fail_emoji}")
+            return
+
+        app = data["items"][0]
+        app_id = app["id"]
+        name = app["name"]
+        protondb_url = f"https://www.protondb.com/app/{app_id}"
+
+        # Check if ProtonDB page exists
+        async with aiohttp.ClientSession() as session:
+            async with session.get(protondb_url) as resp:
+                if resp.status == 200:
+                    embed = discord.Embed(color=discord.Color.red(), title=f"{name}")
+                    embed.set_thumbnail(url=f"https://i.imgur.com/i0xTLAb.png")
+                    embed.add_field(name=f"",   value=f"{protondb_url}")
+
+                    if slashcommand == True:
+                        await ctx.respond(embed=embed, ephemeral=True)
+                    else:
+                        await ctx.send(embed=embed)
+                else:
+                    await ctx.send(f"{ctx.author.mention} No results found for `{name}` {fail_emoji}")
+
+
+
+
+    # !aw
+    @commands.command()
+    async def aw(self, ctx, *, query: str = None):
+        if query == None:
+            await ctx.send(f"{ctx.author.mention} Please provide a search query. `!aw <query>`")
+
+        await self._search_wiki(
+            ctx = ctx,
+            query = query,
+            wiki_name = "Arch Wiki",
+            base_url = "https://wiki.archlinux.org",
+            search_url = "https://wiki.archlinux.org/api.php",
+            thumbnail = "https://i.imgur.com/iH8a5Bd.png",
+            fail_emoji = "<:bruh:1371231771462729730>",
+            embed_color = discord.Color.blue()
+        )
+
+    # !gw
+    @commands.command()
+    async def gw(self, ctx, *, query: str = None):
+        if query == None:
+            await ctx.send(f"{ctx.author.mention} Please provide a search query. `!gw <query>`")
+
+        await self._search_wiki(
+            ctx = ctx,
+            query = query,
+            wiki_name = "Gentoo Wiki",
+            base_url = "https://wiki.gentoo.org",
+            search_url = "https://wiki.gentoo.org/api.php",
+            thumbnail = "https://i.imgur.com/hnQbCSU.png",
+            fail_emoji = "<:bruh:1371231771462729730>",
+            embed_color = discord.Color.from_rgb(230, 230, 230)
+        )
+
+    # !proton
+    @commands.command()
+    async def proton(self, ctx, *, title: str = None):
+        if title == None:
+            await ctx.send(f"{ctx.author.mention} Please provide a search query. `!proton <query>`")
+
+        await self._search_proton(ctx, title)
+
+
+
+
+    # /search archwiki    
+    @search.command(name="arch", description="Search the Arch Wiki")
+    async def search_aw(self, ctx, query: str):
+        await self._search_wiki(
+            ctx = ctx,
+            query = query,
+            wiki_name = "Arch Wiki",
+            base_url = "https://wiki.archlinux.org",
+            search_url = "https://wiki.archlinux.org/api.php",
+            thumbnail = "https://i.imgur.com/iH8a5Bd.png",
+            fail_emoji = "<:bruh:1371231771462729730>",
+            embed_color = discord.Color.blue(),
+            slashcommand = True
+        )
+
+    # /search gentoowiki    
+    @search.command(name="gentoo", description="Search the Gentoo Wiki")
+    async def search_gw(self, ctx, query: str):
+        await self._search_wiki(
+            ctx = ctx,
+            query = query,
+            wiki_name = "Gentoo Wiki",
+            base_url = "https://wiki.gentoo.org",
+            search_url = "https://wiki.gentoo.org/api.php",
+            thumbnail = "https://i.imgur.com/hnQbCSU.png",
+            fail_emoji = "<:bruh:1371231771462729730>",
+            embed_color = discord.Color.from_rgb(230, 230, 230),
+            slashcommand = True
+        )
+
+    # /search proton   
+    @search.command(name="proton", description="Search the Proton DB")
+    async def search_proton(self, ctx, *, title: str):
+        await self._search_proton(ctx, title, slashcommand = True)

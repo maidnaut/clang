@@ -1,4 +1,4 @@
-import discord, os, asyncio, argparse, random
+import discord, os, asyncio, argparse, random, aiohttp
 from inc.terminal import register_plugin
 from discord.ext import commands
 from inc.utils import *
@@ -43,6 +43,11 @@ class FunCog(commands.Cog):
                 "desc": "Roll x number of dice with x sides (e.g. 2d6)",
                 "perm": "everyone"
             },
+            "xkcd": {
+                "args": "<id>",
+                "desc": "Shows a comic from xkcd",
+                "perm": "everyone"
+            }
         }
 
 
@@ -217,3 +222,38 @@ class FunCog(commands.Cog):
         else:
             rolls_str = ", ".join(map(str, rolls))
             await ctx.send(f"{ctx.author.mention} rolled ({num}d{sides}): → **{total}** [{rolls_str}]")
+
+
+
+
+    # !xkcd
+    @commands.command()
+    async def xkcd(self, ctx, id: str = None):
+        if not id.isdigit():
+            id = None
+
+        if id is None:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://xkcd.com/info.0.json") as resp:
+                    if resp.status != 200:
+                        return await ctx.send(f"{ctx.author.mention} Failed to get latest XKCD")
+                    data = await resp.json()
+                    id = str(random.randint(1, data["num"]))
+
+        page_url = f"https://xkcd.com/{id}"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(page_url) as resp:
+                if resp.status != 200:
+                    return await ctx.send(f"{ctx.author.mention} Comic not found ({resp.status})")
+                html = await resp.text()
+
+        result = re.search(
+            r'<div id="comic">.*?<img[^>]+src="(//imgs\.xkcd\.com/comics/[^"]+)"',
+            html, re.DOTALL
+        )
+        if not result:
+            return await ctx.send(f"{ctx.author.mention} Couldn’t find the comic image")
+
+        img_url = "https:" + result.group(1)
+        await ctx.send(f"`xkcd #{id}` {img_url}")

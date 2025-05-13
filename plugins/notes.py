@@ -41,6 +41,8 @@ class NotesCog(commands.Cog):
 
     # Read the note
     async def _read(self, ctx, title, alias):
+        title = title.split()[0]
+
         notes = db_read("notes", [f"guild:{ctx.guild.id}", f"title:{title}"])
 
         if notes:
@@ -69,6 +71,8 @@ class NotesCog(commands.Cog):
 
     # Read the note
     async def _read_id(self, ctx, id):
+        id = id.split()[0]
+
         note = db_read("notes", [f"id:{id}", f"guild:{ctx.guild.id}"])
 
         if note:
@@ -121,6 +125,8 @@ class NotesCog(commands.Cog):
     # Read note
     @commands.command()
     async def n(self, ctx, *, title: str = None):
+        title = title.split()[0]
+
         if not title:
             await ctx.send(f"{ctx.author.mention} Usage: `!n <title>`")
             return
@@ -131,6 +137,8 @@ class NotesCog(commands.Cog):
     # Read note by id
     @commands.command()
     async def nid(self, ctx, *, id: str = None):
+        id = id.split()[0]
+
         if not id:
             await ctx.send(f"{ctx.author.mention} Please provide an ID: `!nid <id>`")
             return
@@ -158,12 +166,14 @@ class NotesCog(commands.Cog):
 
     # Delete Note
     @commands.command()
-    async def dn(self, ctx, *, nid: int = None):
+    async def dn(self, ctx, *, nid: str = None):
+        nid = nid.split()[0]
+
         if not nid:
             await ctx.send(f"{ctx.author.mention} Usage: `!dn <id>`")
             return
 
-        if not isinstance(nid, int):
+        if not nid.isdigit():
             await ctx.send(f"{ctx.author.mention} Please provide a valid id. Usage: `!dn <id>`")
             return
 

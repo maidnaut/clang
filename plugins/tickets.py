@@ -154,7 +154,7 @@ class TicketsCog(commands.Cog):
 
 Hello {ctx.author.mention}, please be patient and wait for the {mod_mention}.
 
-Please also provide message links, screenshots, and any context you think is relevant. Mods will cose the ticket when the isue is resolved, thank you!
+Please also provide message links, screenshots, and any context you think is relevant. Mods will close the ticket when the issue is resolved, thank you!
 
 Use `/ticket add <user>` to add someone else to the ticket.
 """)
@@ -248,7 +248,7 @@ Use `/ticket add <user>` to add someone else to the ticket.
         log_lines = []
         attachments = []
 
-        # Gather all the messages and attatchments
+        # Gather all the messages and attachments
         for msg in messages:
             timestamp = cog.format_date(msg.created_at)
             author = str(msg.author)
@@ -259,13 +259,15 @@ Use `/ticket add <user>` to add someone else to the ticket.
             for embed in msg.embeds:
                 log_lines.append(f"{timestamp} - {author} [sent an embed]")
             for attachment in msg.attachments:
-                attachments.append((attachment.filename, await attachment.read()))
+                unique_name = f"{msg.id}_{attachment.filename}"
+                attachments.append((unique_name, await attachment.read()))
+                log_lines.append(f"{timestamp} - {author} [sent an attatchment]")
 
-        # Create the log
+        # Create the log text file
         log_text = "\n".join(log_lines)
         log_file = discord.File(fp=io.BytesIO(log_text.encode()), filename=f"{ctx.channel.name}.txt")
 
-        # Zip the embeds
+        # Zip the attachments
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             for filename, data in attachments:

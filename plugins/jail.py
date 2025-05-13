@@ -414,12 +414,12 @@ class JailCog(commands.Cog):
         if remaining:
             return await ctx.send(f"{ctx.author.mention} Some members are still jailed. Aborting deletion.")
 
-        # Set up logging
-        messages = await target_channel.history(limit=None, oldest_first=True).flatten()
+        # Get all the messages
+        messages = await ctx.channel.history(limit=None, oldest_first=True).flatten()
         log_lines = []
         attachments = []
 
-        # Gather all the messages and attatchments
+        # Gather all the messages and attachments
         for msg in messages:
             timestamp = self.format_date(msg.created_at)
             author = str(msg.author)
@@ -430,13 +430,15 @@ class JailCog(commands.Cog):
             for embed in msg.embeds:
                 log_lines.append(f"{timestamp} - {author} [sent an embed]")
             for attachment in msg.attachments:
-                attachments.append((attachment.filename, await attachment.read()))
+                unique_name = f"{msg.id}_{attachment.filename}"
+                attachments.append((unique_name, await attachment.read()))
+                log_lines.append(f"{timestamp} - {author} [sent an attatchment]")
 
-        # Create the log
+        # Create the log text file
         log_text = "\n".join(log_lines)
         log_file = discord.File(fp=io.BytesIO(log_text.encode()), filename=f"{target_channel.name}.txt")
 
-        # Zip the embeds
+        # Zip the attachments
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             for filename, data in attachments:

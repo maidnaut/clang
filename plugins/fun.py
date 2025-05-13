@@ -235,7 +235,7 @@ class FunCog(commands.Cog):
     # !xkcd
     @commands.command()
     async def xkcd(self, ctx, id: str = None):
-        if not id.isdigit():
+        if id is not None and not id.isdigit():
             id = None
 
         if id is None:

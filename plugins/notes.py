@@ -65,7 +65,7 @@ class NotesCog(commands.Cog):
                 msg += f"``#{note_id} - {note_title}:`` \n\n📣 {note_content}"
                 await ctx.send(msg)
         else:
-            await ctx.send(f"No note found with title `{title}`.")
+            await ctx.send(f"{ctx.author.mention} No note found with title `{title}`.")
 
     # Read the note
     async def _read_id(self, ctx, id):
@@ -88,14 +88,14 @@ class NotesCog(commands.Cog):
             msg += f"``#{note_id} - {note_title}:`` \n\n📣 {note_content}"
             await ctx.send(msg)
         else:
-            await ctx.send(f"No note found with id `{id}`.")
+            await ctx.send(f"{ctx.author.mention} No note found with id `{id}`.")
 
     # New
     async def _new(self, ctx, title, content):
         db_insert("notes",
                   ["guild", "author", "title", "content", "creation_date"],
                   [ctx.guild.id, ctx.author.id, title, content, discord.utils.utcnow().isoformat()])
-        await ctx.send(f"Note `{title}` saved.")
+        await ctx.send(f"{ctx.author.mention} Note `{title}` saved.")
 
     # Aliases
     @commands.Cog.listener()
@@ -112,7 +112,7 @@ class NotesCog(commands.Cog):
         elif message.content.startswith(".. "):
             args = message.content[3:].strip().split(maxsplit=1)
             if len(args) < 2:
-                await message.channel.send("Usage: `.. <title> <content>`")
+                await message.channel.send(f"{ctx.author.mention} Usage: `.. <title> <content>`")
                 return
             title, content = args
             await self._new(ctx, title, content)
@@ -122,7 +122,7 @@ class NotesCog(commands.Cog):
     @commands.command()
     async def n(self, ctx, *, title: str = None):
         if not title:
-            await ctx.send("Usage: `!n <title>`")
+            await ctx.send(f"{ctx.author.mention} Usage: `!n <title>`")
             return
 
         await self._read(ctx, title, alias=False)
@@ -132,11 +132,11 @@ class NotesCog(commands.Cog):
     @commands.command()
     async def nid(self, ctx, *, id: str = None):
         if not id:
-            await ctx.send(f"{ctx.author} Please provide an ID: `!nid <id>`")
+            await ctx.send(f"{ctx.author.mention} Please provide an ID: `!nid <id>`")
             return
 
         if not id.isdigit():
-            await ctx.send(f"{ctx.author} Please provide an ID: `!nid <id>`")
+            await ctx.send(f"{ctx.author.mention} Please provide an ID: `!nid <id>`")
             return
 
         await self._read_id(ctx, id)
@@ -148,7 +148,7 @@ class NotesCog(commands.Cog):
     @commands.command()
     async def new(self, ctx, title: str = None, *, content: str = None):
         if not title or not content:
-            await ctx.send("Usage: `!new <title> <content>`")
+            await ctx.send(f"{ctx.author.mention} Usage: `!new <title> <content>`")
             return
         await self._new(ctx, title, content)
 
@@ -163,7 +163,7 @@ class NotesCog(commands.Cog):
             await ctx.send(f"{ctx.author.mention} Usage: `!dn <id>`")
             return
 
-        if not nid.isdigit():
+        if not isinstance(nid, int):
             await ctx.send(f"{ctx.author.mention} Please provide a valid id. Usage: `!dn <id>`")
             return
 
@@ -183,15 +183,14 @@ class NotesCog(commands.Cog):
             await ctx.send(f"{ctx.author.mention} You can only delete your own notes.")
             return
 
-        db_remove("notes", ["guild", "id"], [ctx.guild.id, id])
-        await ctx.send(f"Note `{title}` deleted.")
+        db_remove("notes", ["guild", "id"], [ctx.guild.id, nid])
+        await ctx.send(f"{ctx.author.mention} Note `{title}` deleted.")
 
 
 
     # List notes
     @commands.command()
     async def ln(self, ctx):
-        await ctx.message.delete()
 
         notes = db_read("notes", [f"guild:{ctx.guild.id}"])
         if not notes:

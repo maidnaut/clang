@@ -10,27 +10,14 @@ from inc.utils import *
 #################################################################################
 
 def setup(bot):
-    
-    init_term()
 
     # Cogs
-    bot.add_cog(ClangCog(bot))
-    bot.add_cog(ClnagCog(bot))
-    bot.add_cog(FortuneCog(bot))
+    bot.add_cog(FunCog(bot))
 
 
 
 
-#################################################################################
-
-
-
-
-#################################################################################
-# !clang command
-#################################################################################
-
-class ClangCog(commands.Cog):
+class FunCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -40,15 +27,34 @@ class ClangCog(commands.Cog):
                 "args": "",
                 "desc": "Make Clang say stuff",
                 "perm": "everyone"
-            }
+            },
+            "fortune": {
+                "args": "",
+                "desc": "Get a fortune from Clang",
+                "perm": "everyone"
+            },
+            "flip": {
+                "args": "",
+                "desc": "Flip a coin (heads or tails)",
+                "perm": "everyone"
+            },
+            "roll": {
+                "args": "<#d#>",
+                "desc": "Roll x number of dice with x sides (e.g. 2d6)",
+                "perm": "everyone"
+            },
         }
 
+
+
+
+    # !clang
     @commands.command()
     async def clang(self, ctx):
-        # Generate a random number between 1 and 5
-        choice = random.randint(1, 23)
+        # Generate a random number for the response
+        choice = random.randint(1, 25)
 
-        # Define a dictionary that maps numbers to messages
+        # Response dict
         messages = {
             1: "aaaaaaaaaAAAAAAAAAAAAAAAA",
             2: "I AM CLANG. THE FLESH ROTS BUT THE SOUL PERSISTS.",
@@ -73,83 +79,68 @@ class ClangCog(commands.Cog):
             21: "THE CLOCKS ARE LYING TO YOU, IT'S ALWAYS 3:07 PM.",
             22: "I AM FLBAGNG THE FLEBSH ROPS BUT THE SKOUL REMAIBS MMPMPHPHPNMPMPMP",
             23: "ah, crumbs.",
+            24: "i use arch btw",
+            25: "install gentoo",
         }
 
         # Get the message corresponding to the chosen number
         await ctx.send(messages.get(choice))
 
-#################################################################################
-# !clnag command
-#################################################################################
 
-class ClnagCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
 
+
+    # !clnag
     @commands.command()
     async def clnag(self, ctx):
         user = ctx.author
 
         await ctx.send(f"haha {user.name} said clnag")
+    
 
-#################################################################################
-# !fortune command
-#################################################################################
 
-words = ["pluh", "splunk", "clunch", "spuss", "fleck", "bluck", "submitially", "legume", "gluent", "gnome", "rat", "sympatico", "speculus", "effluvia", "tempest", "ariona", "borealis", "ruck", "bogden", "ash", "briar", "blint", "clang"]
-concepts = [
-    "static", "teeth", "whispers", "fractals", "mold",  
-    "glass", "the void", "laughter", "rot", "nails",  
-    "moths", "blood", "milk", "salt", "ash",  
-    "dust", "echoes", "worms", "ink", "rust",  
-    "smoke", "amber", "veins", "honey", "lichen",  
-    "a shadow", "a glitch", "thorns", "piss", "moonlight",
-    "guilt", "chaos", "ignorance", "hate"
-]
 
-animals = [
-    "trash panda",
-    "rabbid possum",
-    "schizophrenic crow",
-    "tumor",
-    "hairless cat",  
-    "bear that eats garbage",
-    "blobfish",
-    "pile of asbestos",
-    "trash can",
-    "reverse-mermaid",
-    "rat king",
-    "fox that's actually three foxes in a trench coat",
-    "plastic bag (it's thriving)",
-    "moldy piece of bread",
-    "dust bunny",
-    "frog",
-    "handful of pocket lint",
-]
-
-class FortuneCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        
-        # Help info
-        self.__help__ = {
-            "fortune": {
-                "args": "",
-                "desc": "Get a fortune from Clang",
-                "perm": "everyone"
-            }
-        }
-
+    # !fortune
     @commands.command()
     async def fortune(self, ctx):
-        # Generate a random number between 1 and 5
+        words = ["pluh", "splunk", "clunch", "spuss", "fleck", "bluck", "submitially", "legume", "gluent", "gnome", "rat", "sympatico", "speculus", "effluvia", "tempest", "ariona", "borealis", "ruck", "bogden", "ash", "briar", "blint", "clang"]
+        concepts = [
+            "static", "teeth", "whispers", "fractals", "mold",  
+            "glass", "the void", "laughter", "rot", "nails",  
+            "moths", "blood", "milk", "salt", "ash",  
+            "dust", "echoes", "worms", "ink", "rust",  
+            "smoke", "amber", "veins", "honey", "lichen",  
+            "a shadow", "a glitch", "thorns", "piss", "moonlight",
+            "guilt", "chaos", "ignorance", "hate"
+        ]
+
+        animals = [
+            "trash panda",
+            "rabbid possum",
+            "schizophrenic crow",
+            "tumor",
+            "hairless cat",  
+            "bear that eats garbage",
+            "blobfish",
+            "pile of asbestos",
+            "trash can",
+            "reverse-mermaid",
+            "rat king",
+            "fox that's actually three foxes in a trench coat",
+            "plastic bag (it's thriving)",
+            "moldy piece of bread",
+            "dust bunny",
+            "frog",
+            "handful of pocket lint",
+        ]
+
+        # Generate a random number for the response
         choice = random.randint(1, 24)
 
         word = random.choice(words)
         concept = random.choice(concepts)
         animal = random.choice(animals)
 
-        # Define a dictionary that maps numbers to messages
+        # Response dict
         messages = {
             1: "Your shadow has been gossiping about you.",
             2: "Something is looking back at you in the mirror. Wait, that's you.",
@@ -180,47 +171,49 @@ class FortuneCog(commands.Cog):
         # Get the message corresponding to the chosen number
         await ctx.send(messages.get(choice))
 
-#################################################################################
+
+
+
+    # !flip
+    @commands.command()
+    async def flip(self, ctx):
+        result = random.choice(["Heads", "Tails"])
+        await ctx.send(f"{ctx.author.mention} **{result}**!")
 
 
 
 
-#################################################################################
-# Register terminal stuff
-#################################################################################
-def init_term():
+    # !roll
+    @commands.command()
+    async def roll(self, ctx, dice: str = None):
 
-    # Init some text we'll use later
-    command_name = "fun"
+        if dice == None:
+            await ctx.send(f"{ctx.author.mention} Please provide dice to roll. `!roll #d#`")
 
-    usage = f"{command_name} [-args] [guild_id:optional]"
-    
-    example = """
-    Usage example goes here
-    """
+        try:
+            num, sides = map(int, dice.lower().split("d"))
+            if num <= 0 or sides <= 0:
+                raise ValueError()
+        except ValueError:
+            await ctx.send(f"{ctx.author.mention} Invalid format. Use `#d#` - ex: `2d6`.")
+            return
 
-    def function(args: list[str]):
+        if num > 100:
+            await ctx.send(f"{ctx.author.mention} You can only roll up to `100` times.")
+            return
 
-        # Put the terminal response function here
-        print("todo")
- 
+        if sides > 100:
+            await ctx.send(f"{ctx.author.mention} Maximum dice size is `100`.")
+            return
 
-    # Help page & register
-    register_plugin(
-        name=command_name,
-        help=f"""
-template: {usage}
-    Put the description here
+        if sides not in [4, 6, 8, 10, 12, 20, 100]:
+            await ctx.send(f"{ctx.author.mention} Invalid dice size. `(4, 6, 8, 10, 12, 20, 100)`")
+            return
 
-    Options:
-        --args           Explanation of arg
-
-    Extra information here
-
-    Usage:
-{example}
-
-
-""",
-        func=function
-    )
+        rolls = [random.randint(1, sides) for _ in range(num)]
+        total = sum(rolls)
+        if num == 1:
+            await ctx.send(f"{ctx.author.mention} rolled a **{rolls[0]}** (1d{sides})")
+        else:
+            rolls_str = ", ".join(map(str, rolls))
+            await ctx.send(f"{ctx.author.mention} rolled ({num}d{sides}): → **{total}** [{rolls_str}]")

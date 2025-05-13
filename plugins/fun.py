@@ -182,8 +182,13 @@ class FunCog(commands.Cog):
     # !flip
     @commands.command()
     async def flip(self, ctx):
-        result = random.choice(["Heads", "Tails"])
-        await ctx.send(f"{ctx.author.mention} **{result}**!")
+
+        rand = random.randint(1, 50)
+        if random.randint(1, rand) == 1:
+            await ctx.send(f"{ctx.author.mention} AAAA THE COIN FELL BEHIND THE COUCH.")
+        else:
+            result = random.choice(["Heads", "Tails"])
+            await ctx.send(f"{ctx.author.mention} **{result}**!")
 
 
 
@@ -194,6 +199,7 @@ class FunCog(commands.Cog):
 
         if dice == None:
             await ctx.send(f"{ctx.author.mention} Please provide dice to roll. `!roll #d#`")
+            return
 
         try:
             num, sides = map(int, dice.lower().split("d"))

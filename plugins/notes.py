@@ -158,14 +158,18 @@ class NotesCog(commands.Cog):
 
     # Delete Note
     @commands.command()
-    async def dn(self, ctx, *, id: int = None):
-        if not id:
-            await ctx.send("Usage: `!dn <id>`")
+    async def dn(self, ctx, *, nid: int = None):
+        if not nid:
+            await ctx.send(f"{ctx.author.mention} Usage: `!dn <id>`")
             return
 
-        note = db_read("notes", [f"guild:{ctx.guild.id}", f"id:{id}"])
+        if not nid.isdigit():
+            await ctx.send(f"{ctx.author.mention} Please provide a valid id. Usage: `!dn <id>`")
+            return
+
+        note = db_read("notes", [f"guild:{ctx.guild.id}", f"id:{nid}"])
         if not note:
-            await ctx.send(f"No note found with ID `{id}`.")
+            await ctx.send(f"No note found with ID `{nid}`.")
             return
 
         note = note[0]

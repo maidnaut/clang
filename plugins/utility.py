@@ -97,7 +97,7 @@ class UtilsCog(commands.Cog):
             except discord.HTTPException:
                 user = None
         else:
-            user = ctx.author
+            user = None
 
         if user is None:
             await ctx.send(f"I have no record for that user.")
@@ -200,7 +200,7 @@ class UtilsCog(commands.Cog):
     @commands.command()
     async def avatar(self, ctx, *, user_input: str = None):
         if user_input is None:
-            user = ctx.author
+            return await ctx.send(f"{ctx.author.mention} Please provide a user. Usage: '!whois <@user/id>")
         else:
             if ctx.message.mentions:
                 user = ctx.message.mentions[0]

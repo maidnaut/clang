@@ -108,18 +108,6 @@ class ModerationCog(commands.Cog):
             await ctx.send("Modlog not configured.")
         return chan
 
-    # Handle errors
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.MissingRequiredArgument):
-            if error.param.name == "reason":
-                await ctx.send(f"Please provide a reason. Usage: `!{ctx.command.name} @user <reason>`")
-            elif error.param.name == "user":
-                await ctx.send(f"Please mention a user. Usage: `!{ctx.command.name} @user <reason>`")
-            return
-        
-        return await self.bot.on_command_error(ctx, error)
-
 
 
 

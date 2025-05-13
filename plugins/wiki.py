@@ -113,7 +113,6 @@ class WikiCog(commands.Cog):
         name = app["name"]
         protondb_url = f"https://www.protondb.com/app/{app_id}"
 
-        # Check if ProtonDB page exists
         async with aiohttp.ClientSession() as session:
             async with session.get(protondb_url) as resp:
                 if resp.status == 200:

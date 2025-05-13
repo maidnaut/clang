@@ -6,7 +6,7 @@ from rich.console import Console
 from inc.terminal import ClangShell
 from inc.utils import *
 
-version = "0.1b"
+version = "0.2b"
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)

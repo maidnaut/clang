@@ -186,7 +186,7 @@ class UtilsCog(commands.Cog):
             embed.set_author(name=guild.name)
         
         embed.add_field(name="", value="", inline=False)
-        embed.add_field(name="Creation", value=f"{guild.created_at.strftime("%b %d %Y")} - ", inline=True)
+        embed.add_field(name="Creation", value=f"{guild.created_at.strftime('%b %d %Y')} - ", inline=True)
         embed.add_field(name="Members", value=f"{guild.member_count}", inline=True)
         await ctx.send(embed=embed)
 

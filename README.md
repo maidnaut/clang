@@ -22,4 +22,5 @@ To run Clang, first do the following:
 4) cd into Clang's directory and run it: "python3 clang.py"
 
 If you want, you can alias Clang to something in .bashrc so you don't have to initialize the venv manually every time,
+
 alias clang="cd ~/clang && source .venv/bin/activate && python clang.py"

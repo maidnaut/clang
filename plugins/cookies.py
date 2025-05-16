@@ -3,6 +3,7 @@ from inc.terminal import register_plugin
 from discord.ext import commands
 from inc.utils import *
 
+# fmt: off
 #################################################################################
 # Handle shell commands and help page
 #################################################################################
@@ -373,3 +374,4 @@ template: {usage}
 """,
         func=function
     )
+

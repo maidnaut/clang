@@ -280,10 +280,16 @@ class CookieCog(commands.Cog):
                     [("cookies", current + 1)])
 
         # Thanks
-        thank_words = r"\b(thank(?:s| you)?|thx|ty(?:sm|vm)?|thnx)\b"
-        contains_thank = bool(re.search(thank_words, message.content.lower()))
-        
-        if contains_thank:
+        preNoPattern1 = r"\b(?<!no)"
+        preNoPattern2 = r"\b(?<!no\s)"
+        postNoPattern = r"(?! but)"
+        middleThanksPattern = r"\b(thank(?:s|you)?|thx|ty(?:sm|vm)?|thnx|danke|gracias|merci|xeixei|dhonnobad|grazie|obrigado|spasibo|arigatou?|gomawo|gamsahamnida|shukran|shukriya|kiitos|asante|efcharisto)\b"
+
+        if re.search(
+                f"{preNoPattern1}{middleThanksPattern}{postNoPattern}", message.content, flags=re.IGNORECASE
+            ) and re.search(
+                f"{preNoPattern2}{middleThanksPattern}{postNoPattern}", message.content, flags=re.IGNORECASE
+            ):
             if guild_id not in self.thank_cooldowns:
                 self.thank_cooldowns[guild_id] = {}
             
@@ -374,4 +380,3 @@ template: {usage}
 """,
         func=function
     )
-

@@ -17,6 +17,12 @@ finally:
     pass
 
 
+class ClangBot(commands.Bot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.globals = {}
+
+
 # Pycord stuff
 activity = discord.Game(name="!help")
 bot = ClangBot(command_prefix="!", activity=activity, help_command=None, intents=discord.Intents.all())

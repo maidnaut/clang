@@ -331,24 +331,24 @@ class CookieCog(commands.Cog):
 
     @commands.command()
     async def leaderboard(self, ctx):
-
         guild_id = ctx.guild.id
         cookies = db_read("cookies", [f"guild_id:{guild_id}"])
-        cookies = sorted(cookies, key=lambda x: x["cookies"], reverse=True)
+        
+        cookies = sorted(cookies, key=lambda x: x[3], reverse=True)
         top_10 = cookies[:10]
 
         leaderboard = ""
         for i, cookie in enumerate(top_10, start=1):
-            user = get_user(cookie["user_id"])
+            user = get_user(cookie[2])
             if user != "N/A":
-                leaderboard += f"**#{i}.** {user.mention} - {entry['cookies']}\n"
+                leaderboard += f"**#{i}.** @{user.display_name} - {cookie[3]}\n"
 
         await ctx.send(embed=discord.Embed(
             title="Cookie Leaderboard",
             description=leaderboard or "No cookie data found.",
             color=discord.Color.gold()
         ))
-            
+                
 
 
 

@@ -329,6 +329,27 @@ class CookieCog(commands.Cog):
                     names = ", ".join(u.mention for u in thanked_users[:-1]) + f" and {thanked_users[-1].mention}"
                     await message.channel.send(f"{names} received thank you cookies!")
 
+    @commands.command()
+    async def leaderboard(self, ctx):
+
+        guild_id = ctx.guild.id
+        cookies = db_read("cookies", [f"guild_id:{guild_id}"])
+        cookies = sorted(cookies, key=lambda x: x["cookies"], reverse=True)
+        top_10 = cookies[:10]
+
+        leaderboard = ""
+        for i, entry in enumerate(top_10, start=1):
+            user = await self.bot.fetch_user(entry["user_id"])
+            leaderboard += f"**#{i}.** {user.mention} - {entry['cookies']}\n"
+
+        await ctx.send(embed=discord.Embed(
+            title="🍪 Cookie Leaderboard",
+            description=leaderboard or "No cookie data found.",
+            color=discord.Color.gold()
+        ))
+            
+
+
 
 
 

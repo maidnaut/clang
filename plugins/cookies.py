@@ -288,7 +288,7 @@ class CookieCog(commands.Cog):
         preNoPattern1 = r"\b(?<!no)"
         preNoPattern2 = r"\b(?<!no\s)"
         postNoPattern = r"(?! but)"
-        middleThanksPattern = r"\b(thank(?:s|you)?|thx|ty(?:sm|vm)?|thnx|danke|gracias|merci|xeixei|dhonnobad|grazie|obrigado|spasibo|arigatou?|gomawo|gamsahamnida|shukran|shukriya|kiitos|asante|efcharisto)\b"
+        middleThanksPattern = r"\b(thank(?:s|you)?|thx|ty(?:sm|vm)?|thnx|danke|gracias|merci|xeixei|dhonnobad|grazie|obrigado|spasibo|arigato|arigatou?|gomawo|gamsahamnida|shukran|shukriya|kiitos|asante|efcharisto)\b"
 
         if re.search(
                 f"{preNoPattern1}{middleThanksPattern}{postNoPattern}", message.content, flags=re.IGNORECASE

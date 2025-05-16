@@ -8,19 +8,6 @@ from discord.ext.commands import CommandNotFound
 console = Console(force_terminal=True, markup=True)
 print = console.print
 
-# Error ignorer
-class ClangBot(commands.Bot):
-    def dispatch(self, event_name, *args, **kwargs):
-        if event_name == "on_command_error":
-            ctx, error = args
-            return super().dispatch(event_name, *args, **kwargs)
-        return super().dispatch(event_name, *args, **kwargs)
-
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, CommandNotFound):
-            return
-        raise error
-
 # Decimal sleep
 async def random_decimal_sleep(min_sleep: float, max_sleep: float):
     await asyncio.sleep(random.uniform(min_sleep, max_sleep))

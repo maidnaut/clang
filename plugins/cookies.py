@@ -338,12 +338,12 @@ class CookieCog(commands.Cog):
         top_10 = cookies[:10]
 
         leaderboard = ""
-        for i, entry in enumerate(top_10, start=1):
-            user = await self.bot.fetch_user(entry["user_id"])
+        for i, cookie in enumerate(top_10, start=1):
+            user = get_user(cookie["user_id"])
             leaderboard += f"**#{i}.** {user.mention} - {entry['cookies']}\n"
 
         await ctx.send(embed=discord.Embed(
-            title="🍪 Cookie Leaderboard",
+            title="Cookie Leaderboard",
             description=leaderboard or "No cookie data found.",
             color=discord.Color.gold()
         ))

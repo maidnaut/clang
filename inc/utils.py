@@ -187,3 +187,19 @@ async def has_perms(ctx):
     except Exception as e:
         await ctx.send(f"Permission check error: {e}")
         return False
+
+# Global user search
+async def get_user(user_id):
+    user = "N/A"
+    try:
+        # First try as member
+        user = await commands.MemberConverter().convert(ctx, user_id)
+    except commands.MemberNotFound:
+        try:
+            # Then try as global user
+            user = await commands.UserConverter().convert(ctx, user_id)
+        except commands.UserNotFound:
+            user = "N/A"
+            return
+
+    return user

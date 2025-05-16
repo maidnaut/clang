@@ -65,6 +65,11 @@ class CookieCog(commands.Cog):
                 "desc": "Sets the rate for the random chance to recieve cookies on every message",
                 "perm": "admin"
             },
+            "leaderboard": {
+                "args": "",
+                "desc": "Shows the cookie leaderboard",
+                "perm": "everyone"
+            },
         }
 
     # Make sure the cookies for the user exists and return an amouunt

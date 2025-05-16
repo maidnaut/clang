@@ -339,7 +339,7 @@ class CookieCog(commands.Cog):
 
         leaderboard = ""
         for i, cookie in enumerate(top_10, start=1):
-            user = get_user(cookie[2])
+            user = await get_user(cookie[2])
             if user != "N/A":
                 leaderboard += f"**#{i}.** @{user.display_name} - {cookie[3]}\n"
 

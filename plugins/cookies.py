@@ -285,16 +285,210 @@ class CookieCog(commands.Cog):
                     [("cookies", current + 1)])
 
         # Thanks
-        preNoPattern1 = r"\b(?<!no)"
-        preNoPattern2 = r"\b(?<!no\s)"
-        postNoPattern = r"(?! but)"
-        middleThanksPattern = r"\b(thank(?:s|you)?|thx|ty(?:sm|vm)?|thnx|danke|gracias|merci|xeixei|dhonnobad|grazie|obrigado|spasibo|arigato|arigatou?|gomawo|gamsahamnida|shukran|shukriya|kiitos|asante|efcharisto)\b"
 
-        if re.search(
-                f"{preNoPattern1}{middleThanksPattern}{postNoPattern}", message.content, flags=re.IGNORECASE
-            ) and re.search(
-                f"{preNoPattern2}{middleThanksPattern}{postNoPattern}", message.content, flags=re.IGNORECASE
+        regexCreator: tuple[tuple, str, tuple] = (
+            (r"\b(?<!no\s)", r"\b(?<!no,\s)"),
+            r"\b" #one or more whitespaces/tabs
+            + r"(?:" # starts non capturing group
+                    + r"t+\n*\s*" # one or more t, followed by one or more newlines/whitespaces/tabs
+                    + r"h+\n*\s*" # one or more h, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"n+\n*\s*" # one or more n, followed by one or more newlines/whitespaces/tabs
+                    + r"k+" # one or more k
+                    + r"(?:" # starts non capturing group
+                             + r"s+" # one or more s
+                        + r"|" # or
+                             + r"y+\n*\s*" # one or more y, followed by one or more newlines/whitespaces/tabs
+                             + r"o+\n*\s*" # one or more o, followed by one or more newlines/whitespaces/tabs
+                             + r"u" # one or more u
+                    + r")?" # end group, the group can have 0 or one instances
+                + r"|" # or
+                    + r"t\n*\s*" # one t, followed by one or more newlines/whitespaces/tabs
+                    + r"h\n*\s*" # one h, followed by one or more newlines/whitespaces/tabs
+                    + r"x+" # one or more x
+                + r"|" # or
+                    + r"t\n*\s*" # one t, followed by one or more newlines/whitespaces/tabs
+                    + r"y+\n*\s*" # one or more y, followed by one or more newlines/whitespaces/tabs
+                    + r"(?:" # starts non capturing group
+                            + r"s+\n*\s*" # one or more s, followed by one or more newlines/whitespaces/tabs
+                            + r"m+" # one or more m
+                        + r"|" # or
+                            + r"v+\n*\s*" # one or more v, followed by one or more newlines/whitespaces/tabs
+                            + r"m+" # one or more m
+                    + r")?" # end group, the group can have 0 or one instances
+                + r"|" # or
+                    + r"t+\n*\s*" # one or more t, followed by one or more newlines/whitespaces/tabs
+                    + r"h+\n*\s*" # one or more h, followed by one or more newlines/whitespaces/tabs
+                    + r"n+\n*\s*" # one or more n, followed by one or more newlines/whitespaces/tabs
+                    + r"x+" # one or more x
+                + r"|" # or
+                    + r"d+\n*\s*" # one or more d, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"n+\n*\s*" # one or more n, followed by one or more newlines/whitespaces/tabs
+                    + r"k+\n*\s*" # one or more k, followed by one or more newlines/whitespaces/tabs
+                    + r"e+" # one or more e
+                + r"|" # or
+                    + r"g+\n*\s*" # one or more g, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"c+\n*\s*" # one or more c, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"s+" # one or more s
+                + r"|" # or
+                    + r"m+\n*\s*" # one or more m, followed by one or more newlines/whitespaces/tabs
+                    + r"e+\n*\s*" # one or more e, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"c+\n*\s*" # one or more c, followed by one or more newlines/whitespaces/tabs
+                    + r"i+" # one or more i
+                + r"|" # or
+                    + r"x+\n*\s*" # one or more x, followed by one or more newlines/whitespaces/tabs
+                    + r"e+\n*\s*" # one or more e, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"x+\n*\s*" # one or more x, followed by one or more newlines/whitespaces/tabs
+                    + r"e+\n*\s*" # one or more e, followed by one or more newlines/whitespaces/tabs
+                    + r"i+" # one or more i
+                + r"|" # or
+                    + r"d+\n*\s*" # one or more d, followed by one or more newlines/whitespaces/tabs
+                    + r"h+\n*\s*" # one or more h, followed by one or more newlines/whitespaces/tabs
+                    + r"o+\n*\s*" # one or more o, followed by one or more newlines/whitespaces/tabs
+                    + r"n+\n*\s*" # one or more n, followed by one or more newlines/whitespaces/tabs
+                    + r"n+\n*\s*" # one or more n, followed by one or more newlines/whitespaces/tabs
+                    + r"o+\n*\s*" # one or more o, followed by one or more newlines/whitespaces/tabs
+                    + r"b+\n*\s*" # one or more b, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"d+" # one or more d
+                + r"|" # or
+                    + r"g+\n*\s*" # one or more g, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"z+\n*\s*" # one or more z, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"e+" # one or more e
+                + r"|" # or
+                    + r"o+\n*\s*" # one or more o, followed by one or more newlines/whitespaces/tabs
+                    + r"b+\n*\s*" # one or more b, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"g+\n*\s*" # one or more g, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"d+\n*\s*" # one or more d, followed by one or more newlines/whitespaces/tabs
+                    + r"o+" # one or more o
+                + r"|" # or
+                    + r"s+\n*\s*" # one or more s, followed by one or more newlines/whitespaces/tabs
+                    + r"p+\n*\s*" # one or more p, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"s+\n*\s*" # one or more s, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"b+\n*\s*" # one or more b, followed by one or more newlines/whitespaces/tabs
+                    + r"o+\n*\s*" # one or more o, followed by one or more newlines/whitespaces/tabs
+                + r"|" # or
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"g+\n*\s*" # one or more g, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"t+\n*\s*" # one or more t, followed by one or more newlines/whitespaces/tabs
+                    + r"o+\n*\s*" # one or more o, followed by one or more newlines/whitespaces/tabs
+                    + r"u*" # 0 or more u
+                + r"|" # or
+                    + r"g+\n*\s*" # one or more g, followed by one or more newlines/whitespaces/tabs
+                    + r"o+\n*\s*" # one or more o, followed by one or more newlines/whitespaces/tabs
+                    + r"m+\n*\s*" # one or more m, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"w+\n*\s*" # one or more w, followed by one or more newlines/whitespaces/tabs
+                    + r"o+" # one or more o
+                + r"|" # or
+                    + r"g+\n*\s*" # one or more g, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"m+\n*\s*" # one or more m, followed by one or more newlines/whitespaces/tabs
+                    + r"s+\n*\s*" # one or more s, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"h+\n*\s*" # one or more h, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"m+\n*\s*" # one or more m, followed by one or more newlines/whitespaces/tabs
+                    + r"n+\n*\s*" # one or more n, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"d+\n*\s*" # one or more d, followed by one or more newlines/whitespaces/tabs
+                    + r"a+" # one or more a
+                + r"|" # or
+                    + r"s+\n*\s*" # one or more s, followed by one or more newlines/whitespaces/tabs
+                    + r"h+\n*\s*" # one or more h, followed by one or more newlines/whitespaces/tabs
+                    + r"u+\n*\s*" # one or more u, followed by one or more newlines/whitespaces/tabs
+                    + r"k+\n*\s*" # one or more k, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"n+" # one or more n
+                + r"|" # or
+                    + r"s+\n*\s*" # one or more s, followed by one or more newlines/whitespaces/tabs
+                    + r"h+\n*\s*" # one or more h, followed by one or more newlines/whitespaces/tabs
+                    + r"u+\n*\s*" # one or more u, followed by one or more newlines/whitespaces/tabs
+                    + r"k+\n*\s*" # one or more k, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"y+\n*\s*" # one or more y, followed by one or more newlines/whitespaces/tabs
+                    + r"a+" # one or more a
+                + r"|" # or
+                    + r"k+\n*\s*" # one or more k, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"t+\n*\s*" # one or more t, followed by one or more newlines/whitespaces/tabs
+                    + r"o+\n*\s*" # one or more o, followed by one or more newlines/whitespaces/tabs
+                    + r"s+" # one or more s
+                + r"|" # or
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"s+\n*\s*" # one or more s, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"n+\n*\s*" # one or more n, followed by one or more newlines/whitespaces/tabs
+                    + r"t+\n*\s*" # one or more t, followed by one or more newlines/whitespaces/tabs
+                    + r"e+" # one or more e
+                + r"|" # or
+                    + r"e+\n*\s*" # one or more e, followed by one or more newlines/whitespaces/tabs
+                    + r"f+\n*\s*" # one or more f, followed by one or more newlines/whitespaces/tabs
+                    + r"c+\n*\s*" # one or more c, followed by one or more newlines/whitespaces/tabs
+                    + r"h+\n*\s*" # one or more h, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"s+\n*\s*" # one or more s, followed by one or more newlines/whitespaces/tabs
+                    + r"t+\n*\s*" # one or more t, followed by one or more newlines/whitespaces/tabs
+                    + r"o+" # one or more o
+                + r"|" # or
+                    + r"t+\n*\s*" # one or more t, followed by one or more newlines/whitespaces/tabs
+                    + r"h+\n*\s*" # one or more h, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"n+\n*\s*" # one or more n, followed by one or more newlines/whitespaces/tabs
+                    + r"m+\n*\s*" # one or more m, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"t+\n*\s*" # one or more t, followed by one or more newlines/whitespaces/tabs
+                    + r"h+" # one or more h
+                + r"|" # or
+                    + r"t+\n*\s*" # one or more t, followed by one or more newlines/whitespaces/tabs
+                    + r"a+\n*\s*" # one or more a, followed by one or more newlines/whitespaces/tabs
+                    + r"n+\n*\s*" # one or more n, followed by one or more newlines/whitespaces/tabs
+                    + r"m+\n*\s*" # one or more m, followed by one or more newlines/whitespaces/tabs
+                    + r"m+\n*\s*" # one or more m, followed by one or more newlines/whitespaces/tabs
+                    + r"i+\n*\s*" # one or more i, followed by one or more newlines/whitespaces/tabs
+                    + r"r+\n*\s*" # one or more r, followed by one or more newlines/whitespaces/tabs
+                    + r"t+" # one or more t
+            + r")", # end non capturing group, group should be seperated because \b
+            (r"\b(?!\sbut)", r"\b(?!,\sbut)"),
+        );
+
+        regexList:list[str] = [f"{preNoPattern}{regexCreator[1]}{postNoPattern}" for postNoPattern in regexCreator[2] for preNoPattern in regexCreator[0]];
+
+        successess:int = 0;
+
+        for shit in regexList:
+            print(shit)
+            print()
+            if re.search(
+                shit, message.content, flags=re.IGNORECASE
             ):
+                successess += 1;
+
+        if successess == len(regexList):
             if guild_id not in self.thank_cooldowns:
                 self.thank_cooldowns[guild_id] = {}
             

@@ -176,7 +176,7 @@ async def has_perms(ctx):
         return False
 
 # Global user search
-async def get_user(user_id):
+async def get_user(ctx, user_id):
     user = "N/A"
     try:
         # First try as member

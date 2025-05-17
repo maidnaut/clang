@@ -1,4 +1,11 @@
+<div align=center> 
+<img src="Clang.png" width=100px>
+
+
 # CLANG
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/maidnaut/clang?style=for-the-badge)
+
+
 
 Clang is an all-in-one self hosted discord bot witten with pycord, inspired by Valkyrja. Handles moderation, tickets, logging, notes, and fun commands.
 
@@ -11,16 +18,21 @@ Clang also comes with its own custom mock shell built in for external configurat
 Clang.
 
 ![image](https://i.imgur.com/UbjUrys.png)
+</div>
 
----
 
+
+
+# Running Clang Locally
 To run Clang, first do the following:
 
-1) Create a venv in Clang's directory. "python3 -m venv ~/path_to_clang/.venv"
-2) Set the venv source: "source ~/path_to_clang/.venv/bin/activate"
-3) Install py-cord & rich: "pip install py-cord rich"
-4) cd into Clang's directory and run it: "python3 clang.py"
+1) Create a venv in Clang's directory: `python3 -m venv ~/path_to_clang/.venv`
+2) Set the venv source: `source ~/path_to_clang/.venv/bin/activate`
+3) Install py-cord & rich: `pip install py-cord rich`
+4) cd into Clang's directory and run it: `python3 clang.py`
 
-If you want, you can alias Clang to something in .bashrc so you don't have to initialize the venv manually every time,
+If you want, you can alias Clang to something in `.bashrc` so you don't have to initialize the venv manually every time,
 
+```sh
 alias clang="cd ~/clang && source .venv/bin/activate && python clang.py"
+```

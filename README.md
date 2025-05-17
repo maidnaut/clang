@@ -17,7 +17,7 @@ Clang also comes with its own custom mock shell built in for external configurat
 
 Clang.
 
-![image](https://i.imgur.com/UbjUrys.png)
+<img src="ClangMessage.png">
 </div>
 
 

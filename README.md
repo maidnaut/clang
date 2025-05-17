@@ -18,8 +18,30 @@ Clang also comes with its own custom mock shell built in for external configurat
 Clang.
 
 <img src="ClangMessage.png">
+<hr>
 </div>
 
+## Commands
+
+| Command                       | Description                                                  |
+|------------------------------|--------------------------------------------------------------|
+| `!cookies`                   | Shows your cookies and supplies commands                     |
+| `!nom`                       | Eats a cookie                                                |
+| `!give <user>`               | Gives the mentioned user one of your cookies                |
+| `!transfer <user> (amount)`  | Cookie credit transfer                                       |
+| `!leaderboard`               | Shows the cookie leaderboard                                 |
+| `!clang`                     | Make Clang say stuff                                         |
+| `!fortune`                   | Get a fortune from Clang                                     |
+| `!flip`                      | Flip a coin (heads or tails)                                 |
+| `!roll <#d#>`                | Roll x number of dice with x sides (e.g. 2d6)                |
+| `!xkcd <id>`                 | Shows a comic from xkcd                                      |
+| `!whois <user:optional>`     | Displays user data                                           |
+| `!ping`                      | Check Clang's latency                                        |
+| `!avatar <user:optional>`    | Displays an avatar                                           |
+| `!serverinfo`                | Displays server data                                         |
+| `!aw`                        | Searches the Arch Wiki                                       |
+| `!gw <query>`                | Searches the Gentoo Wiki                                     |
+| `!proton <query>`            | Searches the ProtonDB                                        |
 
 
 

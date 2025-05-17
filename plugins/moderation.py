@@ -248,10 +248,10 @@ class ModerationCog(commands.Cog):
         # Hand out the role
         if role_obj not in user.roles:
             await user.add_roles(role_obj)
-            await ctx.send(f"{ctx.author.mention} pulled out the ban hammer!")
+            await ctx.send(f"Oh shit, {ctx.author.mention}'s got a glock. EVERYBODY DOWN")
         else:
             await user.remove_roles(role_obj)
-            await ctx.send(f"{ctx.author.mention} put the ban hammer away.")
+            await ctx.send(f"{ctx.author.mention} put the glock away.")
 
 
 

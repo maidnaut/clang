@@ -173,7 +173,7 @@ class TicketsCog(commands.Cog):
         # This is bad quick patch, in the future add a mod channel to the database.
         mod_channel = await cog.get_mod_channel(ctx)
 
-        mod_channel.send(f"""
+        await mod_channel.send(f"""
 {mod_mention} A ticket was opened in {ticket_channel}.\n\n
 
 **Subjet: {title}**.\n

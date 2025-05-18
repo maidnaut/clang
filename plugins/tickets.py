@@ -149,10 +149,15 @@ class TicketsCog(commands.Cog):
         mod_role = discord.utils.get(ctx.guild.roles, name="mods")
         mod_mention = mod_role.mention if mod_role else "@mods"
 
+        # This is bad quick patch, in the future add a mod channel to the database.
+        mod_channel = "1365040257162018897"
+
+        ctx.mod_channel.send(f"{mod_mention} A ticket was opened in {ticket_channel}. **Subjet: {title}**.\nPlease don't all pile in there at once, thank you.")
+
         await ticket_channel.send(f"""
 # Title: {title}
 
-Hello {ctx.author.mention}, please be patient and wait for the {mod_mention}.
+Hello {ctx.author.mention}, please be patient and wait for the mods.
 
 Please also provide message links, screenshots, and any context you think is relevant. Mods will close the ticket when the issue is resolved, thank you!
 

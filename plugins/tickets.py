@@ -178,7 +178,7 @@ class TicketsCog(commands.Cog):
 
 **Subjet: {title}**.
 
-Please reference the [moderator guidelines](https://hackmd.io/@djinzi/mod-guide) if need be. Don't pile in there all at once and overwhelm the user. They also don't need to see our deliberation and argumentation. Be respectful of their time and report, and don't sideline their concern for other issues. Thank you!
+Please reference the [moderator guidelines](<https://hackmd.io/@djinzi/mod-guide>) if need be. Don't pile in there all at once and overwhelm the user. They also don't need to see our deliberation and argumentation. Be respectful of their time and report, and don't sideline their concern for other issues. Thank you!
 """)
 
         await ticket_channel.send(f"""

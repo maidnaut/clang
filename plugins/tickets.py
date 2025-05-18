@@ -39,6 +39,27 @@ class TicketsCog(commands.Cog):
         suffix_index = 0 if 10 <= day % 100 <= 20 else day % 10
         formatted_day = f"{day}{suffix[suffix_index]}"
         return date.strftime(f"%B {formatted_day}, %Y")
+
+    # Get mod channel
+    async def get_mod_channel(self, ctx):
+        try:
+            guild_id = ctx.guild.id
+            
+            # This is bad, store it in the database in the future
+            channel_id = int(1365040257162018897)
+            channel = self.bot.get_channel(channel_id)
+            
+            if not channel:
+                try:
+                    channel = await guild.fetch_channel(channel_id)
+                except discord.NotFound:
+                    await ctx.send(f"Mod channel {channel_id} not found in guild {guild_id}")
+                    return None
+            
+            return channel
+        except Exception as e:
+            await ctx.send(f"Error getting mod channel: {e}")
+            return None
         
     # ticketlog channel
     async def get_ticketlog_channel(self, ctx):
@@ -150,9 +171,9 @@ class TicketsCog(commands.Cog):
         mod_mention = mod_role.mention if mod_role else "@mods"
 
         # This is bad quick patch, in the future add a mod channel to the database.
-        mod_channel = "1365040257162018897"
+        mod_channel = get_mod_channel(ctx)
 
-        ctx.mod_channel.send(f"""
+        mod_channel.send(f"""
 {mod_mention} A ticket was opened in {ticket_channel}.\n\n
 
 **Subjet: {title}**.\n

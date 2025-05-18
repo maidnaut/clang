@@ -182,7 +182,7 @@ Please reference the [moderator guidelines](<https://hackmd.io/@djinzi/mod-guide
 """)
 
         await ticket_channel.send(f"""
-# Title: {title}
+# {title}
 
 Hello {ctx.author.mention}, please be patient and wait for the mods.
 

@@ -152,7 +152,13 @@ class TicketsCog(commands.Cog):
         # This is bad quick patch, in the future add a mod channel to the database.
         mod_channel = "1365040257162018897"
 
-        ctx.mod_channel.send(f"{mod_mention} A ticket was opened in {ticket_channel}. **Subjet: {title}**.\nPlease don't all pile in there at once, thank you.")
+        ctx.mod_channel.send(f"""
+{mod_mention} A ticket was opened in {ticket_channel}.\n\n
+
+**Subjet: {title}**.\n
+
+Please reference the (moderator guidelines)[https://hackmd.io/@djinzi/mod-guide] if need be. Don't pile in there all at once and overwhelm the user. They also don't need to see our deliberation and argumentation. Be respectful of their time and report, and don't sideline their concern for other issues. Thank you!
+""")
 
         await ticket_channel.send(f"""
 # Title: {title}

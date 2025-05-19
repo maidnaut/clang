@@ -1,4 +1,4 @@
-import discord, asyncio, os, re, random, sys
+import discord, asyncio, os, re, random
 from collections import defaultdict
 from discord.ext import commands
 from profanity_check import predict, predict_prob

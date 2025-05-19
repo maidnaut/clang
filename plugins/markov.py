@@ -1,6 +1,7 @@
 import discord, asyncio, os, re, random
 from collections import defaultdict
 from discord.ext import commands
+from inc.utils import *
 
 def setup(bot):
     bot.add_cog(MarkovCog(bot))

@@ -1,7 +1,7 @@
-import discord, asyncio, os, re, random
+import discord, asyncio, os, re, random, profanity_check
 from collections import defaultdict
 from discord.ext import commands
-from profanity_check import predict, predict_prob
+from profanity_check import predict
 
 def setup(bot):
     bot.add_cog(MarkovCog(bot))
@@ -104,7 +104,7 @@ class MarkovCog(commands.Cog):
         if not clean_content:
             return
 
-        if predict([clean_content])[0] == 1:
+        if profanity_check.predict([clean_content])[0] == 1:
             return
 
 

@@ -1,6 +1,9 @@
 import os, re, random
 from collections import defaultdict
 
+def setup(bot):
+    bot.add_cog(MarkovCog(bot))
+
 class MarkovCog(commands.Cog):
 
     def __init__(self, bot):

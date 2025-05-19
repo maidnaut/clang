@@ -1,15 +1,7 @@
 import discord, asyncio, os, re, random, sys
 from collections import defaultdict
 from discord.ext import commands
-
-# janky fix for joblib imports
-import joblib
-import sklearn.externals
-import sklearn.svm._classes as _svm_classes
-sklearn.externals.joblib = joblib
-sys.modules['sklearn.svm.classes'] = _svm_classes
-
-from profanity_check import predict
+from profanity_check import predict, predict_prob
 
 def setup(bot):
     bot.add_cog(MarkovCog(bot))

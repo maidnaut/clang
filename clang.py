@@ -346,15 +346,15 @@ async def load_plugins():
                 print(f"[bold green][✔][/bold green] Loaded plugin/{filename}")
                 await random_decimal_sleep(0, 0.4)
 
-            except NoEntryPointError:
+            except discord.NoEntryPointError:
                 print(f"[bold red][X][/bold red] Plugin {filename} missing setup() function.")
                 await random_decimal_sleep(0, 0.4)
 
-            except ExtensionFailed as e:
+            except discord.ExtensionFailed as e:
                 print(f"[bold red][X][/bold red] Plugin {filename} raised an error during setup: {e}")
                 await random_decimal_sleep(0, 0.4)
 
-            except ExtensionError as e:
+            except discord.ExtensionError as e:
                 print(f"[bold red][X][/bold red] Extension error in plugin {filename}: {e}")
                 await random_decimal_sleep(0, 0.4)
                 

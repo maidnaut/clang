@@ -1,7 +1,7 @@
 import os, sys, time, random, asyncio, discord
 from inc.db import *
 from pathlib import Path
-from discord.ext import commands
+from discord.ext import *
 from rich.console import Console
 from inc.terminal import ClangShell
 from inc.utils import *

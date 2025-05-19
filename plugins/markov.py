@@ -1,7 +1,7 @@
-import discord, asyncio, os, re, random, profanity_check
+import discord, asyncio, os, re, random
 from collections import defaultdict
 from discord.ext import commands
-from profanity_check import predict
+from profanity_check import predict, predict_prob
 
 def setup(bot):
     bot.add_cog(MarkovCog(bot))
@@ -104,9 +104,8 @@ class MarkovCog(commands.Cog):
         if not clean_content:
             return
 
-        if profanity_check.predict([clean_content])[0] == 1:
+        if predict([clean_content])[0] == 1:
             return
-
 
         guild_id = message.guild.id
         words = clean_content.split()

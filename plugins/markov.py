@@ -1,6 +1,7 @@
 import discord, asyncio, os, re, random
 from collections import defaultdict
 from discord.ext import commands
+from collections import defaultdict, deque
 from profanity_check import predict, predict_prob
 
 def setup(bot):

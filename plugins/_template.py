@@ -40,7 +40,7 @@ class TemplateCog(commands.Cog):
         }
 
     @commands.command()
-    async def ping(self, ctx):
+    async def template(self, ctx):
         # Put the bot response here
 
 

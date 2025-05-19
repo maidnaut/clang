@@ -1,6 +1,12 @@
 import discord, asyncio, os, re, random
 from collections import defaultdict
 from discord.ext import commands
+
+# janky fix for joblib imports
+import joblib
+import sklearn.externals
+sklearn.externals.joblib = joblib
+
 from profanity_check import predict
 
 def setup(bot):

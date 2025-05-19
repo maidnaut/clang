@@ -1,4 +1,4 @@
-import os, re, random
+import discord, os, re, random
 from collections import defaultdict
 
 def setup(bot):

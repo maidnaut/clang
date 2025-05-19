@@ -85,11 +85,17 @@ class MarkovCog(commands.Cog):
         if not message.guild:
             return
             
-        if message.mentions or message.role_mentions or message.channel_mentions:
+        # Remove all mentions
+        clean_content = re.sub(r'<@!?\d+>', '', message.content)
+        clean_content = re.sub(r'<@&\d+>', '', clean_content)
+        clean_content = re.sub(r'<#\d+>', '', clean_content)
+        clean_content = clean_content.strip()
+        
+        if not clean_content:
             return
 
         guild_id = message.guild.id
-        words = message.content.split()
+        words = clean_content.split()
         
         if len(words) < 3:
             return
@@ -138,8 +144,7 @@ class MarkovCog(commands.Cog):
 
     # respond on reply
     @commands.Cog.listener()
-    async def on_message(ctx, self, message):
-        
+    async def on_message(self, message):
         if message.author.bot or not message.content:
             return
 
@@ -148,16 +153,13 @@ class MarkovCog(commands.Cog):
 
         # check if clang is mentioned
         if self.bot.user in message.mentions:
-
-            # ignore dm's
             if not message.guild:
                 return
                 
             guild_id = message.guild.id
-            
-            # strip out clang's mention
             clean_content = re.sub(rf'<@!?{self.bot.user.id}>', '', message.content).strip()
             seed_words = clean_content.split()[:2] if clean_content else None
             
             response = self.generate_response(guild_id, seed_words)
-            await message.channel.send(f"{ctx.author.mention} {response}")
+            
+            await message.channel.send(f"{message.author.mention} {response}")

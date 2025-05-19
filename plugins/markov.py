@@ -21,6 +21,75 @@ class MarkovCog(commands.Cog):
         self.save_interval = 300 # 5 minute autosave
         self.bg_task = self.bot.loop.create_task(self.auto_save())
 
+
+
+
+    async def get_jail_category(self, guild_id):
+        try:
+            settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:jail_category"])
+            if not settings or not settings[0][3]:
+                return None
+            
+            channel_id = int(settings[0][3])
+            guild = self.bot.get_guild(guild_id)
+            if not guild:
+                return None
+            
+            channel = guild.get_channel(channel_id)
+            if not channel:
+                try:
+                    channel = await guild.fetch_channel(channel_id)
+                except discord.NotFound:
+                    return None
+            
+            return channel
+        except Exception as e:
+            return None
+
+    async def get_ticket_category(self, guild_id):
+        try:
+            settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:ticket_category"])
+            if not settings or not settings[0][3]:
+                return None
+            
+            channel_id = int(settings[0][3])
+            guild = self.bot.get_guild(guild_id)
+            if not guild:
+                return None
+            
+            channel = guild.get_channel(channel_id)
+            if not channel:
+                try:
+                    channel = await guild.fetch_channel(channel_id)
+                except discord.NotFound:
+                    return None
+            
+            return channel
+        except Exception as e:
+            return None
+
+    async def get_mod_category(self, guild_id):
+        try:
+            # Bad. Fix this later and put it in the db.
+            channel_id = 1365040193329172521
+            guild = self.bot.get_guild(guild_id)
+            if not guild:
+                return None
+            
+            channel = guild.get_channel(channel_id)
+            if not channel:
+                try:
+                    channel = await guild.fetch_channel(channel_id)
+                except discord.NotFound:
+                    return None
+            
+            return channel
+        except Exception as e:
+            return None
+
+
+
+
     # Get the filepath
     def get_chain_path(self, guild_id):
         return os.path.join(self.data_dir, f"{guild_id}.txt")
@@ -93,40 +162,51 @@ class MarkovCog(commands.Cog):
 
     # Add to the chain
     async def train_markov(self, message):
-        if not message.guild:
-            return
-        
-        # Clean out the mentions
-        clean_content = re.sub(r'<@!?\d+>', '', message.content)
-        clean_content = re.sub(r'<@&\d+>', '', clean_content)
-        clean_content = re.sub(r'<#\d+>', '', clean_content)
-        clean_content = clean_content.strip()
-        
-        if not clean_content:
-            return
-
-        if predict([clean_content])[0] == 1:
+        if not message.guild or message.author.bot:
             return
 
         guild_id = message.guild.id
-        words = clean_content.split()
+
+        # Block private category logging
+        ticket_category = await self.get_ticket_category(guild_id)
+        jail_category = await self.get_jail_category(guild_id)
+        mod_category = await self.get_mod_category(guild_id)
+
+        private_categories = []
+        if ticket_category:
+            private_categories.append(ticket_category.id)
+        if jail_category:
+            private_categories.append(jail_category.id)
+        if mod_category:
+            private_categories.append(mod_category.id)
+
+        # Drop out if it's a private category
+        if message.channel.category_id in private_categories:
+            return
+
+        # Remove mentions and channels
+        clean_content = re.sub(r'<@!?\d+>', '', message.content)
+        clean_content = re.sub(r'<@&\d+>', '', clean_content)
+        clean_content = re.sub(r'<#\d+>', '', clean_content).strip()
         
+        if not clean_content or predict([clean_content])[0] == 1:
+            return
+
+        # Bump it in
+        words = clean_content.split()
         if len(words) < 3:
             return
-            
+
         for i in range(len(words) - 2):
             key = (words[i], words[i+1])
             self.chains[guild_id][key].append(words[i+2])
             
-            # Maintain the max filesize
+            # Max entries = 50k
             if key not in self.key_order[guild_id]:
                 self.key_order[guild_id].append(key)
-                
-                # Bump out old entries
                 while len(self.key_order[guild_id]) > self.MAX_ENTRIES:
                     oldest_key = self.key_order[guild_id].popleft()
-                    if oldest_key in self.chains[guild_id]:
-                        del self.chains[guild_id][oldest_key]
+                    del self.chains[guild_id][oldest_key]
 
 
 

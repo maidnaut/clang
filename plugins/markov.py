@@ -138,7 +138,7 @@ class MarkovCog(commands.Cog):
 
     # respond on reply
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(ctx, self, message):
         
         if message.author.bot or not message.content:
             return
@@ -160,4 +160,4 @@ class MarkovCog(commands.Cog):
             seed_words = clean_content.split()[:2] if clean_content else None
             
             response = self.generate_response(guild_id, seed_words)
-            await message.channel.send(response)
+            await message.channel.send(f"{ctx.author.mention} {response}")

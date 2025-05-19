@@ -1,67 +1,81 @@
 import discord, asyncio, os, re, random
 from collections import defaultdict
 from discord.ext import commands
-from inc.utils import *
 
 def setup(bot):
     bot.add_cog(MarkovCog(bot))
 
 class MarkovCog(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
-
         self.chains = defaultdict(lambda: defaultdict(list))
         self.data_dir = "inc/markov"
-
-        self.load_all_chains()
+        
         os.makedirs(self.data_dir, exist_ok=True)
+        self.load_all_chains()
 
         # Autosave
-        self.save_interval = 300 # 5 minutes
+        self.save_interval = 300  # 5 minutes
         self.bg_task = self.bot.loop.create_task(self.auto_save())
 
-
-
-
-    # Chain management
     def get_chain_path(self, guild_id):
         return os.path.join(self.data_dir, f"{guild_id}.txt")
 
-    # Autosave
     async def auto_save(self):
 
         await self.bot.wait_until_ready()
-
         while not self.bot.is_closed():
 
             await asyncio.sleep(self.save_interval)
-
             for guild_id in self.chains:
-
+                
                 path = self.get_chain_path(guild_id)
+                try:
+                    with open(path, "w", encoding="utf-8") as f:
+                        for key, values in self.chains[guild_id].items():
+                            line = f"{' '.join(key)}|{','.join(values)}\n"
+                            f.write(line)
 
-                with open(path, "w", encoding="utf-8") as f:
-                    for key, values in self.chains[guild_id].items():
-                        line = f"{' '.join(key)}|{','.join(values)}\n"
-                        f.write(line)
+                except Exception as e:
+                    print(f"Error saving chain for guild {guild_id}: {e}")
 
-    # Initial load
     def load_chain(self, guild_id):
         path = self.get_chain_path(guild_id)
         if not os.path.exists(path):
             return
             
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+
+                    try:
+                        key_part, values_part = line.split("|", 1)
+                        key = tuple(key_part.split())
+                        values = values_part.split(",")
+                        self.chains[guild_id][key] = values
+                    except ValueError:
+                        continue
+
+        except Exception as e:
+            print(f"Error loading chain for guild {guild_id}: {e}")
+
+    def load_all_chains(self):
+
+        try:
+            for filename in os.listdir(self.data_dir):
+                if filename.endswith(".txt"):
                     
-                key_part, values_part = line.split("|", 1)
-                key = tuple(key_part.split())
-                values = values_part.split(",")
-                self.chains[guild_id][key] = values
+                    try:
+                        guild_id = int(filename[:-4])
+                        self.load_chain(guild_id)
+                    except (ValueError, IndexError):
+                        continue
+                        
+        except FileNotFoundError:
+            pass
 
 
 
@@ -145,18 +159,3 @@ class MarkovCog(commands.Cog):
             
             response = self.generate_response(guild_id, seed_words)
             await message.channel.send(response)
-
-
-
-
-    # Unload
-    async def cog_unload(self):
-
-        self.bg_task.cancel()
-        try:
-            await self.bg_task
-        except asyncio.CancelledError:
-            pass
-        
-        for guild_id in self.chains:
-            self.save_chain(guild_id)

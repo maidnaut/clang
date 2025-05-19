@@ -346,7 +346,7 @@ async def load_plugins():
                 print(f"[bold green][✔][/bold green] Loaded plugin/{filename}")
                 await random_decimal_sleep(0, 0.4)
 
-            except commands.NoEntryPointError:
+            except commands.errors.NoEntryPointError:
                 print(f"[bold red][X][/bold red] Plugin {filename} missing setup() function.")
                 await random_decimal_sleep(0, 0.4)
 

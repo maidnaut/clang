@@ -231,6 +231,29 @@ class FunCog(commands.Cog):
 
 
 
+    # !8ball
+    @commands.Cog.listener()
+    async def on_message(self, message: str = None):
+
+        # Don't self check
+        if message.author.bot:
+            return
+
+        # Drop out if we're in dm's
+        if message.guild is None:
+            return
+
+        if message == None:
+            return await ctx.send(f"{ctx.author.mention} Please ask a question. `!8ball <your question>`")
+
+        user_id = message.author.id
+        guild_id = message.guild.id
+
+        if message.startswith("!8ball "):
+            return await ctx.send(f"{ctx.author.mention} Djinzi pls fill out the responses")
+
+
+
 
     # !xkcd
     @commands.command()

@@ -43,6 +43,11 @@ class FunCog(commands.Cog):
                 "desc": "Roll x number of dice with x sides (e.g. 2d6)",
                 "perm": "everyone"
             },
+            "8ball": {
+                "args": "<question>",
+                "desc": "Ask the 8ball",
+                "perm": "everyone"
+            },
             "xkcd": {
                 "args": "<id>",
                 "desc": "Shows a comic from xkcd",
@@ -244,7 +249,7 @@ class FunCog(commands.Cog):
             "definitely not", "yeag", "nope"
         ]
         
-        await ctx.send(f"🎱 **{ctx.author.mention}**, {random.choice(responses)}")
+        await ctx.send(f"**{ctx.author.mention}** {random.choice(responses)}")
 
 
 

@@ -1,7 +1,7 @@
 import os, sys, time, random, asyncio, discord
 from inc.db import *
 from pathlib import Path
-from discord.ext import *
+from discord.ext import commands
 from rich.console import Console
 from inc.terminal import ClangShell
 from inc.utils import *
@@ -346,15 +346,15 @@ async def load_plugins():
                 print(f"[bold green][✔][/bold green] Loaded plugin/{filename}")
                 await random_decimal_sleep(0, 0.4)
 
-            except commands.NoEntryPointError:
+            except commands.errors.NoEntryPointError:
                 print(f"[bold red][X][/bold red] Plugin {filename} missing setup() function.")
                 await random_decimal_sleep(0, 0.4)
 
-            except commands.ExtensionFailed as e:
+            except commands.errors.ExtensionFailed as e:
                 print(f"[bold red][X][/bold red] Plugin {filename} raised an error during setup: {e}")
                 await random_decimal_sleep(0, 0.4)
 
-            except commands.ExtensionError as e:
+            except commands.errors.ExtensionError as e:
                 print(f"[bold red][X][/bold red] Extension error in plugin {filename}: {e}")
                 await random_decimal_sleep(0, 0.4)
                 

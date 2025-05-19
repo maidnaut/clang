@@ -67,7 +67,7 @@ class MarkovCog(commands.Cog):
         try:
             for filename in os.listdir(self.data_dir):
                 if filename.endswith(".txt"):
-                    
+
                     try:
                         guild_id = int(filename[:-4])
                         self.load_chain(guild_id)
@@ -82,10 +82,12 @@ class MarkovCog(commands.Cog):
 
     # Add to the chain
     async def train_markov(self, message):
-
         if not message.guild:
             return
             
+        if message.mentions or message.role_mentions or message.channel_mentions:
+            return
+
         guild_id = message.guild.id
         words = message.content.split()
         

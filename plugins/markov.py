@@ -133,35 +133,40 @@ class MarkovCog(commands.Cog):
 
     # Generate a response
     def generate_response(self, guild_id, seed_words=None):
-        
         chain = self.chains[guild_id]
         
-        # Users need to talk more
         if not chain:
             return "clang not know words"
         
-        # Format the seeds from the chain
-        if seed_words:
-            try:
-                key = (seed_words[0], seed_words[1]) if len(seed_words) > 1 else random.choice(list(chain.keys()))
-                if key not in chain:
-                    key = random.choice(list(chain.keys()))
-            except:
-                key = random.choice(list(chain.keys()))
-        else:
-            key = random.choice(list(chain.keys()))
+        keys = list(chain.keys())
         
-        # Generate the response
+        if seed_words and len(seed_words) > 1:
+            key = (seed_words[0], seed_words[1])
+            if key not in chain:
+                key = random.choice(keys)
+        else:
+            key = random.choice(keys)
+
+        # 50% chance to ignore seed or pick a new response
+        if random.random() < 0.5:
+            key = random.choice(keys)
+
         response = list(key)
         while True:
             next_words = chain.get(key, None)
             if not next_words:
                 break
-            next_word = random.choice(next_words)
+            
+            next_words_shuffled = next_words[:]
+            random.shuffle(next_words_shuffled)
+            next_word = next_words_shuffled[0]
+            
             response.append(next_word)
             key = (key[1], next_word)
+            
             if len(response) > 20 or random.random() < 0.1:
                 break
+
         return ' '.join(response)
 
 

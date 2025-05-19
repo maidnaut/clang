@@ -1,5 +1,6 @@
-import discord, os, re, random
+import discord, asyncio, os, re, random
 from collections import defaultdict
+from discord.ext import commands
 
 def setup(bot):
     bot.add_cog(MarkovCog(bot))
@@ -11,6 +12,7 @@ class MarkovCog(commands.Cog):
 
         self.chains = defaultdict(lambda: defaultdict(list))
         self.data_dir = "inc/markov"
+
         self.load_all_chains()
         os.makedirs(self.data_dir, exist_ok=True)
 
@@ -142,3 +144,18 @@ class MarkovCog(commands.Cog):
             
             response = self.generate_response(guild_id, seed_words)
             await message.channel.send(response)
+
+
+
+
+    # Unload
+    async def cog_unload(self):
+
+        self.bg_task.cancel()
+        try:
+            await self.bg_task
+        except asyncio.CancelledError:
+            pass
+        
+        for guild_id in self.chains:
+            self.save_chain(guild_id)

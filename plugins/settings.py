@@ -35,7 +35,10 @@ class SettingsCog(commands.Cog):
 
 
     # check for how to update the db
-    async def update(self, guild_id, author, name, value, row_type):
+    async def update(self, ctx, name, value, row_type):
+
+        author = ctx.author.id
+        guild_id = ctx.guild.id
 
         try:
             if row_type == "role":
@@ -114,7 +117,7 @@ class SettingsCog(commands.Cog):
 
     # !setrole command
     @commands.command()
-    async def setrole(self, ctx, role: str = None, *, id_str: str = None):
+    async def setrole(self, ctx, role: str = None, *, id: str = None):
         
         user_level = await get_level(ctx)
         author = ctx.author
@@ -139,7 +142,7 @@ class SettingsCog(commands.Cog):
                 await ctx.send(f"{await check_pings(ctx)}Please select a role: `{all_roles}` \n-# !setrole <role> <id>")
                 return
             
-            if not id_str:
+            if not id:
                 await ctx.send(f"{await check_pings(ctx)}Please provide an ID \n-# !setrole <role> <id>")
                 return
 
@@ -147,18 +150,18 @@ class SettingsCog(commands.Cog):
                 await ctx.send(f"{await check_pings(ctx)}Please select a valid role: `{all_roles}` \n-# !setrole <role> <id>")
                 return
 
-            if not id_str.isdigit():
+            if not id.isdigit():
                 await ctx.send(f"{await check_pings(ctx)}Please provide a valid role ID \n-# !setrole <rold> <id>")
                 return
 
-            await self.update(guild_id, author, role, id_str, "role")
+            await self.update(ctx, role, id, "role")
 
 
 
 
     # !setchannel command
     @commands.command()
-    async def setchannel(self, ctx, channel: str = None, *, id_str: str = None):
+    async def setchannel(self, ctx, channel: str = None, *, id: str = None):
 
         user_level = await get_level(ctx)
         author = ctx.author
@@ -185,7 +188,7 @@ class SettingsCog(commands.Cog):
                 await ctx.send(f"{await check_pings(ctx)}Please select a channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
                 return
             
-            if not id_str:
+            if not id:
                 await ctx.send(f"{await check_pings(ctx)}Please provide an ID \n-# !setchannel <channel> <id>")
                 return
 
@@ -193,9 +196,9 @@ class SettingsCog(commands.Cog):
                 await ctx.send(f"{await check_pings(ctx)}Please select a valid channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
                 return
 
-            if not id_str.isdigit():
+            if not id.isdigit():
                 await ctx.send(f"{await check_pings(ctx)}Please provide a valid channel or category ID \n-# !setchannel <channel> <id>")
                 return
 
 
-            await self.update(guild_id, author, role, id_str, "channel")
+            await self.update(ctx, role, id, "channel")

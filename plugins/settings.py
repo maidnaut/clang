@@ -150,7 +150,7 @@ class SettingsCog(commands.Cog):
                 await ctx.send(f"{await check_pings(ctx)}Please provide a valid role ID \n-# !setrole <rold> <id>")
                 return
 
-            await update(self, guild_id, author, role, id, "role")
+            await self.update(guild_id, author, role, id, "role")
 
 
 
@@ -197,4 +197,4 @@ class SettingsCog(commands.Cog):
                 return
 
 
-            await update(self, guild_id, author, role, id, "channel")
+            await self.update(guild_id, author, role, id, "channel")

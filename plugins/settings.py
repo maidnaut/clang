@@ -202,3 +202,8 @@ class SettingsCog(commands.Cog):
 
 
             await self.update(ctx, channel, id, "channel")
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        await ctx.send(f"Error: {str(error)}")
+        raise error

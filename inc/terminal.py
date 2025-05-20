@@ -1,3 +1,4 @@
+'''
 import os
 import sys
 import importlib
@@ -200,3 +201,4 @@ class ClangShell(commands.Cog):
 
 def setup(bot):
     bot.add_cog(ClangShell(bot))
+'''

@@ -1,6 +1,5 @@
 import discord, os, asyncio, argparse
 from datetime import datetime
-from inc.terminal import register_plugin
 from discord.ext import commands
 from inc.utils import *
 

@@ -1,5 +1,4 @@
 import discord, os, asyncio, argparse, random, math
-from inc.terminal import register_plugin
 from discord.ext import commands
 from datetime import datetime
 from inc.utils import *

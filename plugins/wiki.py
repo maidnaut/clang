@@ -1,5 +1,4 @@
 import discord, os, asyncio, argparse
-from inc.terminal import register_plugin
 from discord.ext import commands
 from inc.utils import *
 import aiohttp

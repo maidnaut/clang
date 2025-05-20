@@ -49,7 +49,7 @@ class SettingsCog(commands.Cog):
             if not check_row:
                 if row_type == "role":
                     db_insert("roles", ["guild_id", "name", "role"], [guild_id, name, value])
-                    return f"{await check_pings(ctx)} {name} role set!"
+                    return await ctx.send(f"{await check_pings(ctx)} {name} role set!")
                 elif row_type == "channel":
                     db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, name, value])
                     return await ctx.send(f"{await check_pings(ctx)} {name} channel/category set!")
@@ -106,10 +106,10 @@ class SettingsCog(commands.Cog):
         if user_level >= 4 or author == owner:
             if status == "on":
                 db_update("config", [f"guild_id:{guild_id}", f"name:elevation_enabled"], [("enabled", "y")])
-                await ctx.send(f"{await check_pings(ctx)}!op is now required on this server.")
+                return await ctx.send(f"{await check_pings(ctx)}!op is now required on this server.")
             if status == "off":
                 db_update("config", [f"guild_id:{guild_id}", f"name:elevation_enabled"], [("enabled", "n")])
-                await ctx.send(f"{await check_pings(ctx)}!op is now disabled on this server.")
+                return await ctx.send(f"{await check_pings(ctx)}!op is now disabled on this server.")
 
 
 
@@ -201,4 +201,4 @@ class SettingsCog(commands.Cog):
                 return
 
 
-            await self.update(ctx, role, id, "channel")
+            await self.update(ctx, channel, id, "channel")

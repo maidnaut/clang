@@ -40,73 +40,6 @@ class TicketsCog(commands.Cog):
         formatted_day = f"{day}{suffix[suffix_index]}"
         return date.strftime(f"%B {formatted_day}, %Y")
 
-    # Get mod channel
-    async def get_mod_channel(self, ctx):
-        try:
-            guild_id = ctx.guild.id
-            
-            # This is bad, store it in the database in the future
-            channel_id = int(1365040257162018897)
-            channel = self.bot.get_channel(channel_id)
-            
-            if not channel:
-                try:
-                    channel = await guild.fetch_channel(channel_id)
-                except discord.NotFound:
-                    await ctx.send(f"Mod channel {channel_id} not found in guild {guild_id}")
-                    return None
-            
-            return channel
-        except Exception as e:
-            await ctx.send(f"Error getting mod channel: {e}")
-            return None
-        
-    # ticketlog channel
-    async def get_ticketlog_channel(self, ctx):
-        try:
-            guild_id = ctx.guild.id
-            settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:ticketlog"])
-            if not settings or not settings[0][3]:
-                return None
-            
-            channel_id = int(settings[0][3])
-            channel = self.bot.get_channel(channel_id)
-            
-            if not channel:
-                try:
-                    channel = await guild.fetch_channel(channel_id)
-                except discord.NotFound:
-                    await ctx.send(f"Ticketlog channel {channel_id} not found in guild {guild_id}")
-                    return None
-            
-            return channel
-        except Exception as e:
-            await ctx.send(f"Error getting ticketlog channel: {e}")
-            return None
-        
-    # tickets category
-    async def get_ticket_category(self, ctx):
-        try:
-            guild_id = ctx.guild.id
-            settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:ticket_category"])
-            if not settings or not settings[0][3]:
-                return None
-            
-            channel_id = int(settings[0][3])
-            channel = self.bot.get_channel(channel_id)
-            
-            if not channel:
-                try:
-                    channel = await guild.fetch_channel(channel_id)
-                except discord.NotFound:
-                    await ctx.send(f"Ticket category {channel_id} not found in guild {guild_id}")
-                    return None
-            
-            return channel
-        except Exception as e:
-            await ctx.send(f"Error getting ticket category: {e}")
-            return None
-
 
 
 
@@ -118,7 +51,7 @@ class TicketsCog(commands.Cog):
         await ctx.respond("Ticket created.", ephemeral=True)
         cog: TicketsCog = ctx.bot.get_cog("TicketsCog")
 
-        tickets_category = await cog.get_ticket_category(ctx)
+        tickets_category = await get_channel(ctx.guild.id, "ticket_category")
         if not tickets_category:
             return await ctx.respond(f"{ctx.author.mention} Ticket category is missing or misconfigured.")
 
@@ -171,7 +104,7 @@ class TicketsCog(commands.Cog):
         mod_mention = mod_role.mention if mod_role else "@mods"
 
         # This is bad quick patch, in the future add a mod channel to the database.
-        mod_channel = await cog.get_mod_channel(ctx)
+        mod_channel = await get_channel(ctx.guild.id, "mod_channel")
 
         await mod_channel.send(f"""
 {mod_mention} A ticket was opened in {ticket_channel}.
@@ -309,7 +242,7 @@ Use `/ticket add <user>` to add someone else to the ticket.
         zip_discord_file = discord.File(zip_buffer, filename=f"{ctx.channel.name}_attachments.zip")
 
         # Post the log
-        log_channel = await cog.get_ticketlog_channel(ctx)
+        log_channel = await get_channel(ctx.guild.id, "ticketlog")
         if log_channel:
             await log_channel.send(f"Ticket log from {ctx.channel.name}:", file=log_file)
             if attachments:

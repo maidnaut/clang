@@ -94,20 +94,6 @@ class ModerationCog(commands.Cog):
         if not self.unban_loop.is_running():
             self.unban_loop.start()
 
-    # Helpers
-    async def get_modlog_channel_from_guild(self, guild):
-        settings = db_read("logchans", [f"guild_id:{guild.id}", "name:modlog"])
-        if not settings or not settings[0][3]:
-            return None
-        ch_id = int(settings[0][3])
-        return self.bot.get_channel(ch_id) or await guild.fetch_channel(ch_id)
-
-    async def get_modlog_channel(self, ctx):
-        chan = await self.get_modlog_channel_from_guild(ctx.guild)
-        if not chan:
-            await ctx.send("Modlog not configured.")
-        return chan
-
 
 
 
@@ -211,7 +197,7 @@ class ModerationCog(commands.Cog):
 
         # Send the embed
         try:
-            modlog = await self.get_modlog_channel(ctx)
+            modlog = await get_channel(ctx.guild.id, "modlog")
             if modlog:
                 embed = discord.Embed(
                     color=discord.Color.orange(),
@@ -438,7 +424,7 @@ class ModerationCog(commands.Cog):
             return await ctx.send(f"{ctx.author.mention} Ban failed: {e}")
 
         # Modlog embed
-        modlog = await self.get_modlog_channel(ctx)
+        modlog = await get_channel(ctx.guild.id, "modlog")
         if modlog:
             embed = discord.Embed(color=discord.Color.red(), title="User Banned")
             if getattr(user, "avatar", None):
@@ -501,7 +487,7 @@ class ModerationCog(commands.Cog):
             return await ctx.send(f"{ctx.author.mention} Unban failed: {e}")
 
         # Modlog embed
-        modlog = await self.get_modlog_channel(ctx)
+        modlog = await get_channel(ctx.guild.id, "modlog")
         if modlog:
             embed = discord.Embed(color=discord.Color.purple(), title="User Unbanned")
             if getattr(user, "avatar", None):
@@ -549,7 +535,7 @@ class ModerationCog(commands.Cog):
             )
 
             # Post to modlog
-            modlog = await self.get_modlog_channel_from_guild(guild)
+            modlog = await get_channel(guild.id, "modlog")
             if modlog:
                 embed = discord.Embed(color=discord.Color.purple(), title="User Unbanned")
                 if user.avatar:

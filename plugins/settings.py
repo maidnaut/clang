@@ -178,7 +178,8 @@ class SettingsCog(commands.Cog):
                 "jaillog",
                 "ticket_category",
                 "jail_category",
-                "mod_category"
+                "mod_category",
+                "mod_channel"
             ]
 
             all_channels = ", ".join(channels)

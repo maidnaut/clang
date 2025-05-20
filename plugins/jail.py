@@ -57,52 +57,6 @@ class JailCog(commands.Cog):
         formatted_day = f"{day}{suffix[suffix_index]}"
         return date.strftime(f"%B {formatted_day}, %Y")
 
-    # jaillog channel
-    async def get_jaillog_channel(self, ctx):
-        try:
-            guild_id = ctx.guild.id
-            settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:jaillog"])
-            if not settings or not settings[0][3]:
-                return None
-            
-            channel_id = int(settings[0][3])
-            channel = self.bot.get_channel(channel_id)
-            
-            if not channel:
-                try:
-                    channel = await guild.fetch_channel(channel_id)
-                except discord.NotFound:
-                    await ctx.send(f"Jaillog channel {channel_id} not found in guild {guild_id}")
-                    return None
-            
-            return channel
-        except Exception as e:
-            await ctx.send(f"Error getting jaillog channel: {e}")
-            return None
-
-    # jaillog channel
-    async def get_jail_category(self, ctx):
-        try:
-            guild_id = ctx.guild.id
-            settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:jail_category"])
-            if not settings or not settings[0][3]:
-                return None
-            
-            channel_id = int(settings[0][3])
-            channel = self.bot.get_channel(channel_id)
-            
-            if not channel:
-                try:
-                    channel = await guild.fetch_channel(channel_id)
-                except discord.NotFound:
-                    await ctx.send(f"Jail category {channel_id} not found in guild {guild_id}")
-                    return None
-            
-            return channel
-        except Exception as e:
-            await ctx.send(f"Error getting jail category: {e}")
-            return None
-
 
 
 
@@ -156,7 +110,7 @@ class JailCog(commands.Cog):
         await ctx.send(f"{ctx.author.mention} sent {', '.join(m.mention for m in members)} to jail!")
 
         # Check for jail category
-        jail_category = await self.get_jail_category(ctx)
+        jail_category = await get_channel(ctx.guild.id, "jail_category")
         if not jail_category:
             return await ctx.send(f"{ctx.author.mention} Jail category is missing or misconfigured.")
 
@@ -448,7 +402,7 @@ class JailCog(commands.Cog):
         zip_discord_file = discord.File(zip_buffer, filename=f"{target_channel.name}_attachments.zip")
 
         # Post the log
-        log_channel = await self.get_jaillog_channel(ctx)
+        log_channel = await get_channel(ctx.guild.id, "log_channel")
         if log_channel:
             await log_channel.send(f"Jail log from {target_channel.name}:", file=log_file)
             if attachments:

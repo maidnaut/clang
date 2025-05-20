@@ -23,72 +23,6 @@ class MarkovCog(commands.Cog):
 
 
 
-    async def get_jail_category(self, guild_id):
-        try:
-            settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:jail_category"])
-            if not settings or not settings[0][3]:
-                return None
-            
-            channel_id = int(settings[0][3])
-            guild = self.bot.get_guild(guild_id)
-            if not guild:
-                return None
-            
-            channel = guild.get_channel(channel_id)
-            if not channel:
-                try:
-                    channel = await guild.fetch_channel(channel_id)
-                except discord.NotFound:
-                    return None
-            
-            return channel
-        except Exception as e:
-            return None
-
-    async def get_ticket_category(self, guild_id):
-        try:
-            settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:ticket_category"])
-            if not settings or not settings[0][3]:
-                return None
-            
-            channel_id = int(settings[0][3])
-            guild = self.bot.get_guild(guild_id)
-            if not guild:
-                return None
-            
-            channel = guild.get_channel(channel_id)
-            if not channel:
-                try:
-                    channel = await guild.fetch_channel(channel_id)
-                except discord.NotFound:
-                    return None
-            
-            return channel
-        except Exception as e:
-            return None
-
-    async def get_mod_category(self, guild_id):
-        try:
-            # Bad. Fix this later and put it in the db.
-            channel_id = 1365040193329172521
-            guild = self.bot.get_guild(guild_id)
-            if not guild:
-                return None
-            
-            channel = guild.get_channel(channel_id)
-            if not channel:
-                try:
-                    channel = await guild.fetch_channel(channel_id)
-                except discord.NotFound:
-                    return None
-            
-            return channel
-        except Exception as e:
-            return None
-
-
-
-
     # Get the filepath
     def get_chain_path(self, guild_id):
         return os.path.join(self.data_dir, f"{guild_id}.txt")
@@ -167,9 +101,9 @@ class MarkovCog(commands.Cog):
         guild_id = message.guild.id
 
         # Block private category logging
-        ticket_category = await self.get_ticket_category(guild_id)
-        jail_category = await self.get_jail_category(guild_id)
-        mod_category = await self.get_mod_category(guild_id)
+        ticket_category = await get_channel(guild_id, "ticket_category")
+        jail_category = await get_channel(guild_id, "jail_category")
+        mod_category = await get_channel(guild_id, "mod_category")
 
         private_categories = []
         if ticket_category:

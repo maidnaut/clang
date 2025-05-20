@@ -209,3 +209,26 @@ async def check_pings(ctx):
         return f"{ctx.author.mention} "
     else:
         return ""
+
+# Get channels
+async def get_channel(guild_id, name):
+    try:
+        settings = db_read("logchans", [f"guild_id:{guild_id}", f"name:{name}"])
+        if not settings or not settings[0][3]:
+            return None
+        
+        channel_id = int(settings[0][3])
+        guild = self.bot.get_guild(guild_id)
+        if not guild:
+            return None
+        
+        channel = guild.get_channel(channel_id)
+        if not channel:
+            try:
+                channel = await guild.fetch_channel(channel_id)
+            except discord.NotFound:
+                return None
+        
+        return channel
+    except Exception as e:
+        return None

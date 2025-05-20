@@ -6,11 +6,11 @@ from inc.utils import *
 
 
 def setup(bot):
-    bot.add_cog(ModerationCog(bot))
+    bot.add_cog(SettingsCog(bot))
 
 
 
-class ModerationCog(commands.Cog):
+class SettingsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

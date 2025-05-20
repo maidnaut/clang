@@ -35,7 +35,7 @@ class SettingsCog(commands.Cog):
 
 
     # check for how to update the db
-    async def update(self, guild_id, author, name, value, row_type):
+    async def push_settings(self, guild_id, author, name, value, row_type):
 
         try:
             if row_type == "role":
@@ -151,7 +151,7 @@ class SettingsCog(commands.Cog):
                 await ctx.send(f"{await check_pings(ctx)}Please provide a valid role ID \n-# !setrole <rold> <id>")
                 return
 
-            await self.update(guild_id, author, role, id, "role")
+            await self.push_settings(guild_id, author, role, id, "role")
 
 
 
@@ -198,4 +198,4 @@ class SettingsCog(commands.Cog):
                 return
 
 
-            await self.update(guild_id, author, role, id, "channel")
+            await self.push_settings(guild_id, author, role, id, "channel")

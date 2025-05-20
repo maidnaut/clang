@@ -85,6 +85,22 @@ class LoggingCog(commands.Cog):
             embed.add_field(name="After", value=after.content[:1024], inline=False)
             await channel.send(embed=embed, silent=True)
 
+    # Check if tupperbox
+    async def is_tupper_deletion(self, message) -> bool:
+        try:
+            async for entry in message.guild.audit_logs(
+                action=discord.AuditLogAction.message_delete,
+                after=datetime.utcnow() - timedelta(seconds=2),
+                limit=1
+            ):
+                return entry.user.id == int(431544605209788416)
+        except discord.Forbidden:
+            return False
+        except Exception as e:
+            print(f"Audit log error: {e}")
+            return False
+        return False
+
     # On delete
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -93,18 +109,7 @@ class LoggingCog(commands.Cog):
         if not message.guild or message.author.bot:
             return
 
-        self.recent_deletions[message.channel.id].append(
-            (message.id, time.monotonic())
-        )
-
-        await asyncio.sleep(0.5)
-        is_tupper = False
-
-        async for msg in message.channel.history(limit=3):
-            if msg.webhook_id and (time.monotonic() - msg.created_at.timestamp()) < 2:
-                is_tupper = True
-                break
-
+        is_tupper = await self.is_tupper_deletion(message)
         channel_type = "botlogs" if is_tupper else "logs"
         channel = await get_channel(int(message.guild.id), channel_type)
         

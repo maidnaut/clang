@@ -15,7 +15,7 @@ class SettingsCog(commands.Cog):
         self.bot = bot
 
         self.__help__ = {
-            "ping": {
+            "setping": {
                 "args": "on, off",
                 "desc": "Enables or disables ping responses from Clang",
                 "perm": ["everyone"]
@@ -66,7 +66,7 @@ class SettingsCog(commands.Cog):
 
     # toggle pings
     @commands.command()
-    async def ping(self, ctx, status: str = None):
+    async def setping(self, ctx, status: str = None):
 
         guild_id = ctx.guild.id
         user_id = ctx.user.id

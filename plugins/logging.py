@@ -19,10 +19,13 @@ class LoggingCog(commands.Cog):
     # Join log
     @commands.Cog.listener()
     async def on_member_join(self, member):
+
+        # Drop out if in dm's
+        if not member.guild:
+            return
+
         guild_id = str(member.guild.id)
-        joinlog = await get_channel(guild_id, "joinlog")
-        
-        channel = self.bot.get_channel(joinlog)
+        channel = await get_channel(guild_id, "joinlog")
 
         if channel is not None:
             embed = discord.Embed(
@@ -36,10 +39,13 @@ class LoggingCog(commands.Cog):
     # Leave log
     @commands.Cog.listener()
     async def on_member_remove(self, member):
+
+        # Drop out if in dm's
+        if not member.guild:
+            return
+
         guild_id = str(member.guild.id)
-        joinlog = await get_channel(guild_id, "joinlog")
-        
-        channel = self.bot.get_channel(joinlog)
+        channel = await get_channel(guild_id, "joinlog")
 
         if channel is not None:
             embed = discord.Embed(
@@ -53,13 +59,16 @@ class LoggingCog(commands.Cog):
     # On edit
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
+
+        # Drop out if in dm's
+        if not before.guild or before.author.bot or before.content == after.content:
+            return
+            
         if before.author.bot or before.content == after.content:
             return
         
         guild_id = str(before.guild.id)
-        logs = await get_channel(guild_id, "logs")
-        
-        channel = self.bot.get_channel(logs)
+        channel = await get_channel(guild_id, "logs")
 
         if channel is not None:
             embed = discord.Embed(
@@ -75,6 +84,11 @@ class LoggingCog(commands.Cog):
     # On delete
     @commands.Cog.listener()
     async def on_message_delete(self, message):
+
+        # drop out if in dm's
+        if not message.guild:
+            return
+            
         if message.author.bot and not message.webhook_id:
             return
 
@@ -82,8 +96,7 @@ class LoggingCog(commands.Cog):
         if message.webhook_id:
         
             guild_id = str(message.guild.id)
-            botlogs = await get_channel(guild_id, "botlogs")
-            channel = self.bot.get_channel(botlogs)
+            channel = await get_channel(guild_id, "botlogs")
 
             if channel is not None:
                 embed = discord.Embed(
@@ -96,8 +109,7 @@ class LoggingCog(commands.Cog):
         else:
         
             guild_id = str(message.guild.id)
-            logs = await get_channel(guild_id, "logs")
-            channel = self.bot.get_channel(logs)
+            channel = await get_channel(guild_id, "logs")
 
             if channel is not None:
                 embed = discord.Embed(

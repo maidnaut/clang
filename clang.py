@@ -91,14 +91,6 @@ async def on_ready():
     # Check environment variables
     await check_env()
 
-    # Check for shell
-    shell = bot.get_cog("ClangShell")
-    if shell:
-        print("[bold cyan]==>[/bold cyan] Shell interface initialized")
-        await random_decimal_sleep(0.1, 0.4)
-    else:
-        print("[bold red][X][/bold red] Shell could not start")
-
     # Load plugins
     print("[bold cyan]==>[/bold cyan] Loading plugins...", highlight=False)
     await random_decimal_sleep(0.1, 0.4)

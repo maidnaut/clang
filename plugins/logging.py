@@ -115,6 +115,6 @@ class LoggingCog(commands.Cog):
 
             embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
             embed.add_field(name="", value=f"{f'Tupperbox deleted a message by {message.author.mention}' if is_tupper else f'{message.author.mention} deleted a message'} in {message.channel.mention}", inline=False)
-            embed.add_field(name="", value=f"**Message Link:** [Jump to Message]({message.jump_url})", inline=False)
+            if is_tupper == True: embed.add_field(name="", value=f"**Message Link:** [Jump to Message]({message.jump_url})", inline=False)
             embed.add_field(name="", value=f"{message.content[:2000] or '*[No content]*'}", inline=False)
             await channel.send(embed=embed, silent=True)

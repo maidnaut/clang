@@ -20,7 +20,7 @@ class LoggingCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         guild_id = str(member.guild.id)
-        joinlog = await get_channel(ctx.guild.id, "joinlog")
+        joinlog = await get_channel(guild_id, "joinlog")
         
         channel = self.bot.get_channel(joinlog)
 
@@ -37,7 +37,7 @@ class LoggingCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         guild_id = str(member.guild.id)
-        joinlog = await get_channel(ctx.guild.id, "joinlog")
+        joinlog = await get_channel(guild_id, "joinlog")
         
         channel = self.bot.get_channel(joinlog)
 
@@ -56,8 +56,8 @@ class LoggingCog(commands.Cog):
         if before.author.bot or before.content == after.content:
             return
         
-        guild_id = str(member.guild.id)
-        logs = await get_channel(ctx.guild.id, "logs")
+        guild_id = str(before.guild.id)
+        logs = await get_channel(guild_id, "logs")
         
         channel = self.bot.get_channel(logs)
 
@@ -81,8 +81,8 @@ class LoggingCog(commands.Cog):
         # Check if it's a bot
         if message.webhook_id:
         
-            guild_id = str(member.guild.id)
-            botlogs = await get_channel(ctx.guild.id, "botlogs")
+            guild_id = str(message.guild.id)
+            botlogs = await get_channel(guild_id, "botlogs")
             channel = self.bot.get_channel(botlogs)
 
             if channel is not None:
@@ -95,8 +95,8 @@ class LoggingCog(commands.Cog):
                 await channel.send(embed=embed, silent=True)
         else:
         
-            guild_id = str(member.guild.id)
-            logs = await get_channel(ctx.guild.id, "logs")
+            guild_id = str(message.guild.id)
+            logs = await get_channel(guild_id, "logs")
             channel = self.bot.get_channel(logs)
 
             if channel is not None:

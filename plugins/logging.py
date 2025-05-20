@@ -24,8 +24,7 @@ class LoggingCog(commands.Cog):
         if not member.guild:
             return
 
-        guild_id = str(member.guild.id)
-        channel = await get_channel(guild_id, "joinlog")
+        channel = await get_channel(int(member.guild.id), "joinlog")
 
         if channel is not None:
             embed = discord.Embed(
@@ -44,8 +43,7 @@ class LoggingCog(commands.Cog):
         if not member.guild:
             return
 
-        guild_id = str(member.guild.id)
-        channel = await get_channel(guild_id, "joinlog")
+        channel = await get_channel(int(member.guild.id), "joinlog")
 
         if channel is not None:
             embed = discord.Embed(
@@ -66,9 +64,8 @@ class LoggingCog(commands.Cog):
             
         if before.author.bot or before.content == after.content:
             return
-        
-        guild_id = str(before.guild.id)
-        channel = await get_channel(guild_id, "logs")
+
+        channel = await get_channel(int(before.guild.id), "logs")
 
         if channel is not None:
             embed = discord.Embed(
@@ -94,9 +91,8 @@ class LoggingCog(commands.Cog):
 
         # Check if it's a bot
         if message.webhook_id:
-        
-            guild_id = str(message.guild.id)
-            channel = await get_channel(guild_id, "botlogs")
+            
+            channel = await get_channel(int(message.guild.id), "botlogs")
 
             if channel is not None:
                 embed = discord.Embed(
@@ -108,8 +104,7 @@ class LoggingCog(commands.Cog):
                 await channel.send(embed=embed, silent=True)
         else:
         
-            guild_id = str(message.guild.id)
-            channel = await get_channel(guild_id, "logs")
+            channel = await get_channel(int(message.guild.id), "logs")
 
             if channel is not None:
                 embed = discord.Embed(

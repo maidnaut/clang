@@ -106,8 +106,8 @@ class LoggingCog(commands.Cog):
                     title=f"Bot Message Deleted in {message.channel.mention}",
                     color=discord.Color.purple(),
                 )
-                embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
-                embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=False)
+                embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
+                embed.add_field(name="User", value=f"{message.author.mention} {message.author.name}", inline=False)
                 embed.add_field(name="Content", value=f"**Message:** {message.content[:2000]}", inline=False)
                 await channel.send(embed=embed, silent=True)
         else:
@@ -119,7 +119,7 @@ class LoggingCog(commands.Cog):
                     title=f"Message Deleted in {message.channel.mention}",
                     color=discord.Color.dark_red(),
                 )
-                embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
-                embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=False)
+                embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
+                embed.add_field(name="User", value=f"{message.author.mention} {message.author.name}", inline=False)
                 embed.add_field(name="Content", value=f"**Message:** {message.content[:2000]}", inline=False)
                 await channel.send(embed=embed, silent=True)

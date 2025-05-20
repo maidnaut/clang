@@ -4,6 +4,7 @@ from typing import Optional
 from discord.ext import commands
 from discord.utils import get
 from inc.utils import *
+from functools import partial
 
 ticket = discord.SlashCommandGroup("ticket", "Ticket related commands")
 
@@ -32,6 +33,7 @@ class TicketsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.add_application_command(ticket)
+        self.get_channel = partial(get_channel, bot=self.bot)
 
     def format_date(self, date):
         suffix = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"]
@@ -51,7 +53,7 @@ class TicketsCog(commands.Cog):
         await ctx.respond("Ticket created.", ephemeral=True)
         cog: TicketsCog = ctx.bot.get_cog("TicketsCog")
 
-        tickets_category = await cog.get_channel(ctx.guild.id, "ticket_category")
+        tickets_category = await self.get_channel(ctx.guild.id, "ticket_category")
         if not tickets_category:
             return await ctx.respond(f"{ctx.author.mention} Ticket category is missing or misconfigured.")
 
@@ -104,7 +106,7 @@ class TicketsCog(commands.Cog):
         mod_mention = mod_role.mention if mod_role else "@mods"
 
         # This is bad quick patch, in the future add a mod channel to the database.
-        mod_channel = await cog.get_channel(ctx.guild.id, "mod_channel")
+        mod_channel = await self.get_channel(ctx.guild.id, "mod_channel")
 
         await mod_channel.send(f"""
 {mod_mention} A ticket was opened in {ticket_channel}.
@@ -242,7 +244,7 @@ Use `/ticket add <user>` to add someone else to the ticket.
         zip_discord_file = discord.File(zip_buffer, filename=f"{ctx.channel.name}_attachments.zip")
 
         # Post the log
-        log_channel = await cog.get_channel(ctx.guild.id, "ticketlog")
+        log_channel = await self.get_channel(ctx.guild.id, "ticketlog")
         if log_channel:
             await log_channel.send(f"Ticket log from {ctx.channel.name}:", file=log_file)
             if attachments:

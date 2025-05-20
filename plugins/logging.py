@@ -78,8 +78,8 @@ class LoggingCog(commands.Cog):
             )
 
             embed.set_thumbnail(url=before.author.avatar.url if before.author.avatar else None)
-            embed.add_field(name="Author", value=f"{before.author.mention} {before.author.name}", inline=False)
-            embed.add_field(name="Message Link", value=f"[Jump to Message]({before.jump_url})", inline=False)
+            embed.add_field(name="", value=f"**Author:** {before.author.mention} {before.author.name}", inline=False)
+            embed.add_field(name="", value=f"**Message Link:** [Jump to Message]({before.jump_url})", inline=False)
             embed.add_field(name="Before", value=before.content[:1024], inline=False)
             embed.add_field(name="After", value=after.content[:1024], inline=False)
             await channel.send(embed=embed, silent=True)
@@ -120,5 +120,5 @@ class LoggingCog(commands.Cog):
                 )
                 embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
                 embed.add_field(name="User", value=f"{message.author.mention} {message.author.name}", inline=False)
-                embed.add_field(name="Content", value=f"**Message:** {message.content[:2000]}", inline=False)
+                embed.add_field(name="Content", value=f"{message.content[:2000]}", inline=False)
                 await channel.send(embed=embed, silent=True)

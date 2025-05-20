@@ -85,22 +85,6 @@ class LoggingCog(commands.Cog):
             embed.add_field(name="After", value=after.content[:1024], inline=False)
             await channel.send(embed=embed, silent=True)
 
-    # Check if tupperbox
-    async def is_tupper_deletion(self, message) -> bool:
-        try:
-            async for entry in message.guild.audit_logs(
-                action=discord.AuditLogAction.message_delete,
-                after=datetime.utcnow() - timedelta(seconds=2),
-                limit=1
-            ):
-                return entry.user.id == int(431544605209788416)
-        except discord.Forbidden:
-            return False
-        except Exception as e:
-            print(f"Audit log error: {e}")
-            return False
-        return False
-
     # On delete
     @commands.Cog.listener()
     async def on_message_delete(self, message):
@@ -109,9 +93,7 @@ class LoggingCog(commands.Cog):
         if not message.guild or message.author.bot:
             return
 
-        is_tupper = await self.is_tupper_deletion(message)
-        channel_type = "botlogs" if is_tupper else "logs"
-        channel = await get_channel(int(message.guild.id), channel_type)
+        channel = await get_channel(int(message.guild.id), "logs")
         
         if channel:
             embed = discord.Embed(
@@ -119,6 +101,6 @@ class LoggingCog(commands.Cog):
             )
 
             embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
-            embed.add_field(name="", value=f"{f'Tupperbox deleted a message by {message.author.mention}' if is_tupper else f'{message.author.mention} deleted a message'} in {message.channel.mention}", inline=False)
+            embed.add_field(name="", value=f"{message.author.mention} deleted a message in {message.channel.mention}", inline=False)
             embed.add_field(name="", value=f"{message.content[:2000] or '*[No content]*'}", inline=False)
             await channel.send(embed=embed, silent=True)

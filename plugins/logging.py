@@ -1,5 +1,6 @@
 import discord
 from inc.utils import *
+from collections import deque
 from datetime import datetime
 from discord.ext import commands
 
@@ -15,6 +16,7 @@ def setup(bot):
 class LoggingCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.recent_deletions = defaultdict(lambda: deque(maxlen=10))
 
     # Join log
     @commands.Cog.listener()
@@ -87,36 +89,31 @@ class LoggingCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message_delete(self, message):
 
-        # drop out if in dm's
-        if not message.guild:
-            return
-            
-        if message.author.bot and not message.webhook_id:
+        # Drop out if dm's or bot
+        if not message.guild or message.author.bot:
             return
 
-        # Check if it's a bot
-        if message.webhook_id:
-            
-            channel = await get_channel(int(message.guild.id), "botlogs")
+        self.recent_deletions[message.channel.id].append(
+            (message.id, time.monotonic())
+        )
 
-            if channel is not None:
-                embed = discord.Embed(
-                    title=f"Bot Message Deleted in {message.channel.mention}",
-                    color=discord.Color.purple(),
-                )
-                embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
-                embed.add_field(name="", value=f"A bot deleted a message by {message.author.mention} in {message.channel.mention}", inline=False)
-                embed.add_field(name="Content", value=f"**Message:** {message.content[:2000]}", inline=False)
-                await channel.send(embed=embed, silent=True)
-        else:
+        await asyncio.sleep(0.5)
+        is_tupper = False
+
+        async for msg in message.channel.history(limit=3):
+            if msg.webhook_id and (time.monotonic() - msg.created_at.timestamp()) < 2:
+                is_tupper = True
+                break
+
+        channel_type = "botlogs" if is_tupper else "logs"
+        channel = await get_channel(int(message.guild.id), channel_type)
         
-            channel = await get_channel(int(message.guild.id), "logs")
-
-            if channel is not None:
-                embed = discord.Embed(
-                    color=discord.Color.dark_red(),
-                )
-                embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
-                embed.add_field(name="", value=f"{message.author.mention} deleted a message in {message.channel.mention}", inline=False)
-                embed.add_field(name="", value=f"**Message:** {message.content[:2000]}", inline=False)
-                await channel.send(embed=embed, silent=True)
+        if channel:
+            embed = discord.Embed(
+                title=f"🗑️ {'Tupperbox' if is_tupper else 'Message'} Deleted",
+                color=discord.Color.purple() if is_tupper else discord.Color.dark_red(),
+                timestamp=datetime.now()
+            )
+            embed.description = f"**Channel:** {message.channel.mention}\n"
+            embed.description += f"**Original Content:**\n{message.content[:2000] or '*[No content]*'}"
+            await channel.send(embed=embed, silent=True)

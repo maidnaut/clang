@@ -29,10 +29,12 @@ class LoggingCog(commands.Cog):
         if channel is not None:
             embed = discord.Embed(
                 title="🎉 Member Joined",
-                description=f"{member.mention} {member.name}",
                 color=discord.Color.green(),
-                timestamp=datetime.now()
             )
+
+            embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
+            embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=True)
+
             await channel.send(embed=embed, silent=True)
 
     # Leave log
@@ -48,10 +50,12 @@ class LoggingCog(commands.Cog):
         if channel is not None:
             embed = discord.Embed(
                 title="👋 Member Left",
-                description=f"{member.mention} {member.name}",
                 color=discord.Color.red(),
-                timestamp=datetime.now()
             )
+
+            embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
+            embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=True)
+
             await channel.send(embed=embed, silent=True)
 
     # On edit
@@ -69,11 +73,14 @@ class LoggingCog(commands.Cog):
 
         if channel is not None:
             embed = discord.Embed(
-                title="Message Edited",
-                description=f"**Author:** {before.author.mention}\n**Channel:** {before.channel.mention}",
+                title=f"Message Edited in {before.channel.mention}",
+                description=f"**Author:** {before.author.mention}",
                 color=discord.Color.orange(),
-                timestamp=datetime.now()
             )
+
+            embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
+            embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=False)
+            embed.add_field(name="Message Link", value=f"[Jump to Message]({before.jump_url})", inline=False)
             embed.add_field(name="Before", value=before.content[:1024], inline=False)
             embed.add_field(name="After", value=after.content[:1024], inline=False)
             await channel.send(embed=embed, silent=True)
@@ -96,11 +103,12 @@ class LoggingCog(commands.Cog):
 
             if channel is not None:
                 embed = discord.Embed(
-                    title="Bot Message Deletion",
-                    description=f"**Channel:** {message.channel.mention}\n**Content:** {message.content[:2000]}",
+                    title=f"Bot Message Deleted in {message.channel.mention}",
                     color=discord.Color.purple(),
-                    timestamp=datetime.now()
                 )
+                embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
+                embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=False)
+                embed.add_field(name="Content", value=f"**Message:** {message.content[:2000]}", inline=False)
                 await channel.send(embed=embed, silent=True)
         else:
         
@@ -108,10 +116,10 @@ class LoggingCog(commands.Cog):
 
             if channel is not None:
                 embed = discord.Embed(
-                    title="Message Deleted",
-                    description=f"**Author:** {message.author.mention}\n**Channel:** {message.channel.mention}",
+                    title=f"Message Deleted in {message.channel.mention}",
                     color=discord.Color.dark_red(),
-                    timestamp=datetime.now()
                 )
-                embed.add_field(name="Content", value=message.content[:2000] or "[Content Unavailable]")
+                embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
+                embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=False)
+                embed.add_field(name="Content", value=f"**Message:** {message.content[:2000]}", inline=False)
                 await channel.send(embed=embed, silent=True)

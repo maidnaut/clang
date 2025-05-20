@@ -38,9 +38,9 @@ class SettingsCog(commands.Cog):
 
         try:
             if row_type == "role":
-                check_row = db_read("roles", [f"guild_id:{guild_id}", f"name":{name}])
+                check_row = db_read("roles", [f"guild_id:{guild_id}", f"name:{name}"])
             elif row_type == "channel":
-                check_row = db_read("logchans", [f"guild_id:{guild_id}", f"name":{name}])
+                check_row = db_read("logchans", [f"guild_id:{guild_id}", f"name:{name}"])
             
             if not result:
                 if row_type == "role":

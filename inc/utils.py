@@ -194,7 +194,7 @@ async def get_user(ctx, user_id):
 # Check ping status
 async def check_pings(ctx):
 
-    user_id = ctx.user.id
+    user_id = ctx.author.id
     guild_id = ctx.guild.id
     check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"])
 

@@ -25,7 +25,6 @@ class ClangBot(commands.Bot):
 # Pycord stuff
 activity = discord.Game(name="!help")
 bot = ClangBot(command_prefix="!", activity=activity, help_command=None, intents=discord.Intents.all())
-bot.add_cog(ClangShell(bot))
 
 # global dict
 bot.globals = {}
@@ -192,7 +191,7 @@ async def check_env():
             name = guild.name
             await install(gid, name)
         
-        print("\nSetup complete. Edit the configs at any time in the terminal.\n")
+        print("\nSetup complete.\n")
         await random_decimal_sleep(0.4, 0.8)
     
     else:

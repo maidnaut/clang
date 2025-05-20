@@ -55,7 +55,7 @@ class SettingsCog(commands.Cog):
                     return await ctx.send(f"{await check_pings(ctx)} {name} channel/category set!")
 
             else:
-                if row_type == "roles":
+                if row_type == "role":
                     db_update("roles", [f"guild_id:{guild_id}", f"name:{name}"], [("role", value)])
                     return await ctx.send(f"{await check_pings(ctx)} {name} role set!")
                 elif row_type == "channel":
@@ -118,7 +118,7 @@ class SettingsCog(commands.Cog):
     # !setrole command
     @commands.command()
     async def setrole(self, ctx, role: str = None, *, id: str = None):
-        
+        print(f"!setrole triggered with role={role}, id={id}")
         user_level = await get_level(ctx)
         author = ctx.author
         guild_id = ctx.guild.id
@@ -155,7 +155,7 @@ class SettingsCog(commands.Cog):
                 return
 
             await self.update(ctx, role, id, "role")
-
+            print("Update call completed") 
 
 
 
@@ -163,6 +163,7 @@ class SettingsCog(commands.Cog):
     @commands.command()
     async def setchannel(self, ctx, channel: str = None, *, id: str = None):
 
+        print(f"!setchannel triggered with channel={channel}, id={id}")
         user_level = await get_level(ctx)
         author = ctx.author
         guild_id = ctx.guild.id
@@ -202,6 +203,7 @@ class SettingsCog(commands.Cog):
 
 
             await self.update(ctx, channel, id, "channel")
+            print("Update call completed") 
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

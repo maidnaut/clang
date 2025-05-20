@@ -3,7 +3,6 @@ from inc.db import *
 from pathlib import Path
 from discord.ext import commands
 from rich.console import Console
-from inc.terminal import ClangShell
 from inc.utils import *
 
 version = "0.5b"

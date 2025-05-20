@@ -9,8 +9,6 @@ from inc.utils import *
 #################################################################################
 
 def setup(bot):
-    
-    init_term()
 
     # Cogs
     bot.add_cog(CookieCog(bot))
@@ -360,50 +358,3 @@ class CookieCog(commands.Cog):
             description=leaderboard or "No cookie data found.",
             color=discord.Color.gold()
         ))
-                
-
-
-
-
-
-#################################################################################
-
-
-
-
-#################################################################################
-# Register terminal stuff
-#################################################################################
-def init_term():
-
-    # Init some text we'll use later
-    usage = "command_name [-args] [guild_id:optional]"
-    
-    example = """
-    Usage example goes here
-    """
-
-    def function(args: list[str]):
-
-        # Put the terminal response function here
-        print("todo")
-
-    # Help page & register
-    register_plugin(
-        name="template",
-        help=f"""
-template: {usage}
-    Put the description here
-
-    Options:
-        --args           Explanation of arg
-
-    Extra information here
-
-    Usage:
-{example}
-
-
-""",
-        func=function
-    )

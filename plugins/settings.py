@@ -1,12 +1,14 @@
 import discord
-from discord.ext import commands, tasks
+from inc.db import *
 from inc.utils import *
+from discord.ext import commands, tasks
 
 
 
 
 def setup(bot):
     bot.add_cog(SettingsCog(bot))
+
 
 
 

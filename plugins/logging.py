@@ -73,12 +73,11 @@ class LoggingCog(commands.Cog):
 
         if channel is not None:
             embed = discord.Embed(
-                title=f"Message Edited in {before.channel.mention}",
                 color=discord.Color.orange(),
             )
 
             embed.set_thumbnail(url=before.author.avatar.url if before.author.avatar else None)
-            embed.add_field(name="", value=f"**Author:** {before.author.mention} {before.author.name}", inline=False)
+            embed.add_field(name="", value=f" {before.author.mention} edited a message in {before.channel.mention}", inline=False)
             embed.add_field(name="", value=f"**Message Link:** [Jump to Message]({before.jump_url})", inline=False)
             embed.add_field(name="Before", value=before.content[:1024], inline=False)
             embed.add_field(name="After", value=after.content[:1024], inline=False)
@@ -106,7 +105,7 @@ class LoggingCog(commands.Cog):
                     color=discord.Color.purple(),
                 )
                 embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
-                embed.add_field(name="User", value=f"{message.author.mention} {message.author.name}", inline=False)
+                embed.add_field(name="", value=f"A bot deleted a message by {message.author.mention} in {message.channel.mention}", inline=False)
                 embed.add_field(name="Content", value=f"**Message:** {message.content[:2000]}", inline=False)
                 await channel.send(embed=embed, silent=True)
         else:
@@ -115,10 +114,9 @@ class LoggingCog(commands.Cog):
 
             if channel is not None:
                 embed = discord.Embed(
-                    title=f"Message Deleted in {message.channel.mention}",
                     color=discord.Color.dark_red(),
                 )
                 embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
-                embed.add_field(name="User", value=f"{message.author.mention} {message.author.name}", inline=False)
-                embed.add_field(name="Content", value=f"{message.content[:2000]}", inline=False)
+                embed.add_field(name="", value=f"{message.author.mention} deleted a message in {message.channel.mention}", inline=False)
+                embed.add_field(name="", value=f"**Message:** {message.content[:2000]}", inline=False)
                 await channel.send(embed=embed, silent=True)

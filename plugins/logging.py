@@ -110,10 +110,11 @@ class LoggingCog(commands.Cog):
         
         if channel:
             embed = discord.Embed(
-                title=f"🗑️ {'Tupperbox' if is_tupper else 'Message'} Deleted",
-                color=discord.Color.purple() if is_tupper else discord.Color.dark_red(),
-                timestamp=datetime.now()
+                color=discord.Color.purple() if is_tupper else discord.Color.red(),
             )
-            embed.description = f"**Channel:** {message.channel.mention}\n"
-            embed.description += f"**Original Content:**\n{message.content[:2000] or '*[No content]*'}"
+
+            embed.set_thumbnail(url=before.author.avatar.url if before.author.avatar else None)
+            embed.add_field(name="", value=f"{f'Tupperbox deleted a message by {message.author.mention}' if is_tupper else f'{message.author.mention} deleted a message'} in {message.channel.mention}", inline=False)
+            embed.add_field(name="", value=f"**Message Link:** [Jump to Message]({message.jump_url})", inline=False)
+            embed.add_field(name="", value=f"{message.content[:2000] or '*[No content]*'}", inline=False)
             await channel.send(embed=embed, silent=True)

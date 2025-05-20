@@ -1,5 +1,4 @@
-import discord
-from inc.db import *
+import discord, re
 from inc.utils import *
 from discord.ext import commands, tasks
 

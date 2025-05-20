@@ -74,12 +74,11 @@ class LoggingCog(commands.Cog):
         if channel is not None:
             embed = discord.Embed(
                 title=f"Message Edited in {before.channel.mention}",
-                description=f"**Author:** {before.author.mention}",
                 color=discord.Color.orange(),
             )
 
-            embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
-            embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=False)
+            embed.set_thumbnail(url=before.author.avatar.url if before.author.avatar else None)
+            embed.add_field(name="Author", value=f"{before.author.mention} {before.author.name}", inline=False)
             embed.add_field(name="Message Link", value=f"[Jump to Message]({before.jump_url})", inline=False)
             embed.add_field(name="Before", value=before.content[:1024], inline=False)
             embed.add_field(name="After", value=after.content[:1024], inline=False)

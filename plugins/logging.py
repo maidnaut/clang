@@ -33,7 +33,7 @@ class LoggingCog(commands.Cog):
             )
 
             embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
-            embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=True)
+            embed.add_field(name="", value=f"{member.mention} {member.name}", inline=True)
 
             await channel.send(embed=embed, silent=True)
 
@@ -54,7 +54,7 @@ class LoggingCog(commands.Cog):
             )
 
             embed.set_thumbnail(url=member.avatar.url if member.avatar else None)
-            embed.add_field(name="User", value=f"{member.mention} {member.name}", inline=True)
+            embed.add_field(name="", value=f"{member.mention} {member.name}", inline=True)
 
             await channel.send(embed=embed, silent=True)
 

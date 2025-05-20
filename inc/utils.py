@@ -196,7 +196,7 @@ async def check_pings(ctx):
 
     user_id = ctx.user.id
     guild_id = ctx.guild.id
-    check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id":{user_id}])
+    check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"])
 
     ping = True
     if result:

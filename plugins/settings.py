@@ -42,7 +42,7 @@ class SettingsCog(commands.Cog):
             elif row_type == "channel":
                 check_row = db_read("logchans", [f"guild_id:{guild_id}", f"name:{name}"])
             
-            if not result:
+            if not check_row:
                 if row_type == "role":
                     db_insert("roles", ["guild_id", "name", "role"], [guild_id, name, value])
                     return f"{author.mention} {name} role set!"
@@ -80,7 +80,7 @@ class SettingsCog(commands.Cog):
 
         check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"])
 
-        if not result:
+        if not check_row:
             db_insert("pings", ["guild_id", "user_id", "status"], [guild_id, user_id, status])
         else:
             db_update("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"], [("status", status)])

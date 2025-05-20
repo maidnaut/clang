@@ -199,7 +199,7 @@ async def check_pings(ctx):
     check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"])
 
     ping = True
-    if result:
+    if check_row:
         if check_row[0][3] == "on":
             ping = True
         else:

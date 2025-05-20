@@ -5,7 +5,7 @@ from discord.ext import commands
 from discord.utils import get
 from inc.utils import *
 from functools import partial
-import utils as utils
+import inc.utils as utils
 
 ticket = discord.SlashCommandGroup("ticket", "Ticket related commands")
 

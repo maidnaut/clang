@@ -142,10 +142,6 @@ async def on_ready():
 
     await random_decimal_sleep(0.1, 0.4)
 
-    # Schedule a task for the shell or it won't work
-    if shell:
-        bot.loop.create_task(shell.process_terminal_input())
-
 #################################################################################
 # Connect to database
 #################################################################################

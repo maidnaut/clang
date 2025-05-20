@@ -97,7 +97,7 @@ class LoggingCog(commands.Cog):
         
         if channel:
             embed = discord.Embed(
-                color=discord.Color.purple() if is_tupper else discord.Color.red(),
+                color=discord.Color.red(),
             )
 
             embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)

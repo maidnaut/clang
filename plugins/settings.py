@@ -51,10 +51,10 @@ class SettingsCog(commands.Cog):
                     return await ctx.send(f"{author.mention} {name} channel/category set!")
 
             else:
-                if row_type == "roles:
+                if row_type == "roles":
                     db_update("roles", [f"guild_id:{guild_id}", f"name:{name}"], [("role", value)])
                     return await ctx.send(f"{author.mention} {name} role set!")
-                elif row_type == "channel:
+                elif row_type == "channel":
                     db_update("logchans", [f"guild_id:{guild_id}", f"name:{name}"], [("channel", value)])
                     return await ctx.send(f"{author.mention} {name} channel/category set!")
 

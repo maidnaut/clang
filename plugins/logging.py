@@ -24,7 +24,7 @@ class LoggingCog(commands.Cog):
         
         channel = self.bot.get_channel(joinlog)
 
-        if channel not "":
+        if channel is not "":
             embed = discord.Embed(
                 title="🎉 Member Joined",
                 description=f"{member.mention} {member.name}",
@@ -41,7 +41,7 @@ class LoggingCog(commands.Cog):
         
         channel = self.bot.get_channel(joinlog)
 
-        if channel not "":
+        if channel is not "":
             embed = discord.Embed(
                 title="👋 Member Left",
                 description=f"{member.mention} {member.name}",
@@ -61,7 +61,7 @@ class LoggingCog(commands.Cog):
         
         channel = self.bot.get_channel(logs)
 
-        if channel not "":
+        if channel is not "":
             embed = discord.Embed(
                 title="Message Edited",
                 description=f"**Author:** {before.author.mention}\n**Channel:** {before.channel.mention}",
@@ -85,7 +85,7 @@ class LoggingCog(commands.Cog):
             botlogs = await get_channel(ctx.guild.id, "botlogs")
             channel = self.bot.get_channel(botlogs)
 
-            if channel not "":
+            if channel is not "":
                 embed = discord.Embed(
                     title="Bot Message Deletion",
                     description=f"**Channel:** {message.channel.mention}\n**Content:** {message.content[:2000]}",
@@ -99,7 +99,7 @@ class LoggingCog(commands.Cog):
             logs = await get_channel(ctx.guild.id, "logs")
             channel = self.bot.get_channel(logs)
 
-            if channel not "":
+            if channel is not "":
                 embed = discord.Embed(
                     title="Message Deleted",
                     description=f"**Author:** {message.author.mention}\n**Channel:** {message.channel.mention}",

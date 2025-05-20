@@ -113,7 +113,7 @@ class LoggingCog(commands.Cog):
                 color=discord.Color.purple() if is_tupper else discord.Color.red(),
             )
 
-            embed.set_thumbnail(url=before.author.avatar.url if before.author.avatar else None)
+            embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
             embed.add_field(name="", value=f"{f'Tupperbox deleted a message by {message.author.mention}' if is_tupper else f'{message.author.mention} deleted a message'} in {message.channel.mention}", inline=False)
             embed.add_field(name="", value=f"**Message Link:** [Jump to Message]({message.jump_url})", inline=False)
             embed.add_field(name="", value=f"{message.content[:2000] or '*[No content]*'}", inline=False)

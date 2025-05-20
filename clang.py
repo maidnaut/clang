@@ -6,7 +6,7 @@ from rich.console import Console
 from inc.terminal import ClangShell
 from inc.utils import *
 
-version = "0.4.1b"
+version = "0.5b"
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -241,15 +241,16 @@ async def install(guild_id, guild_name):
         print("[bold green][✔][/bold green] Default random chance of cookie drops set to 1 in 100 messages.")
         await random_decimal_sleep(0, 0.3)
 
-        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "ticket_category", ""])
         db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "joinlog", ""])
-        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "logs", ""])
         db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "modlog", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "logs", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "botlogs", ""])
         db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "ticketlog", ""])
-        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "admin_ticketlog", ""])
-        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "jail_category", ""])
         db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "jaillog", ""])
-        print("[bold green][✔][/bold green] Logging channels registered.")
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "ticket_category", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "jail_category", ""])
+        db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, "mod_category", ""])
+        print("[bold green][✔][/bold green] Channels registered.")
         await random_decimal_sleep(0, 0.3)
 
         db_insert("config", ["guild_id", "name", "enabled"], [guild_id, "elevation_enabled", "y"])

@@ -190,3 +190,22 @@ async def get_user(ctx, user_id):
             return
 
     return user
+
+# Check ping status
+async def check_pings(ctx):
+
+    user_id = ctx.user.id
+    guild_id = ctx.guild.id
+    check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id":{user_id}])
+
+    ping = True
+    if result:
+        if check_row[0][3] == "on":
+            ping = True
+        else:
+            ping = False
+    
+    if ping == True:
+        return f"{ctx.author.mention} "
+    else:
+        return ""

@@ -69,7 +69,7 @@ class SettingsCog(commands.Cog):
     async def setping(self, ctx, status: str = None):
 
         guild_id = ctx.guild.id
-        user_id = ctx.user.id
+        user_id = ctx.author.id
 
         if status == None:
             return await ctx.send(f"{check_pings(ctx)}Please supply a valid argument: `!ping [on, off]`")

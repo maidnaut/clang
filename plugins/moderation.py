@@ -620,7 +620,7 @@ class ModerationCog(commands.Cog):
 
     # !mute
     @commands.command()
-    async def mute(self, ctx, user_str: str = None, time: str = None, reason: str = None):
+    async def mute(self, ctx, user_str: str = None, time: str = None, reason: typing.Optional[str] = None):
 
         # No perms
         user_level = await get_level(ctx)
@@ -632,8 +632,11 @@ class ModerationCog(commands.Cog):
             if user_level in [2, 4]:
                 return await ctx.send("!op?")
 
-        # User not supplied
-        if user_str is None or time is None or reason is None:
+        if reason is None:
+            reason = "None provided"
+
+        # Args not supplied
+        if user_str is None or time is None:
             return await ctx.send(f"{ctx.author.mention} Usage: ``!mute <user> <time/off> <reason>")
 
         # Find user

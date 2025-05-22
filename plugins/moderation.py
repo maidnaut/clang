@@ -38,7 +38,7 @@ class ModerationCog(commands.Cog):
             },
             "silentwarn": {
                 "args": "<user> <reason>",
-                "desc": "Silently issues a warning to a user without a dm.",
+                "desc": "(Alias: !addnote) Silently issues a warning to a user without a dm.",
                 "perm": ["submod", "mod", "admin"]
             },
             "delwarn": {
@@ -63,9 +63,14 @@ class ModerationCog(commands.Cog):
             },
             "slowmode": {
                 "args": "<time>",
-                "desc": "Sets the slowmode for the current channel. Takes s/m/d for time, and accepts 0 or off to disable.",
+                "desc": "(Alias: !slow) Sets the slowmode for the current channel. Takes s/m/d for time, and accepts 0 or off to disable.",
                 "perm": ["submod", "mod", "admin"]
             },
+            "timeout": {
+                "args": "<user> <time> <reason:optional>",
+                "desc": "(Alias: !mute) Times out a user for the set amount of time, dming them the reason",
+                "perm": ["submod", "mod", "admin"]
+            }
         }
 
         # Ensure our tables exist
@@ -241,7 +246,7 @@ class ModerationCog(commands.Cog):
         await self._handle_warning(ctx, user, reason, silent=False)
 
     # !silentwarn
-    @commands.command()
+    @commands.command(aliases=['addnote'])
     async def silentwarn(self, ctx, user: str = None, *, reason: str = None):
         await self._handle_warning(ctx, user, reason, silent=True)
 
@@ -548,7 +553,7 @@ class ModerationCog(commands.Cog):
 
 
     # !slowmode
-    @commands.command()
+    @commands.command(aliases=['slow'])
     async def slowmode(self, ctx, time: str = None):
 
         # No perms
@@ -617,7 +622,7 @@ class ModerationCog(commands.Cog):
 
 
     # !mute
-    @commands.command()
+    @commands.command(aliases=['timeout'])
     async def mute(self, ctx, user_str: str = None, time: str = None, reason: typing.Optional[str] = None):
 
         # No perms
@@ -649,7 +654,7 @@ class ModerationCog(commands.Cog):
         # Turn mute off
         if time == "off":
             await user.timeout_for(datetime.timedelta(seconds=0), reason="Unmuted")
-            await ctx.send(f"{ctx.author.mention} {user} unmuted.")
+            await ctx.send(f"{ctx.author.mention} {user.mention} unmuted.")
             return
 
         # Time is an int, interpret as seconds

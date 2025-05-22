@@ -719,6 +719,6 @@ class ModerationCog(commands.Cog):
                 dm_status = " (DM failed)"
 
         # Do the thingy
-        await user.timeout_for(seconds, reason=reason)
+        await user.timeout_for(time, reason=reason)
 
         await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {display}.{dm_status}")

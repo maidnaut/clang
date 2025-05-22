@@ -402,7 +402,7 @@ class JailCog(commands.Cog):
         zip_discord_file = discord.File(zip_buffer, filename=f"{target_channel.name}_attachments.zip")
 
         # Post the log
-        log_channel = await get_channel(ctx.guild.id, "log_channel")
+        log_channel = await get_channel(ctx.guild.id, "jaillog")
         if log_channel:
             await log_channel.send(f"Jail log from {target_channel.name}:", file=log_file)
             if attachments:

@@ -618,9 +618,9 @@ class ModerationCog(commands.Cog):
 
 
 
-    # !timeout
+    # !mute
     @commands.command()
-    async def timeout(self, ctx, user_str: str = None, time: str = None, reason: str = None):
+    async def mute(self, ctx, user_str: str = None, time: str = None, reason: str = None):
 
         # No perms
         user_level = await get_level(ctx)
@@ -633,9 +633,8 @@ class ModerationCog(commands.Cog):
                 return await ctx.send("!op?")
 
         # User not supplied
-        if user_str is None or not time is None or not reason is None:
+        if user_str is None or time is None or reason is None:
             return await ctx.send(f"{ctx.author.mention} Usage: ``!mute <user> <time/off> <reason>")
-
 
         # Find user
         try:
@@ -648,7 +647,7 @@ class ModerationCog(commands.Cog):
 
         # Turn mute off
         if time == "off":
-            await ctx.channel.edit(slowmode_delay=0)
+            user.timeout_for(0, "Unmuted")
             await ctx.send(f"{ctx.author.mention} {user} unmuted.")
             return
 

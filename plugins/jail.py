@@ -373,7 +373,7 @@ class JailCog(commands.Cog):
         log_lines = []
         attachments = []
 
-        # Grab all the attatchments
+        # Gather all the messages and attachments
         for msg in messages:
             timestamp = self.format_date(msg.created_at)
             author = str(msg.author)
@@ -384,16 +384,9 @@ class JailCog(commands.Cog):
             for embed in msg.embeds:
                 log_lines.append(f"{timestamp} - {author} [sent an embed]")
             for attachment in msg.attachments:
-                try:
-                    # Buffer it instead of grabbing it directly
-                    buffer = io.BytesIO()
-                    await attachment.save(buffer)
-                    unique_name = f"{msg.id}_{attachment.filename}"
-                    attachments.append((unique_name, buffer.getvalue()))
-                    log_lines.append(f"{timestamp} - {author} [sent an attachment]")
-                except Exception as e:
-                    print(f"Failed to save attachment {attachment.filename}: {str(e)}")
-                    log_lines.append(f"{timestamp} - {author} [FAILED to save attachment: {attachment.filename}]")
+                unique_name = f"{msg.id}_{attachment.filename}"
+                attachments.append((unique_name, await attachment.read()))
+                log_lines.append(f"{timestamp} - {author} [sent an attatchment]")
 
         # Create the log text file
         log_text = "\n".join(log_lines)

@@ -623,7 +623,7 @@ class ModerationCog(commands.Cog):
 
     # !mute
     @commands.command(aliases=['timeout'])
-    async def mute(self, ctx, user_str: str = None, time: str = None, reason: typing.Optional[str] = None):
+    async def mute(self, ctx, user_str: str = None, time: str = None, *, reason: typing.Optional[str] = None):
 
         # No perms
         user_level = await get_level(ctx)
@@ -659,8 +659,8 @@ class ModerationCog(commands.Cog):
 
         # Time is an int, interpret as seconds
         if time.isdigit():
-            time = int(time)
-            if time > 21600:
+            seconds = int(time)
+            if seconds > 21600:
                 return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
             else:
                 duration = datetime.timedelta(seconds=seconds)

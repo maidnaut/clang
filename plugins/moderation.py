@@ -446,7 +446,7 @@ class ModerationCog(commands.Cog):
         if not user_str or not reason:
             return await ctx.send(f"{ctx.author.mention} Usage: `!unban <user> <reason>`")
 
-        # Fffind user
+        # Find user
         try:
             user = await commands.MemberConverter().convert(ctx, user_str)
         except commands.MemberNotFound:
@@ -614,3 +614,111 @@ class ModerationCog(commands.Cog):
 
         await ctx.send(f"{ctx.author.mention} Slowmode set to {display}.")
 
+
+
+
+
+    # !timeout
+    @commands.command()
+    async def timeout(self, ctx, user_str: str = None, time: str = None, reason: str = None):
+
+        # No perms
+        user_level = await get_level(ctx)
+        if user_level < 2:
+            return
+
+        elev = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled"])
+        if elev and elev[0][3] == "y":
+            if user_level in [2, 4]:
+                return await ctx.send("!op?")
+
+        # User not supplied
+        if user_str is None or not time is None or not reason is None:
+            return await ctx.send(f"{ctx.author.mention} Usage: ``!mute <user> <time/off> <reason>")
+
+
+        # Find user
+        try:
+            user = await commands.MemberConverter().convert(ctx, user_str)
+        except commands.MemberNotFound:
+            try:
+                user = await commands.UserConverter().convert(ctx, user_str)
+            except commands.UserNotFound:
+                return await ctx.send(f"{ctx.author.mention} Couldn't find `{user_str}`")
+
+        # Turn mute off
+        if time == "off":
+            await ctx.channel.edit(slowmode_delay=0)
+            await ctx.send(f"{ctx.author.mention} {user} unmuted.")
+            return
+
+        # Time is an int, interpret as seconds
+        if time.isdigit():
+            time = int(time)
+            if time > 21600:
+                return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
+            else:
+                user.timeout_for(time, reason)
+                await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {time} second(s).")
+                return
+
+        # Pattern match for s/d/h
+        match = re.match(r"^(\d+)([smh])$", time.strip().lower())
+        if not match:
+            return await ctx.send(f"{ctx.author.mention} Invalid format. Use like ``!mute <user> <time> (10s``, ``5m``, ``1h``), <reason>")
+        
+        value, unit = match.groups()
+        value = int(value)
+
+        if unit == 's':
+            seconds = value
+        elif unit == 'm':
+            seconds = value * 60
+        elif unit == 'h':
+            seconds = value * 3600
+
+        if seconds > 21600:
+            return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
+
+        # Do the thingy
+        user.timeout_for(seconds, reason)
+
+        # trim the .0
+        if unit == 's':
+            display = f"{value} second(s)"
+        elif unit == 'm':
+            display = f"{value} minute(s)"
+        elif unit == 'h':
+            display = f"{value} hour(s)"
+
+        # Modlog embed
+        modlog = await get_channel(ctx.guild.id, "modlog")
+        if modlog:
+            embed = discord.Embed(color=discord.Color.purple(), title="User Muted")
+            if getattr(user, "avatar", None):
+                embed.set_thumbnail(url=user.avatar.url)
+            embed.add_field(name="User",   value=user.mention,       inline=True)
+            embed.add_field(name="Mod",    value=ctx.author.mention, inline=True)
+            embed.add_field(name="Duration", value=display,          inline=False)
+            embed.add_field(name="Reason", value=reason,             inline=False)
+            await modlog.send(embed=embed)
+
+        # Send the DM
+        dm_status = ""
+        if not user.bot and not silent:
+            try:
+                dm_embed = discord.Embed(
+                    title=f"You were muted in {ctx.guild.name} for {display}",
+                    color=discord.Color.purple(),
+                    description=(
+                        f"**Reason:** {reason}\n\n"
+                    )
+                )
+                dm_embed.set_thumbnail(url=ctx.guild.icon.url if ctx.guild.icon else "")
+                await user.send(embed=dm_embed)
+            except discord.Forbidden:
+                dm_status = " (Couldn't DM user)"
+            except Exception as e:
+                dm_status = " (DM failed)"
+
+        await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {display}.{dm_status}")

@@ -373,7 +373,7 @@ class JailCog(commands.Cog):
         log_lines = []
         attachments = []
 
-        # Gather all the messages and attachments
+        # Grab all the attatchments
         for msg in messages:
             timestamp = self.format_date(msg.created_at)
             author = str(msg.author)
@@ -384,31 +384,78 @@ class JailCog(commands.Cog):
             for embed in msg.embeds:
                 log_lines.append(f"{timestamp} - {author} [sent an embed]")
             for attachment in msg.attachments:
-                unique_name = f"{msg.id}_{attachment.filename}"
-                attachments.append((unique_name, await attachment.read()))
-                log_lines.append(f"{timestamp} - {author} [sent an attatchment]")
+                try:
+                    # Buffer it instead of grabbing it directly
+                    buffer = io.BytesIO()
+                    await attachment.save(buffer)
+                    unique_name = f"{msg.id}_{attachment.filename}"
+                    attachments.append((unique_name, buffer.getvalue()))
+                    log_lines.append(f"{timestamp} - {author} [sent an attachment]")
+                except Exception as e:
+                    print(f"Failed to save attachment {attachment.filename}: {str(e)}")
+                    log_lines.append(f"{timestamp} - {author} [FAILED to save attachment: {attachment.filename}]")
 
-        # Create the log text file
         log_text = "\n".join(log_lines)
         log_file = discord.File(fp=io.BytesIO(log_text.encode()), filename=f"{target_channel.name}.txt")
 
-        # Zip the attachments
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-            for filename, data in attachments:
-                zip_file.writestr(filename, data)
-        zip_buffer.seek(0)
+        # Limit file size
+        MAX_ZIP_SIZE = 8 * 1024 * 1024
+        zip_parts = []
+        
+        # Create the zip
+        if attachments:
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                for filename, data in attachments:
+                    zip_info = zipfile.ZipInfo(filename)
+                    zip_info.compress_type = zipfile.ZIP_DEFLATED
+                    zip_file.writestr(zip_info, data)
+            
+            zip_buffer.seek(0)
+            zip_data = zip_buffer.getvalue()
+            
+            # Split zip if too big
+            if len(zip_data) > MAX_ZIP_SIZE:
+                chunk_size = MAX_ZIP_SIZE - 1024
+                for i in range(0, len(zip_data), chunk_size):
+                    part_buffer = io.BytesIO(zip_data[i:i+chunk_size])
+                    part_file = discord.File(
+                        part_buffer,
+                        filename=f"{target_channel.name}_attachments_part_{i//chunk_size + 1}.zip"
+                    )
+                    zip_parts.append(part_file)
+            else:
+                zip_parts.append(discord.File(
+                    io.BytesIO(zip_data),
+                    filename=f"{target_channel.name}_attachments.zip"
+                ))
 
-        zip_discord_file = discord.File(zip_buffer, filename=f"{target_channel.name}_attachments.zip")
-
-        # Post the log
         log_channel = await get_channel(ctx.guild.id, "log_channel")
         if log_channel:
-            await log_channel.send(f"Jail log from {target_channel.name}:", file=log_file)
-            if attachments:
-                await log_channel.send(f"All attachments from {target_channel.name}:", file=zip_discord_file)
+            max_retries = 3
+            try:
+                # Send log
+                await log_channel.send(f"Jail log from {target_channel.name}:", file=log_file)
+                
+                # Send attachments with error reporting
+                if zip_parts:
+                    for part in zip_parts:
+                        for attempt in range(max_retries):
+                            try:
+                                await log_channel.send(
+                                    f"Attachments from {target_channel.name} (Part {zip_parts.index(part)+1}):",
+                                    file=part
+                                )
+                                break
+                            except discord.HTTPException as e:
+                                if attempt == max_retries - 1:
+                                    print(f"Failed to send zip part after {max_retries} attempts: {e}")
+                                else:
+                                    await asyncio.sleep(2 ** attempt)
+            except Exception as e:
+                await ctx.send(f"{ctx.author.mention} Logging failed -  {str(e)}")
 
-        # Baleet channel
+        # Delete the channel
         await target_channel.delete()
 
         if where == "out":

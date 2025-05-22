@@ -704,7 +704,7 @@ class ModerationCog(commands.Cog):
 
         # Send the DM
         dm_status = ""
-        if not user.bot and not silent:
+        if not user.bot:
             try:
                 dm_embed = discord.Embed(
                     title=f"You were muted in {ctx.guild.name} for {display}",

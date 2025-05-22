@@ -648,7 +648,7 @@ class ModerationCog(commands.Cog):
 
         # Turn mute off
         if time == "off":
-            user.timeout_for(0, reason="Unmuted")
+            await user.timeout_for(0, reason="Unmuted")
             await ctx.send(f"{ctx.author.mention} {user} unmuted.")
             return
 
@@ -658,7 +658,7 @@ class ModerationCog(commands.Cog):
             if time > 21600:
                 return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
             else:
-                user.timeout_for(time, reason=reason)
+                await user.timeout_for(time, reason=reason)
                 await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {time} second(s).")
                 return
 
@@ -679,9 +679,6 @@ class ModerationCog(commands.Cog):
 
         if seconds > 21600:
             return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
-
-        # Do the thingy
-        user.timeout_for(seconds, reason=reason)
 
         # trim the .0
         if unit == 's':
@@ -720,5 +717,8 @@ class ModerationCog(commands.Cog):
                 dm_status = " (Couldn't DM user)"
             except Exception as e:
                 dm_status = " (DM failed)"
+
+        # Do the thingy
+        await user.timeout_for(seconds, reason=reason)
 
         await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {display}.{dm_status}")

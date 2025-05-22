@@ -646,6 +646,24 @@ class ModerationCog(commands.Cog):
             except commands.UserNotFound:
                 return await ctx.send(f"{ctx.author.mention} Couldn't find `{user_str}`")
 
+        # Turn mute off
+        if time == "off":
+            await user.timeout_for(datetime.timedelta(seconds=0), reason="Unmuted")
+            await ctx.send(f"{ctx.author.mention} {user} unmuted.")
+            return
+
+        # Time is an int, interpret as seconds
+        if time.isdigit():
+            time = int(time)
+            if time > 21600:
+                return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
+            else:
+                duration = datetime.timedelta(seconds=seconds)
+                display = f"{seconds} second(s)"
+                await user.timeout_for(duration, reason=reason)
+                await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {display}.")
+                return
+
         # Pattern match for s/d/h
         match = re.match(r"^(\d+)([smh])$", time.strip().lower())
         if not match:
@@ -671,22 +689,6 @@ class ModerationCog(commands.Cog):
             display = f"{value} minute(s)"
         elif unit == 'h':
             display = f"{value} hour(s)"
-
-        # Turn mute off
-        if time == "off":
-            await user.timeout_for(0, reason="Unmuted")
-            await ctx.send(f"{ctx.author.mention} {user} unmuted.")
-            return
-
-        # Time is an int, interpret as seconds
-        if time.isdigit():
-            time = int(time)
-            if time > 21600:
-                return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
-            else:
-                await user.timeout_for(seconds, reason=reason)
-                await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {time} second(s).")
-                return
 
         # Modlog embed
         modlog = await get_channel(ctx.guild.id, "modlog")
@@ -719,6 +721,7 @@ class ModerationCog(commands.Cog):
                 dm_status = " (DM failed)"
 
         # Do the thingy
-        await user.timeout_for(seconds, reason=reason)
+        duration = datetime.timedelta(seconds=seconds)
+        await user.timeout_for(duration, reason=reason)
 
         await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {display}.{dm_status}")

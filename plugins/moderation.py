@@ -652,7 +652,7 @@ class ModerationCog(commands.Cog):
                 return await ctx.send(f"{ctx.author.mention} Couldn't find `{user_str}`")
 
         # Turn mute off
-        if time == "off":
+        if time == "off" or time == "0":
             await user.timeout_for(datetime.timedelta(seconds=0), reason="Unmuted")
             await ctx.send(f"{ctx.author.mention} {user.mention} unmuted.")
             return

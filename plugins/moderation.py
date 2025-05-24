@@ -641,7 +641,7 @@ class ModerationCog(commands.Cog):
 
         # PURGEBAN
         try:
-            await ctx.guild.ban(user, reason=reason, delete_message_days=7)
+            await ctx.guild.ban(user, reason=reason, delete_message_seconds=604800)
         except discord.Forbidden:
             return await ctx.send(f"{ctx.author.mention} Missing ban permissions")
         except discord.HTTPException as e:

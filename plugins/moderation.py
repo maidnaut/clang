@@ -660,7 +660,7 @@ class ModerationCog(commands.Cog):
             await modlog.send(embed=embed)
 
         await ctx.send(
-            f"{ctx.author.mention} - {user.mention} was purge banned with {total_deleted} total messages purged."
+            f"{ctx.author.mention} - {user.mention} was purge banned with all messages from the last 7 days deleted."
         )
 
 

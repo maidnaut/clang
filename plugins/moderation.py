@@ -554,14 +554,22 @@ class ModerationCog(commands.Cog):
 
     # !purge
     @commands.command()
-    async def purge(self, ctx, user_str: str = None):
+    async def purge(self, ctx, user_str: str = None, amount: str = None):
         user_level = await get_level(ctx)
         if user_level < 2:
             return
 
         # No user supplied
         if user_str == None:
-            return await ctx.send(f"{ctx.author.mention} Supply a user: `!purge <user>")
+            return await ctx.send(f"{ctx.author.mention} Supply a user: `!purge <user> <amount>`")
+
+        if amount == None:
+            return await ctx.send(f"{ctx.author.mention} Supply an amount: `!purge <user> <amount>`")
+        
+        amount = int(amount)
+
+        if amount > 100:
+            return await ctx.send(f"{ctx.author.mention} Max message deletion is 100: `!purge <user> <amount>`")
 
         # Find user
         try:
@@ -581,11 +589,22 @@ class ModerationCog(commands.Cog):
         def check(m): return m.author.id == user.id and m.id < ctx.message.id
 
         while True:
-            deleted = await ctx.channel.purge(limit=100, check=check, before=ctx.message)
+            deleted = await ctx.channel.purge(limit=amount, check=check, before=ctx.message)
             count = len(deleted)
             total_deleted += count
-            if count < 100:
+            if count < amount:
                 break
+
+        # Post to modlog
+        modlog = await get_channel(guild.id, "modlog")
+        if modlog:
+            embed = discord.Embed(color=discord.Color.purple(), title=f"{total_deleted} messages purged")
+            if user.avatar:
+                embed.set_thumbnail(url=user.avatar.url)
+            embed.add_field(name="User",   value=user.mention,      inline=True)
+            embed.add_field(name="Mod",    value=self.bot.user.name,           inline=True)
+            embed.add_field(name="Channel", value=f"{ctx.channel}", inline=False)
+            await modlog.send(embed=embed)
 
         msg = await ctx.send(f"{ctx.author.mention} Purged {total_deleted} messages from {user.mention}")
 

@@ -255,7 +255,7 @@ class ModerationCog(commands.Cog):
     async def delwarn(self, ctx, user_str: str = None, id: str = None):
 
         user_level = await get_level(ctx)
-        if user_level < 1:
+        if user_level < 2:
             return
 
         if user_level not in (3, 5): # Op or Root
@@ -302,7 +302,7 @@ class ModerationCog(commands.Cog):
     async def clear(self, ctx, user_str: str = None):
 
         user_level = await get_level(ctx)
-        if user_level < 1:
+        if user_level < 2:
             return
 
         if user_level not in (3, 5): # Op or Root
@@ -350,7 +350,7 @@ class ModerationCog(commands.Cog):
     @commands.command()
     async def ban(self, ctx, user_str: str = None, *, args: str = None):
         user_level = await get_level(ctx)
-        if user_level < 1:
+        if user_level < 2:
             return
 
         if not user_str or not args:
@@ -443,7 +443,7 @@ class ModerationCog(commands.Cog):
     @commands.command()
     async def unban(self, ctx, user_str: str = None, *, reason: str = None):
         user_level = await get_level(ctx)
-        if user_level < 1:
+        if user_level < 2:
             return
 
         if not user_str or not reason:
@@ -547,6 +547,133 @@ class ModerationCog(commands.Cog):
                 embed.add_field(name="Mod",    value=self.bot.user.name,           inline=True)
                 embed.add_field(name="Reason", value="Ban timer expired", inline=False)
                 await modlog.send(embed=embed)
+
+
+
+
+
+    # !purge
+    @commands.command()
+    async def purge(self, ctx, user_str: str = None):
+        user_level = await get_level(ctx)
+        if user_level < 2:
+            return
+
+        # No user supplied
+        if usr_str == None:
+            return await ctx.send(f"{ctx.author.mention} Supply a user: `!purge <user>")
+
+        # Find user
+        try:
+            user = await commands.MemberConverter().convert(ctx, user_str)
+        except commands.MemberNotFound:
+            try:
+                user = await commands.UserConverter().convert(ctx, user_str)
+            except commands.UserNotFound:
+                return await ctx.send(f"{ctx.author.mention} Couldn't find user `{user_str}`")
+
+        # Check permissions
+        if not ctx.channel.permissions_for(ctx.guild.me).manage_messages:
+            return await ctx.send(f"{ctx.author.mention} I need `Manage Messages` permission")
+
+        # Purge messages in batches
+        total_deleted = 0
+        def check(m): return m.author.id == user.id and m.id < ctx.message.id
+
+        while True:
+            deleted = await ctx.channel.purge(limit=100, check=check, before=ctx.message)
+            count = len(deleted)
+            total_deleted += count
+            if count < 100:
+                break
+
+        msg = await ctx.send(f"{ctx.author.mention} Purged {total_deleted} messages from {user.mention}")
+        await msg.delete(delay=5)
+
+
+
+
+
+    # !purgeban
+    @commands.command()
+    async def purgeban(self, ctx, user_str: str = None, *, reason: str = None):
+        user_level = await get_level(ctx)
+        if user_level < 2:
+            return
+
+        if not user_str:
+            return await ctx.send(f"{ctx.author.mention} Usage: `!purgeban <user> <reason>`")
+
+        if not reason:
+            reason = "No reason provided. Likely spam."
+
+        # Find user
+        try:
+            user = await commands.MemberConverter().convert(ctx, user_str)
+        except commands.MemberNotFound:
+            try:
+                user = await commands.UserConverter().convert(ctx, user_str)
+            except commands.UserNotFound:
+                return await ctx.send(f"{ctx.author.mention} Couldn't find user `{user_str}`")
+
+        # Purge messages
+        total_deleted = 0
+        if ctx.channel.permissions_for(ctx.guild.me).manage_messages:
+            def check(m): return m.author.id == user.id and m.id < ctx.message.id
+            
+            while True:
+                deleted = await ctx.channel.purge(limit=100, check=check, before=ctx.message)
+                total_deleted += len(deleted)
+                if len(deleted) < 100:
+                    break
+
+        # Ban
+        try:
+            existing_ban = await ctx.guild.fetch_ban(user)
+            if existing_ban:
+                return await ctx.send(f"{ctx.author.mention} User already banned! Run !purge instead.")
+        except discord.NotFound:
+            pass
+        except discord.Forbidden:
+            return await ctx.send(f"{ctx.author.mention} Can't check bans!")
+        except discord.HTTPException as e:
+            return await ctx.send(f"{ctx.author.mention} Error checking bans: {e}")
+
+        # Add note
+        now = datetime.datetime.now()
+        ban_note = f"**PURGE BANNED**: {reason}"
+        
+        last_warn = db_read("warnings", [f"user_id:{user.id}", f"guild_id:{ctx.guild.id}"])
+        warn_id = int(last_warn[-1][3]) + 1 if last_warn else 1
+        
+        db_insert("warnings",
+            ["guild_id", "user_id", "warn_id", "reason", "moderator_id", "warn_date"],
+            [ctx.guild.id, user.id, warn_id, ban_note, ctx.author.id, now]
+        )
+
+        # Do the ban
+        try:
+            await ctx.guild.ban(user, reason=reason, delete_message_days=0)
+        except discord.Forbidden:
+            return await ctx.send(f"{ctx.author.mention} Missing ban permissions")
+        except discord.HTTPException as e:
+            return await ctx.send(f"{ctx.author.mention} Ban failed: {e}")
+
+        # Modlog embed
+        modlog = await get_channel(ctx.guild.id, "modlog")
+        if modlog:
+            embed = discord.Embed(color=discord.Color.darkred(), title="PURGE BAN")
+            if getattr(user, "avatar", None):
+                embed.set_thumbnail(url=user.avatar.url)
+            embed.add_field(name="User",   value=user.mention, inline=True)
+            embed.add_field(name="Mod",    value=ctx.author.mention, inline=True)
+            embed.add_field(name="Reason", value=reason, inline=False)
+            
+            await modlog.send(embed=embed)
+
+        await ctx.send(
+            f"{ctx.author.mention} - {user.mention} was purge banned with {total_deleted} total messages purged."
+        )
 
 
 

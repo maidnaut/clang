@@ -584,15 +584,18 @@ class ModerationCog(commands.Cog):
         if not ctx.channel.permissions_for(ctx.guild.me).manage_messages:
             return await ctx.send(f"{ctx.author.mention} I need `Manage Messages` permission")
 
-        # Purge messages in batches
+        # Purge messages
         total_deleted = 0
+        remaining = amount
         def check(m): return m.author.id == user.id and m.id < ctx.message.id
 
-        while True:
-            deleted = await ctx.channel.purge(limit=amount, check=check, before=ctx.message)
+        while remaining > 0:
+            limit = min(remaining, 100)
+            deleted = await ctx.channel.purge(limit=limit, check=check, before=ctx.message)
             count = len(deleted)
             total_deleted += count
-            if count < amount:
+            remaining -= count
+            if count == 0:
                 break
 
         # Post to modlog

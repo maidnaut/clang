@@ -588,7 +588,6 @@ class ModerationCog(commands.Cog):
                 break
 
         msg = await ctx.send(f"{ctx.author.mention} Purged {total_deleted} messages from {user.mention}")
-        await msg.delete(delay=5)
 
 
 

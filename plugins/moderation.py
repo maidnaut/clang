@@ -56,9 +56,19 @@ class ModerationCog(commands.Cog):
                 "desc": "Bans a user from the server and dm's them the reason. If no time is provided, time will default to permanent",
                 "perm": ["mod", "admin"]
             },
+            "purgeban": {
+                "args": "<user> <reason>",
+                "desc": "Bans a user from the server and deletes up to 7 days worth of messages",
+                "perm": ["mod", "admin"]
+            },
             "unban": {
                 "args": "<user> <reason>",
                 "desc": "Unbans the user from the server.",
+                "perm": ["mod", "admin"]
+            },
+            "purge": {
+                "args": "<user> <amount>",
+                "desc": "Deletes up to 100 messages from the user in the channel the command is run",
                 "perm": ["mod", "admin"]
             },
             "slowmode": {

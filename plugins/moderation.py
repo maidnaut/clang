@@ -661,7 +661,7 @@ class ModerationCog(commands.Cog):
         # Modlog embed
         modlog = await get_channel(ctx.guild.id, "modlog")
         if modlog:
-            embed = discord.Embed(color=discord.Color.darkred(), title="PURGE BAN")
+            embed = discord.Embed(color=discord.Color.red(), title="PURGE BAN")
             if getattr(user, "avatar", None):
                 embed.set_thumbnail(url=user.avatar.url)
             embed.add_field(name="User",   value=user.mention, inline=True)

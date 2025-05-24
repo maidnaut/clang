@@ -652,7 +652,7 @@ class ModerationCog(commands.Cog):
 
         # Do the ban
         try:
-            await ctx.guild.ban(user, reason=reason, delete_message_days=0)
+            await ctx.guild.ban(user, reason=reason)
         except discord.Forbidden:
             return await ctx.send(f"{ctx.author.mention} Missing ban permissions")
         except discord.HTTPException as e:

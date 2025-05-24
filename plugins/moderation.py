@@ -596,7 +596,7 @@ class ModerationCog(commands.Cog):
                 break
 
         # Post to modlog
-        modlog = await get_channel(guild.id, "modlog")
+        modlog = await get_channel(ctx.guild.id, "modlog")
         if modlog:
             embed = discord.Embed(color=discord.Color.purple(), title=f"{total_deleted} messages purged")
             if user.avatar:

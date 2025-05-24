@@ -615,17 +615,6 @@ class ModerationCog(commands.Cog):
             except commands.UserNotFound:
                 return await ctx.send(f"{ctx.author.mention} Couldn't find user `{user_str}`")
 
-        # Purge messages
-        total_deleted = 0
-        if ctx.channel.permissions_for(ctx.guild.me).manage_messages:
-            def check(m): return m.author.id == user.id and m.id < ctx.message.id
-            
-            while True:
-                deleted = await ctx.channel.purge(limit=100, check=check, before=ctx.message)
-                total_deleted += len(deleted)
-                if len(deleted) < 100:
-                    break
-
         # Ban
         try:
             existing_ban = await ctx.guild.fetch_ban(user)
@@ -650,9 +639,9 @@ class ModerationCog(commands.Cog):
             [ctx.guild.id, user.id, warn_id, ban_note, ctx.author.id, now]
         )
 
-        # Do the ban
+        # PURGEBAN
         try:
-            await ctx.guild.ban(user, reason=reason)
+            await ctx.guild.ban(user, reason=reason, delete_message_days=7)
         except discord.Forbidden:
             return await ctx.send(f"{ctx.author.mention} Missing ban permissions")
         except discord.HTTPException as e:

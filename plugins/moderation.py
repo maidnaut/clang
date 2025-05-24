@@ -606,7 +606,7 @@ class ModerationCog(commands.Cog):
                 embed.set_thumbnail(url=user.avatar.url)
             embed.add_field(name="User",   value=user.mention,      inline=True)
             embed.add_field(name="Mod",    value=ctx.author.mention,           inline=True)
-            embed.add_field(name="Channel", value=f"#{ctx.channel}", inline=False)
+            embed.add_field(name="Channel", value=f"{ctx.channel.mention}", inline=False)
             await modlog.send(embed=embed)
 
         msg = await ctx.send(f"{ctx.author.mention} Purged {total_deleted} messages from {user.mention}")

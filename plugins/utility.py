@@ -49,6 +49,11 @@ class UtilsCog(commands.Cog):
                 "args": "",
                 "desc": "Displays server data",
                 "perm": "everyone"
+            },
+            "source": {
+                "args": "",
+                "desc": "Github url",
+                "perm": "everyone"
             }
         }
 
@@ -62,6 +67,19 @@ class UtilsCog(commands.Cog):
                 ("moderator_id", "INTEGER"),
                 ("warn_date", "TEXT"),
             ])
+
+
+
+
+
+#################################################################################
+# !source
+#################################################################################
+
+    @commands.command()
+    async def source(self, ctx):
+        return await ctx.send("https://github.com/maidnaut/clang")
+
 
 
 

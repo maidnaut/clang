@@ -560,7 +560,7 @@ class ModerationCog(commands.Cog):
             return
 
         # No user supplied
-        if usr_str == None:
+        if user_str == None:
             return await ctx.send(f"{ctx.author.mention} Supply a user: `!purge <user>")
 
         # Find user

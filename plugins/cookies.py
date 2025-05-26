@@ -97,10 +97,10 @@ class CookieCog(commands.Cog):
                     return await ctx.guild.fetch_member(int(user_input))
             except discord.NotFound:
                 pass
-            await ctx.send(f"{author_ping(ctx)} I couldn't find user '{user_input}' in this server.")
+            await ctx.send(f"{await author_ping(ctx)} I couldn't find user '{user_input}' in this server.")
             return None
         except commands.BadArgument:
-            await ctx.send(f"{author_ping(ctx)} Invalid user format: {user_input}")
+            await ctx.send(f"{await author_ping(ctx)} Invalid user format: {user_input}")
             return None
 
     # !coomies
@@ -111,7 +111,7 @@ class CookieCog(commands.Cog):
 
         cookies = self.check_cookies(guild_id, user_id)
 
-        await ctx.send(f"{author_ping(ctx)} You have {cookies} cookies.\n-# Use ``!give <@user>``, or reply with the word thanks to give. Use ``!nom`` to eat one.")
+        await ctx.send(f"{await author_ping(ctx)} You have {cookies} cookies.\n-# Use ``!give <@user>``, or reply with the word thanks to give. Use ``!nom`` to eat one.")
 
     # !nom
     @commands.command()
@@ -122,17 +122,17 @@ class CookieCog(commands.Cog):
         cookies = self.check_cookies(guild_id, user_id)
 
         if cookies is None or cookies <= 0:
-            await ctx.send(f"{author_ping(ctx)} You don't have any cookies to eat!")
+            await ctx.send(f"{await author_ping(ctx)} You don't have any cookies to eat!")
             return
 
         db_update("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"], [("cookies", cookies - 1)])
-        await ctx.send(f"{author_ping(ctx)} You ate a cookie. You now have {cookies - 1} cookies.")
+        await ctx.send(f"{await author_ping(ctx)} You ate a cookie. You now have {cookies - 1} cookies.")
 
     # !give <user>
     @commands.command()
     async def give(self, ctx, user_input: str = None):
         if user_input is None:
-            return await ctx.send(f"{author_ping(ctx)} Please mention a user: `!give @user`")
+            return await ctx.send(f"{await author_ping(ctx)} Please mention a user: `!give @user`")
 
         member = await self.membercheck(ctx, user_input)
         if not member:
@@ -143,11 +143,11 @@ class CookieCog(commands.Cog):
         guild_id = str(ctx.guild.id)
 
         if sender_id == receiver_id:
-            return await ctx.send(f"{author_ping(ctx)} You can't send a cookie to yourself!")
+            return await ctx.send(f"{await author_ping(ctx)} You can't send a cookie to yourself!")
 
         sender_cookies = self.check_cookies(guild_id, sender_id)
         if sender_cookies < 1:
-            return await ctx.send(f"{author_ping(ctx)} You don't have any cookies to give!")
+            return await ctx.send(f"{await author_ping(ctx)} You don't have any cookies to give!")
 
         receiver_cookies = self.check_cookies(guild_id, receiver_id)
 
@@ -165,15 +165,15 @@ class CookieCog(commands.Cog):
     @commands.command()
     async def transfer(self, ctx, user_input: str = None, amount: str = None):
         if user_input is None or amount is None:
-            return await ctx.send(f"{author_ping(ctx)} Usage: `!transfer @user amount`")
+            return await ctx.send(f"{await author_ping(ctx)} Usage: `!transfer @user amount`")
 
         try:
             amount = int(amount)
         except ValueError:
-            return await ctx.send(f"{author_ping(ctx)} Please provide a valid amount.")
+            return await ctx.send(f"{await author_ping(ctx)} Please provide a valid amount.")
         
         if amount <= 0:
-            return await ctx.send(f"{author_ping(ctx)} Amount must be positive!")
+            return await ctx.send(f"{await author_ping(ctx)} Amount must be positive!")
 
         member = await self.membercheck(ctx, user_input)
         if not member:
@@ -185,7 +185,7 @@ class CookieCog(commands.Cog):
 
         sender_cookies = self.check_cookies(guild_id, sender_id)
         if sender_cookies < amount:
-            return await ctx.send(f"{author_ping(ctx)} You don't have enough cookies to transfer {amount}!")
+            return await ctx.send(f"{await author_ping(ctx)} You don't have enough cookies to transfer {amount}!")
 
         receiver_cookies = self.check_cookies(guild_id, receiver_id)
 
@@ -197,7 +197,7 @@ class CookieCog(commands.Cog):
                 [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], 
                 [("cookies", receiver_cookies + amount)])
 
-        await ctx.send(f"{author_ping(ctx)}Transferred {amount} cookies to {user_ping(ctx)}!")
+        await ctx.send(f"{await author_ping(ctx)}Transferred {amount} cookies to {await user_ping(ctx)}!")
 
     # !setrate <int>
     @commands.command()
@@ -212,11 +212,11 @@ class CookieCog(commands.Cog):
             return await ctx.send("!op?")
         
         if rate is None:
-            await ctx.send(f"{author_ping(ctx)} ``!setrate <int>``")
+            await ctx.send(f"{await author_ping(ctx)} ``!setrate <int>``")
             return
         
         if rate <= 0:
-            await ctx.send(f"{author_ping(ctx)} Rate must be positive!")
+            await ctx.send(f"{await author_ping(ctx)} Rate must be positive!")
             return
 
         guild_id = ctx.guild.id
@@ -224,7 +224,7 @@ class CookieCog(commands.Cog):
                 [f"guild_id:{guild_id}"], 
                 [("rate", rate)])
 
-        await ctx.send(f"Cookie drop rate set to 1 in {rate} messages.")
+        await ctx.send(f"{await author_ping(ctx)} Cookie drop rate set to 1 in {rate} messages.")
 
     # !airdrop <user> <int>
     @commands.command()
@@ -239,11 +239,11 @@ class CookieCog(commands.Cog):
             return await ctx.send("!op?")
         
         if user is None or amount is None:
-            await ctx.send(f"{author_ping(ctx)} ``!airdrop <@user> <int>``")
+            await ctx.send(f"{await author_ping(ctx)} ``!airdrop <@user> <int>``")
             return
         
         if amount <= 0:
-            await ctx.send(f"{author_ping(ctx)} Amount must be positive!")
+            await ctx.send(f"{await author_ping(ctx)} Amount must be positive!")
             return
 
         guild_id = ctx.guild.id
@@ -254,7 +254,7 @@ class CookieCog(commands.Cog):
                 [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
                 [("cookies", cookies + amount)])
 
-        await ctx.send(f"{author_ping(ctx)} Airdropped {amount} cookies to {user_ping(ctx)}! They now have {cookies + amount} cookies.")
+        await ctx.send(f"{await author_ping(ctx)} Airdropped {amount} cookies to {await user_ping(ctx)}! They now have {cookies + amount} cookies.")
 
     # Cookie drop & thanks
     @commands.Cog.listener()
@@ -333,9 +333,9 @@ class CookieCog(commands.Cog):
                             [("cookies", current + 1)])
                 
                 if len(thanked_users) == 1:
-                    await message.channel.send(f"{check_ping(thanked_users[0])} received a thank you cookie!")
+                    await message.channel.send(f"{await check_ping(thanked_users[0])} received a thank you cookie!")
                 else:
-                    names = ", ".join(u.mention for u in thanked_users[:-1]) + f" and {check_ping(thanked_users[-1])}"
+                    names = ", ".join(u.mention for u in thanked_users[:-1]) + f" and {await check_ping(thanked_users[-1])}"
                     await message.channel.send(f"{names} received thank you cookies!")
 
     @commands.command()
@@ -350,7 +350,7 @@ class CookieCog(commands.Cog):
         for i, cookie in enumerate(top_10, start=1):
             user = await get_user(ctx, cookie[2])
             if user != "N/A":
-                leaderboard += f"**#{i}** {user_ping(ctx)} - {cookie[3]}\n"
+                leaderboard += f"**#{i}** {await user_ping(ctx)} - {cookie[3]}\n"
 
         await ctx.send(embed=discord.Embed(
             title="Cookie Leaderboard",

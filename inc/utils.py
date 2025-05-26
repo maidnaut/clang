@@ -206,9 +206,9 @@ async def author_ping(ctx):
             ping = False
     
     if ping == True:
-        return f"{ctx.author.mention} "
+        return f"{ctx.author.mention}"
     else:
-        return f"{ctx.author.display_name} "
+        return f"{ctx.author.display_name}"
 
 # Check ping status
 async def user_ping(ctx):

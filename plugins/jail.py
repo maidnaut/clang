@@ -37,13 +37,19 @@ class JailCog(commands.Cog):
                 "desc": "Sends select user(s) to a private jail.",
                 "perm": ["submod", "mod", "admin"]
             },
+            "add": {
+                "args": "<user(s)> [#channel]",
+                "desc": "Adds the specified users to the jail channel.",
+                "perm": ["submod", "mod", "admin"]
+
+            },
             "release": {
-                "args": "<user(s)/all>",
+                "args": "<user(s)/all> [#channel]",
                 "desc": "Releases select user(s) from jail.",
                 "perm": ["submod", "mod", "admin"]
             },
             "close": {
-                "args": "",
+                "args": "[#channel]",
                 "desc": "Closes the jail and creates logs.",
                 "perm": ["submod", "mod", "admin"]
             },
@@ -85,7 +91,7 @@ class JailCog(commands.Cog):
                     members.append(member)
 
         if not members:
-            await ctx.send(f"{ctx.author.mention} Please mention at least one valid user or user ID. `!jail @user1 1234567890 ...`")
+            await ctx.send(f"{ctx.author.mention} Please mention at least one valid user or user ID. `!jail @user1 1234567890 ...`", silent=True)
             return
 
         # Get the roles
@@ -97,22 +103,22 @@ class JailCog(commands.Cog):
 
         jail_role_id = roles.get("jail")
         if not jail_role_id:
-            return await ctx.send(f"{ctx.author.mention} This server's roles aren't configured properly.")
+            return await ctx.send(f"{ctx.author.mention} This server's roles aren't configured properly.", silent=True)
 
         jail_role = ctx.guild.get_role(jail_role_id)
         if not jail_role:
-            return await ctx.send(f"{ctx.author.mention} Jail role is missing or misconfigured.")
+            return await ctx.send(f"{ctx.author.mention} Jail role is missing or misconfigured.", silent=True)
 
         for member in members:
             if jail_role not in member.roles:
                 await member.add_roles(jail_role)
 
-        await ctx.send(f"{ctx.author.mention} sent {', '.join(m.mention for m in members)} to jail!")
+        await ctx.send(f"{ctx.author.mention} sent {', '.join(m.mention for m in members)} to jail!", silent=True)
 
         # Check for jail category
         jail_category = await get_channel(ctx.guild.id, "jail_category")
         if not jail_category:
-            return await ctx.send(f"{ctx.author.mention} Jail category is missing or misconfigured.")
+            return await ctx.send(f"{ctx.author.mention} Jail category is missing or misconfigured.", silent=True)
 
         # Add role & update perms
         overwrites = {
@@ -156,7 +162,7 @@ class JailCog(commands.Cog):
             return
 
         mentions = ", ".join(m.mention for m in members)
-        await jail_channel.send(f"{mentions}, you have been jailed. Please wait for a staff member.")
+        await jail_channel.send(f"{mentions}, you have been jailed. Please wait for a staff member.", silent=True)
 
     # !add
     @commands.command()
@@ -168,7 +174,7 @@ class JailCog(commands.Cog):
             return
 
         if not args:
-            return await ctx.send(f"{ctx.author.mention} Usage: `!add <user1> <user2> ... [#jail-channel]`")
+            return await ctx.send(f"{ctx.author.mention} Usage: `!add <user1> <user2> ... [#jail-channel]`", silent=True)
 
         # Get the jail roles
         roles = {
@@ -179,11 +185,11 @@ class JailCog(commands.Cog):
 
         jail_role_id = roles.get("jail")
         if not jail_role_id:
-            return await ctx.send(f"{ctx.author.mention} Jail role is not configured.")
+            return await ctx.send(f"{ctx.author.mention} Jail role is not configured.", silent=True)
         
         jail_role = ctx.guild.get_role(jail_role_id)
         if not jail_role:
-            return await ctx.send(f"{ctx.author.mention} Jail role is missing or misconfigured.")
+            return await ctx.send(f"{ctx.author.mention} Jail role is missing or misconfigured.", silent=True)
 
         # Are we in or out of a jail?
         where = ""
@@ -199,10 +205,10 @@ class JailCog(commands.Cog):
                 user_args = args
                 where = "in"
             else:
-                return await ctx.send(f"{ctx.author.mention} You must specify a jail channel mention if not used in a jail channel.")
+                return await ctx.send(f"{ctx.author.mention} You must specify a jail channel mention if not used in a jail channel.", silent=True)
 
         if not target_channel or not isinstance(target_channel, discord.TextChannel):
-            return await ctx.send(f"{ctx.author.mention} Invalid jail channel.")
+            return await ctx.send(f"{ctx.author.mention} Invalid jail channel.", silent=True)
 
         # Parse the users
         members = []
@@ -217,7 +223,7 @@ class JailCog(commands.Cog):
                     members.append(member)
 
         if not members:
-            return await ctx.send(f"{ctx.author.mention} No valid users found.")
+            return await ctx.send(f"{ctx.author.mention} No valid users found.", silent=True)
 
         # Add the roles
         for member in members:
@@ -236,7 +242,7 @@ class JailCog(commands.Cog):
         await target_channel.send(f"{ctx.author.mention} added {mentions} to {potential_channel.mention}")
 
         if where == "out":
-            await ctx.send(f"{ctx.author.mention} Done.")
+            await ctx.send(f"{ctx.author.mention} Done.", silent=True)
 
     # !release command
     @commands.command(name="release")
@@ -258,11 +264,11 @@ class JailCog(commands.Cog):
 
         jail_role_id = roles.get("jail")
         if not jail_role_id:
-            return await ctx.send(f"{ctx.author.mention} Jail role is not configured.")
+            return await ctx.send(f"{ctx.author.mention} Jail role is not configured.", silent=True)
         
         jail_role = guild.get_role(jail_role_id)
         if not jail_role:
-            return await ctx.send(f"{ctx.author.mention} Jail role is missing or misconfigured.")
+            return await ctx.send(f"{ctx.author.mention} Jail role is missing or misconfigured.", silent=True)
 
         # Are we in our out of a jail?
         where = ""
@@ -277,10 +283,10 @@ class JailCog(commands.Cog):
                 user_args = args
                 where = "in"
             else:
-                return await ctx.send(f"{ctx.author.mention} You must use this in a jail channel or provide a jail channel mention.")
+                return await ctx.send(f"{ctx.author.mention} You must use this in a jail channel or provide a jail channel mention.", silent=True)
 
         if not target_channel or not isinstance(target_channel, discord.TextChannel):
-            return await ctx.send(f"{ctx.author.mention} Invalid jail channel.")
+            return await ctx.send(f"{ctx.author.mention} Invalid jail channel.", silent=True)
 
         # Parse the users
         if len(user_args) == 1 and user_args[0].lower() == "all":
@@ -296,7 +302,7 @@ class JailCog(commands.Cog):
                     continue
 
         if not members_to_release:
-            return await ctx.send(f"{ctx.author.mention} No valid users to release.")
+            return await ctx.send(f"{ctx.author.mention} No valid users to release.", silent=True)
 
         # Release the users
         for member in members_to_release:
@@ -309,10 +315,10 @@ class JailCog(commands.Cog):
                 await member.remove_roles(jail_role)
 
         mentions = ", ".join(m.mention for m in members_to_release)
-        await target_channel.send(f"{ctx.author.mention} released {mentions} from jail.")
+        await target_channel.send(f"{ctx.author.mention} released {mentions} from jail.", silent=True)
 
         if where == "out":
-            await ctx.send(f"{ctx.author.mention} Done.")
+            await ctx.send(f"{ctx.author.mention} Done.", silent=True)
 
     # !close command
     @commands.command()
@@ -333,11 +339,11 @@ class JailCog(commands.Cog):
         }
         jail_role_id = roles.get("jail")
         if not jail_role_id:
-            return await ctx.send(f"{ctx.author.mention} This server's roles aren't configured properly.")
+            return await ctx.send(f"{ctx.author.mention} This server's roles aren't configured properly.", silent=True)
         
         jail_role = guild.get_role(jail_role_id)
         if not jail_role:
-            return await ctx.send(f"{ctx.author.mention} The jail role doesn't exist.")
+            return await ctx.send(f"{ctx.author.mention} The jail role doesn't exist.", silent=True)
 
         # Are we in our out of a jail?
         where = ""
@@ -350,23 +356,23 @@ class JailCog(commands.Cog):
                 target_channel = ctx.channel
                 where = "in"
             else:
-                return await ctx.send(f"{ctx.author.mention} You must use this in a jail channel or specify one with a channel mention.")
+                return await ctx.send(f"{ctx.author.mention} You must use this in a jail channel or specify one with a channel mention.", silent=True)
 
         if not target_channel or not target_channel.name.startswith("jail-"):
-            return await ctx.send(f"{ctx.author.mention} That is not a valid jail channel.")
+            return await ctx.send(f"{ctx.author.mention} That is not a valid jail channel.", silent=True)
 
         # Find users to release
         members_to_release = [m for m in target_channel.members if jail_role in m.roles]
         for member in members_to_release:
             await member.remove_roles(jail_role)
-            await target_channel.send(f"{ctx.author.mention} released {member.mention} from jail.")
+            await target_channel.send(f"{ctx.author.mention} released {member.mention} from jail.", silent=True)
 
         # Close the channel
-        await target_channel.send("Wrapping up... This might take a minute if there were a lot of messages.")
+        await target_channel.send("Wrapping up... This might take a minute if there were a lot of messages.", silent=True)
 
         remaining = [m for m in target_channel.members if jail_role in m.roles]
         if remaining:
-            return await ctx.send(f"{ctx.author.mention} Some members are still jailed. Aborting deletion.")
+            return await ctx.send(f"{ctx.author.mention} Some members are still jailed. Aborting deletion.", silent=True)
 
         # Get all the messages
         messages = await ctx.channel.history(limit=None, oldest_first=True).flatten()
@@ -412,4 +418,4 @@ class JailCog(commands.Cog):
         await target_channel.delete()
 
         if where == "out":
-            await ctx.send(f"{ctx.author.mention} Done.")
+            await ctx.send(f"{ctx.author.mention} Done.", silent=True)

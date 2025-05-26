@@ -192,7 +192,7 @@ async def get_user(ctx, user_id):
     return user
 
 # Check ping status
-async def check_pings(ctx):
+async def author_ping(ctx):
 
     user_id = ctx.author.id
     guild_id = ctx.guild.id
@@ -208,7 +208,45 @@ async def check_pings(ctx):
     if ping == True:
         return f"{ctx.author.mention} "
     else:
-        return ""
+        return f"{ctx.author.name}"
+
+# Check ping status
+async def user_ping(ctx):
+
+    user_id = ctx.user.id
+    guild_id = ctx.guild.id
+    check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"])
+
+    ping = True
+    if check_row:
+        if check_row[0][3] == "on":
+            ping = True
+        else:
+            ping = False
+    
+    if ping == True:
+        return f"{ctx.user.mention} "
+    else:
+        return f"{ctx.user.name}"
+
+# Check ping status
+async def check_ping(ctx, user):
+
+    user_id = user.id
+    guild_id = ctx.guild.id
+    check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"])
+
+    ping = True
+    if check_row:
+        if check_row[0][3] == "on":
+            ping = True
+        else:
+            ping = False
+    
+    if ping == True:
+        return f"{user.mention} "
+    else:
+        return f"{user.name}"
 
 # Get channels
 async def get_channel(guild_id, name):

@@ -28,7 +28,9 @@ class ClangBot(commands.Bot):
 
     @tasks.loop(seconds=60)
     async def random_status(self):
+        print(f"[status loop] tick – picking from: {self.status_messages!r}")
         new_status = random.choice(self.status_messages)
+        print(f"[status loop] setting status → {new_status!r}")
         await self.change_presence(activity=discord.Game(name=new_status))
 
     @random_status.before_loop
@@ -153,7 +155,11 @@ async def on_ready():
 
     await bot.change_presence(activity=discord.Game(name="!help"))
     bot.random_status.start()
+    print(f"[on_ready] random_status is_running? → {bot.random_status.is_running()}")
 
+async def random_status_error(self, error):
+    print(f"[status loop][ERROR] {error!r}")
+    
 #################################################################################
 # Connect to database
 #################################################################################

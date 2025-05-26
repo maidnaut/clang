@@ -128,8 +128,6 @@ async def start_bot():
 @bot.event
 async def on_ready():
 
-    await self.change_presence(activity=discord.Game(name="Restarting..."))
-
     # Check guilds
     await check_guilds()
 

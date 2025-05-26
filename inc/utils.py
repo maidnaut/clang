@@ -262,7 +262,15 @@ async def check_ping_id(ctx, user_id):
         else:
             ping = False
 
-    user = await get_user(ctx, user_id)
+    try:
+        # First try as member
+        user = await commands.MemberConverter().convert(ctx, user_id)
+    except commands.MemberNotFound:
+        try:
+            # Then try as global user
+            user = await commands.UserConverter().convert(ctx, user_id)
+        except commands.UserNotFound:
+            return "N/A"
     
     if ping == True:
         return f"{user.mention} "

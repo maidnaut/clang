@@ -1,7 +1,7 @@
 import os, sys, time, random, asyncio, discord
 from inc.db import *
 from pathlib import Path
-from discord.ext import commands
+from discord.ext import commands, tasks
 from rich.console import Console
 from inc.utils import *
 
@@ -142,7 +142,7 @@ async def on_ready():
 
     await random_decimal_sleep(0.1, 0.4)
 
-    self.random_status.start()
+    random_status.start()
 
 #################################################################################
 # Random Statuses

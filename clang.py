@@ -47,7 +47,7 @@ class ClangBot(commands.Bot):
         await self.wait_until_ready()
 
     # Avatar change
-    @tasks.loop(seconds=9000)
+    @tasks.loop(seconds=60)
     async def random_avatar(self):
         if self.avatar_paths:
             avatar_path = random.choice(self.avatar_paths)

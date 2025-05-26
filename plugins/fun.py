@@ -92,7 +92,7 @@ class FunCog(commands.Cog):
         }
 
         # Get the message corresponding to the chosen number
-        await ctx.send({await author_ping(ctx)} messages.get(choice))
+        await ctx.send(f"{await author_ping(ctx)} {messages.get(choice)}")
 
 
 
@@ -177,7 +177,7 @@ class FunCog(commands.Cog):
         }
 
         # Get the message corresponding to the chosen number
-        await ctx.send({await author_ping(ctx)} messages.get(choice))
+        await ctx.send(f"{await author_ping(ctx)} {messages.get(choice)}")
 
 
 

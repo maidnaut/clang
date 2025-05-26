@@ -152,7 +152,7 @@ async def on_ready():
     await random_decimal_sleep(0.1, 0.4)
 
     await bot.change_presence(activity=discord.Game(name="!help"))
-    random_status.start()
+    bot.random_status.start()
 
 #################################################################################
 # Connect to database

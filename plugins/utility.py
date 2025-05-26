@@ -114,9 +114,6 @@ class UtilsCog(commands.Cog):
             await ctx.send(f"{await author_ping(ctx)} I have no record for that user.")
             return
 
-        # Set up our op data
-        user_level = await get_level(ctx)
-
         # Run the whois
         member = ctx.guild.get_member(user.id) or user
         display_name = ""

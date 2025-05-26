@@ -142,7 +142,7 @@ async def on_ready():
 
     await random_decimal_sleep(0.1, 0.4)
 
-    await self.change_presence(activity=discord.Game(name="!help"))
+    await change_presence(activity=discord.Game(name="!help"))
     random_status.start()
 
 #################################################################################
@@ -151,11 +151,11 @@ async def on_ready():
 @tasks.loop(seconds=60)
 async def random_status(self):
     new_status = random.choice(self.status_messages)
-    await self.change_presence(activity=discord.Game(name=new_status))
+    await change_presence(activity=discord.Game(name=new_status))
 
 @random_status.before_loop
 async def before_random_status(self):
-    await self.wait_until_ready()
+    await wait_until_ready()
 
 #################################################################################
 # Connect to database

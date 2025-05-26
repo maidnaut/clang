@@ -20,7 +20,11 @@ class ClangBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.globals = {}
-
+        self.status_messages = [
+            "discord.gg/archverse",
+            "!help",
+            "CLANG 👏 CLANG 👏 CLANG 👏",
+        ]
 
 # Pycord stuff
 activity = discord.Game(name="Restarting...")
@@ -143,16 +147,14 @@ async def on_ready():
 #################################################################################
 # Random Statuses
 #################################################################################
-statusmessages = [
-    "discord.gg/archverse",
-    "!help",
-    "CLANG 👏 CLANG 👏 CLANG 👏",
-]
-
 @tasks.loop(seconds=60)
-async def randomstatus():
-    status = random.choice(statusmessages)
-    await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name=status))
+async def random_status(self):
+    new_status = random.choice(self.status_messages)
+    await self.change_presence(activity=discord.Game(name=new_status))
+
+@random_status.before_loop
+async def before_random_status(self):
+    await self.wait_until_ready()
 
 #################################################################################
 # Connect to database

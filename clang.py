@@ -142,7 +142,7 @@ async def on_ready():
 
     await random_decimal_sleep(0.1, 0.4)
 
-    randomstatus.start()
+    self.random_status.start()
 
 #################################################################################
 # Random Statuses

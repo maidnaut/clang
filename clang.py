@@ -26,6 +26,15 @@ class ClangBot(commands.Bot):
             "CLANG 👏 CLANG 👏 CLANG 👏",
         ]
 
+    @tasks.loop(seconds=60)
+    async def random_status(self):
+        new_status = random.choice(self.status_messages)
+        await self.change_presence(activity=discord.Game(name=new_status))
+
+    @random_status.before_loop
+    async def before_random_status(self):
+        await self.wait_until_ready()
+
 # Pycord stuff
 activity = discord.Game(name="Restarting...")
 bot = ClangBot(
@@ -144,18 +153,6 @@ async def on_ready():
 
     await bot.change_presence(activity=discord.Game(name="!help"))
     random_status.start()
-
-#################################################################################
-# Random Statuses
-#################################################################################
-@tasks.loop(seconds=60)
-async def random_status(self):
-    new_status = random.choice(self.status_messages)
-    await bot.change_presence(activity=discord.Game(name=new_status))
-
-@random_status.before_loop
-async def before_random_status(self):
-    await bot.wait_until_ready()
 
 #################################################################################
 # Connect to database

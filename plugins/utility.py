@@ -123,11 +123,9 @@ class UtilsCog(commands.Cog):
         join_date = member.joined_at.strftime("%Y-%m-%d") if isinstance(member, discord.Member) and member.joined_at else "N/A"
         created_at = user.created_at.strftime("%Y-%m-%d")
 
-        user_mention = f"<@\u200b{member.id}>"
-
         embed = discord.Embed(
             color=discord.Color.blurple(),
-            description=f"**{user_mention}** (`{user.name}`)"
+            description=f"**{member.mention if isinstance(member, discord.Member) else user.mention}** (`{user.name}`)"
         )
         embed.set_author(name=display_name, icon_url=user.display_avatar.url)
         embed.set_thumbnail(url=user.display_avatar.url)
@@ -138,14 +136,14 @@ class UtilsCog(commands.Cog):
         # Do whois embed + warnings
         warnings = db_read("warnings", [f"guild_id:{ctx.guild.id}", f"user_id:{user.id}"])
 
-        await ctx.send(embed=embed, silent=True)
+        await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
 
         warnings_text = f"{member.mention if isinstance(member, discord.Member) else user.mention}'s Warnings:\n"
 
         if not warnings:
             warnings_text += "No warnings found for this user."
 
-            await ctx.send(warnings_text, silent=True)
+            await ctx.send(warnings_text)
 
             return
 
@@ -156,14 +154,12 @@ class UtilsCog(commands.Cog):
             author_id = result[5]
             reason = result[4]
 
-            author_mention = f"<@\u200b{author_id}>"
-
             dt = datetime.fromisoformat(full_date)
             date = dt.strftime("%B %d, %Y")
 
-            warnings_text += f"**{note_id})** {date}, by <@{author_mention}>  — {reason}\n"
+            warnings_text += f"**{note_id})** {date}, by <@{author_id}>  — {reason}\n"
 
-        await ctx.send(warnings_text.strip(), silent=True)
+        await ctx.send(warnings_text.strip(), allowed_mentions=discord.AllowedMentions.none())
 
 
 

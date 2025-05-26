@@ -249,7 +249,7 @@ async def check_ping(ctx, user):
         return f"{user.name}"
 
 # Check ping status
-async def check_ping_id(ctx, user_id):
+async def check_ping_id(ctx, user_id: str):
 
     user_id = user_id
     guild_id = ctx.guild.id

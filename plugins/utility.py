@@ -154,7 +154,7 @@ class UtilsCog(commands.Cog):
             dt = datetime.fromisoformat(full_date)
             date = dt.strftime("%B %d, %Y")
 
-            warnings_text += f"**{note_id})** {date}, by {await check_ping_id(ctx, author_id)}  — {reason}\n"
+            warnings_text += f"**{note_id})** {date}, by {await check_ping_id(ctx, str(author_id))}  — {reason}\n"
 
         await ctx.send(warnings_text.strip())
 

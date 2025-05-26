@@ -38,7 +38,7 @@ class ClangBot(commands.Bot):
         ]
 
     # Status Change
-    @tasks.loop(seconds=3900)
+    @tasks.loop(seconds=18000)
     async def random_status(self):
         new_status = random.choice(self.status_messages)
         await self.change_presence(activity=discord.Game(name=new_status))

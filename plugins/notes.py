@@ -271,7 +271,7 @@ class NotesCog(commands.Cog):
             start = page * per_page
             end = start + per_page
             titles = [f"◆   ``#{note[0]} - {note[3]}``" for note in notes[start:end]]
-            author = {await author_ping(ctx)}
+            author = await author_ping(ctx)
             embed = discord.Embed(
                 title=f"{author}'s notes (Page {page+1}/{pages})",
                 description="\n".join(titles),

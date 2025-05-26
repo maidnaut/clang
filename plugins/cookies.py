@@ -159,7 +159,7 @@ class CookieCog(commands.Cog):
                 [f"user_id:{receiver_id}", f"guild_id:{guild_id}"],
                 [("cookies", receiver_cookies + 1)])
         
-        await ctx.send(f"{await author_ping(ctx)} gave a cookie to {await user_ping(ctx)}!")
+        await ctx.send(f"{await author_ping(ctx)} gave a cookie to {await user_ping(ctx, member)}!")
 
     # !transfer <user< <amount>
     @commands.command()
@@ -197,7 +197,7 @@ class CookieCog(commands.Cog):
                 [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], 
                 [("cookies", receiver_cookies + amount)])
 
-        await ctx.send(f"{await author_ping(ctx)}Transferred {amount} cookies to {await user_ping(ctx)}!")
+        await ctx.send(f"{await author_ping(ctx)}Transferred {amount} cookies to {await user_ping(ctx, member)}!")
 
     # !setrate <int>
     @commands.command()
@@ -254,7 +254,7 @@ class CookieCog(commands.Cog):
                 [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
                 [("cookies", cookies + amount)])
 
-        await ctx.send(f"{await author_ping(ctx)} Airdropped {amount} cookies to {await user_ping(ctx)}! They now have {cookies + amount} cookies.")
+        await ctx.send(f"{await author_ping(ctx)} Airdropped {amount} cookies to {await user_ping(ctx, user)}! They now have {cookies + amount} cookies.")
 
     # Cookie drop & thanks
     @commands.Cog.listener()
@@ -350,7 +350,7 @@ class CookieCog(commands.Cog):
         for i, cookie in enumerate(top_10, start=1):
             user = await get_user(ctx, cookie[2])
             if user != "N/A":
-                leaderboard += f"**#{i}** {await user_ping(ctx)} - {cookie[3]}\n"
+                leaderboard += f"**#{i}** {await user_ping(ctx, user)} - {cookie[3]}\n"
 
         await ctx.send(embed=discord.Embed(
             title="Cookie Leaderboard",

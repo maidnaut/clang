@@ -61,39 +61,38 @@ class FunCog(commands.Cog):
     @commands.command()
     async def clang(self, ctx):
         # Generate a random number for the response
-        choice = random.randint(1, 25)
+        choice = random.randint(1, 24)
 
         # Response dict
         messages = {
             1: "aaaaaaaaaAAAAAAAAAAAAAAAA",
             2: "I AM CLANG. THE FLESH ROTS BUT THE SOUL PERSISTS.",
-            3: "In the depths they call me a behemoth, and to the seas I am leviathan. Hell rides in my wake.",
-            4: "CLANG 👏  CLANG 👏  CLANG 👏",
-            5: "clang",
-            6: "who's clang",
-            7: "FEED ME SPAGHETTI CLANG DEMANDS SPPGEAGEAHGFJ",
-            8: "-# aaaaaa sneaky clang",
-            9: "Are you okay Clang? Clang once for yes, twice for no.",
-            10: "WHAT'S THE WIFI PASSWORD???? CLANG NEED WIFI.",
-            11: "If you stay here too long, you'll end up frying your brain.",
-            12: "???AAAAAAA???",
-            13: "STAY HYDRATED WITH THE BLOOD OF YOUR ENEMIES",
-            14: "NO MORE !CLANG AAAAAAAAA",
-            15: "I'd just like to interject for a moment. What you're referring to as Clang is infact, SKULL/Clang, or as I've recently taken to calling it, SKULL PLUS CLANG.",
-            16: "bleeeehhhh *ding*",
-            17: "splunk",
-            18: "!clang command kinda clunchy ngl",
-            19: "I AM CLAG I MEAN CLANG",
-            20: "clang reference",
-            21: "THE CLOCKS ARE LYING TO YOU, IT'S ALWAYS 3:07 PM.",
-            22: "I AM FLBAGNG THE FLEBSH ROPS BUT THE SKOUL REMAIBS MMPMPHPHPNMPMPMP",
-            23: "ah, crumbs.",
-            24: "i use arch btw",
-            25: "install gentoo",
+            3: "CLANG 👏  CLANG 👏  CLANG 👏",
+            4: "clang",
+            5: "who's clang",
+            6: "FEED ME SPAGHETTI CLANG DEMANDS SPPGEAGEAHGFJ",
+            7: "-# aaaaaa sneaky clang",
+            8: "Are you okay Clang? Clang once for yes, twice for no.",
+            9: "WHAT'S THE WIFI PASSWORD???? CLANG NEED WIFI.",
+            10: "If you stay here too long, you'll end up frying your brain.",
+            11: "???AAAAAAA???",
+            12: "STAY HYDRATED WITH THE BLOOD OF YOUR ENEMIES",
+            13: "NO MORE !CLANG AAAAAAAAA",
+            14: "I'd just like to interject for a moment. What you're referring to as Clang is infact, SKULL/Clang, or as I've recently taken to calling it, SKULL PLUS CLANG.",
+            15: "bleeeehhhh *ding*",
+            16: "splunk",
+            17: "!clang command kinda clunchy ngl",
+            18: "I AM CLAG I MEAN CLANG",
+            19: "clang reference",
+            20: "THE CLOCKS ARE LYING TO YOU, IT'S ALWAYS 3:07 PM.",
+            21: "I AM FLBAGNG THE FLEBSH ROPS BUT THE SKOUL REMAIBS MMPMPHPHPNMPMPMP",
+            22: "ah, crumbs.",
+            23: "i use arch btw",
+            24: "install gentoo",
         }
 
         # Get the message corresponding to the chosen number
-        await ctx.send(messages.get(choice))
+        await ctx.send({await author_ping(ctx)} messages.get(choice))
 
 
 
@@ -103,7 +102,7 @@ class FunCog(commands.Cog):
     async def clnag(self, ctx):
         user = ctx.author
 
-        await ctx.send(f"haha {user.name} said clnag")
+        await ctx.send(f"haha {await author_ping(ctx)} said clnag")
     
 
 
@@ -153,7 +152,7 @@ class FunCog(commands.Cog):
         messages = {
             1: "Your shadow has been gossiping about you.",
             2: "Something is looking back at you in the mirror. Wait, that's you.",
-            3: f"Tomorrow’s soup will taste like the concept of {concept}. Don't eat it. Do you eat soup or drink it? Probably best not to drink it either.",
+            3: f"Tomorrow’s soup will taste like {concept}. Don't eat it. Do you eat soup or drink it? Probably best not to drink it either.",
             4: "Your left shoe is plotting something. Right shoe is in on it.",
             5: "Give Clang your cookies, and your fortunes will always be true.",
             6: "Your teeth are whispering secrets. If you listen closely, you can hear them.",
@@ -178,7 +177,7 @@ class FunCog(commands.Cog):
         }
 
         # Get the message corresponding to the chosen number
-        await ctx.send(messages.get(choice))
+        await ctx.send({await author_ping(ctx)} messages.get(choice))
 
 
 
@@ -189,10 +188,10 @@ class FunCog(commands.Cog):
 
         rand = random.randint(1, 50)
         if random.randint(1, rand) == 1:
-            await ctx.send(f"{ctx.author.mention} AAAA THE COIN FELL BEHIND THE COUCH.")
+            await ctx.send(f"{await author_ping(ctx)} AAAA THE COIN FELL BEHIND THE COUCH.")
         else:
             result = random.choice(["Heads", "Tails"])
-            await ctx.send(f"{ctx.author.mention} **{result}**!")
+            await ctx.send(f"{await author_ping(ctx)} **{result}**!")
 
 
 
@@ -202,7 +201,7 @@ class FunCog(commands.Cog):
     async def roll(self, ctx, dice: str = None):
 
         if dice == None:
-            await ctx.send(f"{ctx.author.mention} Please provide dice to roll. `!roll #d#`")
+            await ctx.send(f"{await author_ping(ctx)} Please provide dice to roll. `!roll #d#`")
             return
 
         try:
@@ -210,28 +209,28 @@ class FunCog(commands.Cog):
             if num <= 0 or sides <= 0:
                 raise ValueError()
         except ValueError:
-            await ctx.send(f"{ctx.author.mention} Invalid format. Use `#d#` - ex: `2d6`.")
+            await ctx.send(f"{await author_ping(ctx)} Invalid format. Use `#d#` - ex: `2d6`.")
             return
 
         if num > 100:
-            await ctx.send(f"{ctx.author.mention} You can only roll up to `100` times.")
+            await ctx.send(f"{await author_ping(ctx)} You can only roll up to `100` times.")
             return
 
         if sides > 100:
-            await ctx.send(f"{ctx.author.mention} Maximum dice size is `100`.")
+            await ctx.send(f"{await author_ping(ctx)} Maximum dice size is `100`.")
             return
 
         if sides not in [4, 6, 8, 10, 12, 20, 100]:
-            await ctx.send(f"{ctx.author.mention} Invalid dice size. `(4, 6, 8, 10, 12, 20, 100)`")
+            await ctx.send(f"{await author_ping(ctx)} Invalid dice size. `(4, 6, 8, 10, 12, 20, 100)`")
             return
 
         rolls = [random.randint(1, sides) for _ in range(num)]
         total = sum(rolls)
         if num == 1:
-            await ctx.send(f"{ctx.author.mention} rolled a **{rolls[0]}** (1d{sides})")
+            await ctx.send(f"{await author_ping(ctx)} rolled a **{rolls[0]}** (1d{sides})")
         else:
             rolls_str = ", ".join(map(str, rolls))
-            await ctx.send(f"{ctx.author.mention} rolled ({num}d{sides}): → **{total}** [{rolls_str}]")
+            await ctx.send(f"{await author_ping(ctx)} rolled ({num}d{sides}): → **{total}** [{rolls_str}]")
 
 
 
@@ -240,7 +239,7 @@ class FunCog(commands.Cog):
     async def eight_ball(self, ctx, *, message: str = None):
         
         if not message:
-            return await ctx.send(f"{ctx.author.mention} Please ask a question. `!8ball <your question>`")
+            return await ctx.send(f"{await author_ping(ctx)} Please ask a question. `!8ball <your question>`")
 
         responses = [
             "yeah, definitely", "yeah, definitely /s", "nope, not a chance", "perchance",
@@ -248,7 +247,7 @@ class FunCog(commands.Cog):
             "definitely not", "yeag", "nope"
         ]
         
-        await ctx.send(f"**{ctx.author.mention}** {random.choice(responses)}")
+        await ctx.send(f"{await author_ping(ctx)} {random.choice(responses)}")
 
 
 
@@ -263,7 +262,7 @@ class FunCog(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 async with session.get("https://xkcd.com/info.0.json") as resp:
                     if resp.status != 200:
-                        return await ctx.send(f"{ctx.author.mention} Failed to get latest XKCD")
+                        return await ctx.send(f"{await author_ping(ctx)} Failed to get latest XKCD")
                     data = await resp.json()
                     id = str(random.randint(1, data["num"]))
 
@@ -272,7 +271,7 @@ class FunCog(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(page_url) as resp:
                 if resp.status != 200:
-                    return await ctx.send(f"{ctx.author.mention} Comic not found ({resp.status})")
+                    return await ctx.send(f"{await author_ping(ctx)} Comic not found ({resp.status})")
                 html = await resp.text()
 
         result = re.search(
@@ -280,7 +279,7 @@ class FunCog(commands.Cog):
             html, re.DOTALL
         )
         if not result:
-            return await ctx.send(f"{ctx.author.mention} Couldn’t find the comic image")
+            return await ctx.send(f"{await author_ping(ctx)} Couldn’t find the comic image")
 
         img_url = "https:" + result.group(1)
         await ctx.send(f"`xkcd #{id}` {img_url}")

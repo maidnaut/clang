@@ -111,7 +111,7 @@ class UtilsCog(commands.Cog):
                 user = None
 
         if user is None:
-            await ctx.send(f"I have no record for that user.")
+            await ctx.send(f"{await author_ping(ctx)} I have no record for that user.")
             return
 
         # Set up our op data
@@ -157,7 +157,7 @@ class UtilsCog(commands.Cog):
             dt = datetime.fromisoformat(full_date)
             date = dt.strftime("%B %d, %Y")
 
-            warnings_text += f"**{note_id})** {date}, by <@{author_id}>  — {reason}\n"
+            warnings_text += f"**{note_id})** {date}, by {await check_ping_id(ctx, author_id)}  — {reason}\n"
 
         await ctx.send(warnings_text.strip())
 
@@ -171,7 +171,7 @@ class UtilsCog(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         latency_ms = round(self.bot.latency * 1000, 2)
-        await ctx.send(f"Pong! `{latency_ms}ms`")
+        await ctx.send(f"{await author_ping(ctx)} Pong! `{latency_ms}ms`")
 
 #################################################################################
 # !serverinfo
@@ -224,12 +224,12 @@ class UtilsCog(commands.Cog):
                 user = None
 
         if user is None:
-            await ctx.send(f"{ctx.author.mention} I have no record for that user.")
+            await ctx.send(f"{await author_ping(ctx)} I have no record for that user.")
             return
 
         embed = discord.Embed(
             color=discord.Color.blurple(),
-            description=f"**{user.mention}** (`{user.name}`)"
+            description=f"{await user_ping(ctx, user)} (`{user.name}`)"
         )
 
         embed.set_image(url=user.avatar.url)

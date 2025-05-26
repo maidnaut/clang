@@ -64,13 +64,13 @@ class WikiCog(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(search_url, params=params) as resp:
                 if resp.status != 200:
-                    await ctx.send(f"{ctx.author.mention} I couldn't contact {wiki_name}. {fail_emoji}")
+                    await ctx.send(f"{await author_ping(ctx)} I couldn't contact {wiki_name}. {fail_emoji}")
                     return
                 data = await resp.json()
 
         search_results = data.get("query", {}).get("search", [])
         if not search_results:
-            await ctx.send(f"{ctx.author.mention} No results found on the {wiki_name} for `{query}`. {fail_emoji}")
+            await ctx.send(f"{await author_ping(ctx)} No results found on the {wiki_name} for `{query}`. {fail_emoji}")
             return
 
         top_result = search_results[0]
@@ -103,12 +103,12 @@ class WikiCog(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(steam_search_url, params=params) as resp:
                 if resp.status != 200:
-                    await ctx.send(f"{ctx.author.mention} Couldn't search Steam. Status {resp.status} {fail_emoji}")
+                    await ctx.send(f"{await author_ping(ctx)} Couldn't search Steam. Status {resp.status} {fail_emoji}")
                     return
                 data = await resp.json()
 
         if not data.get("items"):
-            await ctx.send(f"{ctx.author.mention} No results found for `{title}` {fail_emoji}")
+            await ctx.send(f"{await author_ping(ctx)} No results found for `{title}` {fail_emoji}")
             return
 
         app = data["items"][0]
@@ -128,7 +128,7 @@ class WikiCog(commands.Cog):
                     else:
                         await ctx.send(embed=embed)
                 else:
-                    await ctx.send(f"{ctx.author.mention} No results found for `{name}` {fail_emoji}")
+                    await ctx.send(f"{await author_ping(ctx)} No results found for `{name}` {fail_emoji}")
 
 
 
@@ -137,7 +137,7 @@ class WikiCog(commands.Cog):
     @commands.command()
     async def aw(self, ctx, *, query: str = None):
         if query == None:
-            await ctx.send(f"{ctx.author.mention} Please provide a search query. `!aw <query>`")
+            await ctx.send(f"{await author_ping(ctx)} Please provide a search query. `!aw <query>`")
 
         await self._search_wiki(
             ctx = ctx,
@@ -154,7 +154,7 @@ class WikiCog(commands.Cog):
     @commands.command()
     async def gw(self, ctx, *, query: str = None):
         if query == None:
-            await ctx.send(f"{ctx.author.mention} Please provide a search query. `!gw <query>`")
+            await ctx.send(f"{await author_ping(ctx)} Please provide a search query. `!gw <query>`")
 
         await self._search_wiki(
             ctx = ctx,
@@ -171,7 +171,7 @@ class WikiCog(commands.Cog):
     @commands.command()
     async def proton(self, ctx, *, title: str = None):
         if title == None:
-            await ctx.send(f"{ctx.author.mention} Please provide a search query. `!proton <query>`")
+            await ctx.send(f"{await author_ping(ctx)} Please provide a search query. `!proton <query>`")
 
         await self._search_proton(ctx, title)
 

@@ -117,7 +117,7 @@ class ModerationCog(commands.Cog):
         # If elev is off, drop out, don't need to !op
         elev = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled"])
         if elev and elev[0][3] == "n":
-            await ctx.send(f"{ctx.author.mention} You don't need to op here!")
+            await ctx.send(f"{await author_ping(ctx)} You don't need to op here!")
             return
 
         user = ctx.author
@@ -133,7 +133,7 @@ class ModerationCog(commands.Cog):
 
         # Validate
         if not roles.get("op") or not roles.get("root"):
-            return await ctx.send(f"{ctx.author.mention} This server's roles aren't configured properly.")
+            return await ctx.send(f"{await author_ping(ctx)} This server's roles aren't configured properly.")
 
         # Target the role
         if user_level == 2 and "op" in roles:
@@ -151,15 +151,15 @@ class ModerationCog(commands.Cog):
         # Get the object
         role_obj = ctx.guild.get_role(target_id)
         if not role_obj:
-            return await ctx.send(f"{ctx.author.mention} This server's roles aren't configured properly.")
+            return await ctx.send(f"{await author_ping(ctx)} This server's roles aren't configured properly.")
 
         # Hand out the role
         if role_obj not in user.roles:
             await user.add_roles(role_obj)
-            await ctx.send(f"Oh shit, {ctx.author.mention}'s got a glock. EVERYBODY DOWN")
+            await ctx.send(f"Oh shit, {await author_ping(ctx)}'s got a glock. EVERYBODY DOWN")
         else:
             await user.remove_roles(role_obj)
-            await ctx.send(f"{ctx.author.mention} put the glock away.")
+            await ctx.send(f"{await author_ping(ctx)} put the glock away.")
 
 
 
@@ -171,11 +171,11 @@ class ModerationCog(commands.Cog):
             return
 
         if not user_str:
-            await ctx.send(f"{ctx.author.mention} Please provide a user. `!{'silent' if silent else ''}warn <user> <reason>`")
+            await ctx.send(f"{await author_ping(ctx)} Please provide a user. `!{'silent' if silent else ''}warn <user> <reason>`")
             return
         
         if not reason:
-            await ctx.send(f"{ctx.author.mention} Please provide a reason: `!{'silent' if silent else ''}warn <user> <reason>`")
+            await ctx.send(f"{await author_ping(ctx)} Please provide a reason: `!{'silent' if silent else ''}warn <user> <reason>`")
             return
 
         try:
@@ -187,7 +187,7 @@ class ModerationCog(commands.Cog):
                 user = await commands.UserConverter().convert(ctx, user_str)
                 silent = True
             except commands.UserNotFound:
-                await ctx.send(f"{ctx.author.mention} Couldn't find user: {user_str}")
+                await ctx.send(f"{await author_ping(ctx)} Couldn't find user: {user_str}")
                 return
 
         # Do the warn
@@ -204,7 +204,7 @@ class ModerationCog(commands.Cog):
 
         # Database is busted?
         except Exception as e:
-            await ctx.send(f"{user.mention} Something went wrong, I couldn't process the warning in my database.")
+            await ctx.send(f"{await author_ping(ctx)} Something went wrong, I couldn't process the warning in my database.")
             await ctx.send(f"Database error: {e}")
             return
 
@@ -247,7 +247,7 @@ class ModerationCog(commands.Cog):
                 dm_status = " (DM failed)"
 
         # Update your final response
-        response = f"{ctx.author.mention} Done. {dm_status}"
+        response = f"{await author_ping(ctx)} Done. {dm_status}"
         await ctx.send(response)
 
     # !warn
@@ -273,11 +273,11 @@ class ModerationCog(commands.Cog):
             return
 
         if not user_str:
-            await ctx.send(f"{ctx.author.mention} Please provide a user. `!delwarn <user> <id>`")
+            await ctx.send(f"{await author_ping(ctx)} Please provide a user. `!delwarn <user> <id>`")
             return
         
         if not id:
-            await ctx.send(f"{ctx.author.mention} Please provide a reason: `!delwarn <user> <reason>`")
+            await ctx.send(f"{await author_ping(ctx)} Please provide a reason: `!delwarn <user> <reason>`")
             return
 
         try:
@@ -289,12 +289,12 @@ class ModerationCog(commands.Cog):
                 user = await commands.UserConverter().convert(ctx, user_str)
                 silent = True
             except commands.UserNotFound:
-                await ctx.send(f"{ctx.author.mention} Couldn't find user: {user_str}")
+                await ctx.send(f"{await author_ping(ctx)} Couldn't find user: {user_str}")
                 return
 
         warnings = db_read("warnings", [f"user_id:{user.id}", f"guild_id:{ctx.guild.id}"])
         if not warnings:
-            await ctx.send(f"{ctx.author.mention} User has no warnings.")
+            await ctx.send(f"{await author_ping(ctx)} User has no warnings.")
             return
 
         try:
@@ -302,10 +302,10 @@ class ModerationCog(commands.Cog):
                 ["guild_id", "user_id", "warn_id",],
                 [int(ctx.guild.id), int(user.id), int(id)])
 
-            await ctx.send(f"{ctx.author.mention} Warning #{id} removed from {user.mention}'s wrap sheet.")
+            await ctx.send(f"{await author_ping(ctx)} Warning #{id} removed from {await user_ping(ctx, user)}'s rap sheet.")
         
         except Exception as e:
-            await ctx.send(f"Couldn't delete warning: {e}")
+            await ctx.send(f"{await author_ping(ctx)} Couldn't delete warning: {e}")
 
     # !clear
     @commands.command()
@@ -320,7 +320,7 @@ class ModerationCog(commands.Cog):
             return
 
         if not user_str:
-            await ctx.send(f"{ctx.author.mention} Please provide a user. `!clear <user>`")
+            await ctx.send(f"{await author_ping(ctx)} Please provide a user. `!clear <user>`")
             return
 
         try:
@@ -332,12 +332,12 @@ class ModerationCog(commands.Cog):
                 user = await commands.UserConverter().convert(ctx, user_str)
                 silent = True
             except commands.UserNotFound:
-                await ctx.send(f"{ctx.author.mention} Couldn't find user: {user_str}")
+                await ctx.send(f"{await author_ping(ctx)} Couldn't find user: {user_str}")
                 return
 
         warnings = db_read("warnings", [f"user_id:{user.id}", f"guild_id:{ctx.guild.id}"])
         if not warnings or len(warnings) == 0:
-            await ctx.send(f"{ctx.author.mention} User has no warnings.")
+            await ctx.send(f"{await author_ping(ctx)} User has no warnings.")
             return
 
         try:
@@ -348,10 +348,10 @@ class ModerationCog(commands.Cog):
                     ["guild_id", "user_id", "warn_id"],
                     [int(ctx.guild.id), int(user.id), int(warn_id)])
 
-            await ctx.send(f"{ctx.author.mention} All warnings removed from {user.mention}'s wrap sheet.")
+            await ctx.send(f"{await author_ping(ctx)} All warnings removed from {await user_ping(ctx, user)}'s rap sheet.")
         
         except Exception as e:
-            await ctx.send(f"Couldn't delete warnings: {e}")
+            await ctx.send(f"{await author_ping(ctx)} Couldn't delete warnings: {e}")
 
 
 
@@ -364,7 +364,7 @@ class ModerationCog(commands.Cog):
             return
 
         if not user_str or not args:
-            return await ctx.send(f"{ctx.author.mention} Usage: `!ban <user> [time] <reason>`")
+            return await ctx.send(f"{await author_ping(ctx)} Usage: `!ban <user> [time] <reason>`")
 
         # Get ban time
         tm = re.match(r"(?:(\d+)y)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?", args.split()[0])
@@ -376,7 +376,7 @@ class ModerationCog(commands.Cog):
             reason   = args
 
         if not reason:
-            return await ctx.send(f"{ctx.author.mention} Please provide a reason.")
+            return await ctx.send(f"{await author_ping(ctx)} Please provide a reason.")
 
         # Find user
         try:
@@ -385,18 +385,18 @@ class ModerationCog(commands.Cog):
             try:
                 user = await commands.UserConverter().convert(ctx, user_str)
             except commands.UserNotFound:
-                return await ctx.send(f"{ctx.author.mention} Couldn't find `{user_str}`")
+                return await ctx.send(f"{await author_ping(ctx)} Couldn't find `{user_str}`")
 
         # Already banned?
         try:
             if await ctx.guild.fetch_ban(discord.Object(id=user.id)):
-                return await ctx.send(f"{ctx.author.mention} That user is already banned.")
+                return await ctx.send(f"{await author_ping(ctx)} That user is already banned.")
         except discord.NotFound:
             pass
         except discord.Forbidden:
-            return await ctx.send(f"{ctx.author.mention} Missing permission to check bans.")
+            return await ctx.send(f"{await author_ping(ctx)} Missing permission to check bans.")
         except discord.HTTPException as e:
-            return await ctx.send(f"{ctx.author.mention} Error checking bans: {e}")
+            return await ctx.send(f"{await author_ping(ctx)} Error checking bans: {e}")
 
         # Figure out unban_date
         if ban_time:
@@ -432,9 +432,9 @@ class ModerationCog(commands.Cog):
             else:
                 await ctx.guild.ban(user, reason=reason)
         except discord.Forbidden:
-            return await ctx.send(f"{ctx.author.mention} Missing permission to ban.")
+            return await ctx.send(f"{await author_ping(ctx)} Missing permission to ban.")
         except discord.HTTPException as e:
-            return await ctx.send(f"{ctx.author.mention} Ban failed: {e}")
+            return await ctx.send(f"{await author_ping(ctx)} Ban failed: {e}")
 
         # Modlog embed
         modlog = await get_channel(ctx.guild.id, "modlog")
@@ -457,7 +457,7 @@ class ModerationCog(commands.Cog):
             return
 
         if not user_str or not reason:
-            return await ctx.send(f"{ctx.author.mention} Usage: `!unban <user> <reason>`")
+            return await ctx.send(f"{await author_ping(ctx)} Usage: `!unban <user> <reason>`")
 
         # Find user
         try:
@@ -466,17 +466,17 @@ class ModerationCog(commands.Cog):
             try:
                 user = await commands.UserConverter().convert(ctx, user_str)
             except commands.UserNotFound:
-                return await ctx.send(f"{ctx.author.mention} Couldn't find `{user_str}`")
+                return await ctx.send(f"{await author_ping(ctx)} Couldn't find `{user_str}`")
 
         # Check ban exists
         try:
             await ctx.guild.fetch_ban(discord.Object(id=user.id))
         except discord.NotFound:
-            return await ctx.send(f"{ctx.author.mention} That user is not banned.")
+            return await ctx.send(f"{await author_ping(ctx)} That user isn't banned.")
         except discord.Forbidden:
-            return await ctx.send(f"{ctx.author.mention} Missing permission to check bans.")
+            return await ctx.send(f"{await author_ping(ctx)} Missing permission to check bans.")
         except discord.HTTPException as e:
-            return await ctx.send(f"{ctx.author.mention} Error checking bans: {e}")
+            return await ctx.send(f"{await author_ping(ctx)} Error checking bans: {e}")
 
         # Add unban note
         now = datetime.datetime.now()
@@ -495,9 +495,9 @@ class ModerationCog(commands.Cog):
         try:
             await ctx.guild.unban(user)
         except discord.Forbidden:
-            return await ctx.send(f"{ctx.author.mention} Missing permission to unban.")
+            return await ctx.send(f"{await author_ping(ctx)} Missing permission to unban.")
         except discord.HTTPException as e:
-            return await ctx.send(f"{ctx.author.mention} Unban failed: {e}")
+            return await ctx.send(f"{await author_ping(ctx)} Unban failed: {e}")
 
         # Modlog embed
         modlog = await get_channel(ctx.guild.id, "modlog")
@@ -571,15 +571,15 @@ class ModerationCog(commands.Cog):
 
         # No user supplied
         if user_str == None:
-            return await ctx.send(f"{ctx.author.mention} Supply a user: `!purge <user> <amount>`")
+            return await ctx.send(f"{await author_ping(ctx)} Supply a user: `!purge <user> <amount>`")
 
         if amount == None:
-            return await ctx.send(f"{ctx.author.mention} Supply an amount: `!purge <user> <amount>`")
+            return await ctx.send(f"{await author_ping(ctx)} Supply an amount: `!purge <user> <amount>`")
         
         amount = int(amount)
 
         if amount > 100:
-            return await ctx.send(f"{ctx.author.mention} Max message deletion is 100: `!purge <user> <amount>`")
+            return await ctx.send(f"{await author_ping(ctx)} Max message deletion is 100: `!purge <user> <amount>`")
 
         # Find user
         try:
@@ -588,11 +588,11 @@ class ModerationCog(commands.Cog):
             try:
                 user = await commands.UserConverter().convert(ctx, user_str)
             except commands.UserNotFound:
-                return await ctx.send(f"{ctx.author.mention} Couldn't find user `{user_str}`")
+                return await ctx.send(f"{await author_ping(ctx)} Couldn't find user `{user_str}`")
 
         # Check permissions
         if not ctx.channel.permissions_for(ctx.guild.me).manage_messages:
-            return await ctx.send(f"{ctx.author.mention} I need `Manage Messages` permission")
+            return await ctx.send(f"{await author_ping(ctx)} I need `Manage Messages` permission")
 
         # Purge messages
         total_deleted = 0
@@ -619,7 +619,7 @@ class ModerationCog(commands.Cog):
             embed.add_field(name="Channel", value=f"{ctx.channel.mention}", inline=False)
             await modlog.send(embed=embed)
 
-        msg = await ctx.send(f"{ctx.author.mention} Purged {total_deleted} messages from {user.mention}")
+        msg = await ctx.send(f"{await author_ping(ctx)} Purged {total_deleted} messages from {user.mention}")
 
 
 
@@ -633,7 +633,7 @@ class ModerationCog(commands.Cog):
             return
 
         if not user_str:
-            return await ctx.send(f"{ctx.author.mention} Usage: `!purgeban <user> <reason>`")
+            return await ctx.send(f"{await author_ping(ctx)} Usage: `!purgeban <user> <reason>`")
 
         if not reason:
             reason = "No reason provided. Likely spam."
@@ -645,19 +645,19 @@ class ModerationCog(commands.Cog):
             try:
                 user = await commands.UserConverter().convert(ctx, user_str)
             except commands.UserNotFound:
-                return await ctx.send(f"{ctx.author.mention} Couldn't find user `{user_str}`")
+                return await ctx.send(f"{await author_ping(ctx)} Couldn't find user `{user_str}`")
 
         # Ban
         try:
             existing_ban = await ctx.guild.fetch_ban(user)
             if existing_ban:
-                return await ctx.send(f"{ctx.author.mention} User already banned! Run !purge instead.")
+                return await ctx.send(f"{await author_ping(ctx)} User already banned! Run !purge instead.")
         except discord.NotFound:
             pass
         except discord.Forbidden:
-            return await ctx.send(f"{ctx.author.mention} Can't check bans!")
+            return await ctx.send(f"{await author_ping(ctx)} Can't check bans!")
         except discord.HTTPException as e:
-            return await ctx.send(f"{ctx.author.mention} Error checking bans: {e}")
+            return await ctx.send(f"{await author_ping(ctx)} Error checking bans: {e}")
 
         # Add note
         now = datetime.datetime.now()
@@ -675,9 +675,9 @@ class ModerationCog(commands.Cog):
         try:
             await ctx.guild.ban(user, reason=reason, delete_message_seconds=604800)
         except discord.Forbidden:
-            return await ctx.send(f"{ctx.author.mention} Missing ban permissions")
+            return await ctx.send(f"{await author_ping(ctx)} Missing ban permissions")
         except discord.HTTPException as e:
-            return await ctx.send(f"{ctx.author.mention} Ban failed: {e}")
+            return await ctx.send(f"{await author_ping(ctx)} Ban failed: {e}")
 
         # Modlog embed
         modlog = await get_channel(ctx.guild.id, "modlog")
@@ -692,7 +692,7 @@ class ModerationCog(commands.Cog):
             await modlog.send(embed=embed)
 
         await ctx.send(
-            f"{ctx.author.mention} - {user.mention} was purge banned with all messages from the last 7 days deleted."
+            f"{await author_ping(ctx)} - {user.mention} was purge banned with all messages from the last 7 days deleted."
         )
 
 
@@ -715,28 +715,28 @@ class ModerationCog(commands.Cog):
 
         # Time not supplied
         if time is None:
-            return await ctx.send(f"{ctx.author.mention} Please provide a time. ``!slowmode <time/off>``")
+            return await ctx.send(f"{await author_ping(ctx)} Please provide a time. ``!slowmode <time/off>``")
 
         # Turn slowmode off
         if time == "off":
             await ctx.channel.edit(slowmode_delay=0)
-            await ctx.send(f"{ctx.author.mention} Slowmode turned off.")
+            await ctx.send(f"{await author_ping(ctx)} Slowmode turned off.")
             return
 
         # Time is an int, interpret as seconds
         if time.isdigit():
             time = int(time)
             if time > 21600:
-                return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
+                return await ctx.send(f"{await author_ping(ctx)} Rate too high! Must be below 21600 seconds (6 hours).")
             else:
                 await ctx.channel.edit(slowmode_delay=time)
-                await ctx.send(f"{ctx.author.mention} Slowmode set to {time} second(s).")
+                await ctx.send(f"{await author_ping(ctx)} Slowmode set to {time} second(s).")
                 return
 
         # Pattern match for s/d/h
         match = re.match(r"^(\d+)([smh])$", time.strip().lower())
         if not match:
-            return await ctx.send(f"{ctx.author.mention} Invalid format. Use like ``!slowmode 10s``, ``5m``, or ``1h``.")
+            return await ctx.send(f"{await author_ping(ctx)} Invalid format. Use like ``!slowmode 10s``, ``5m``, or ``1h``.")
         
         value, unit = match.groups()
         value = int(value)
@@ -749,7 +749,7 @@ class ModerationCog(commands.Cog):
             seconds = value * 3600
 
         if seconds > 21600:
-            return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
+            return await ctx.send(f"{await author_ping(ctx)} Rate too high! Must be below 21600 seconds (6 hours).")
 
         # Do the thingy
         await ctx.channel.edit(slowmode_delay=seconds)
@@ -762,7 +762,7 @@ class ModerationCog(commands.Cog):
         elif unit == 'h':
             display = f"{value} hour(s)"
 
-        await ctx.send(f"{ctx.author.mention} Slowmode set to {display}.")
+        await ctx.send(f"{await author_ping(ctx)} Slowmode set to {display}.")
 
 
 
@@ -787,7 +787,7 @@ class ModerationCog(commands.Cog):
 
         # Args not supplied
         if user_str is None or time is None:
-            return await ctx.send(f"{ctx.author.mention} Usage: ``!mute <user> <time/off> <reason>")
+            return await ctx.send(f"{await author_ping(ctx)} Usage: ``!mute <user> <time/off> <reason>")
 
         # Find user
         try:
@@ -796,30 +796,30 @@ class ModerationCog(commands.Cog):
             try:
                 user = await commands.UserConverter().convert(ctx, user_str)
             except commands.UserNotFound:
-                return await ctx.send(f"{ctx.author.mention} Couldn't find `{user_str}`")
+                return await ctx.send(f"{await author_ping(ctx)} Couldn't find `{user_str}`")
 
         # Turn mute off
         if time == "off" or time == "0":
             await user.timeout_for(datetime.timedelta(seconds=0), reason="Unmuted")
-            await ctx.send(f"{ctx.author.mention} {user.mention} unmuted.")
+            await ctx.send(f"{await author_ping(ctx)} {await user_ping(ctx, user)} unmuted.")
             return
 
         # Time is an int, interpret as seconds
         if time.isdigit():
             seconds = int(time)
             if seconds > 21600:
-                return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
+                return await ctx.send(f"{await author_ping(ctx)} Rate too high! Must be below 21600 seconds (6 hours).")
             else:
                 duration = datetime.timedelta(seconds=seconds)
                 display = f"{seconds} second(s)"
                 await user.timeout_for(duration, reason=reason)
-                await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {display}.")
+                await ctx.send(f"{await author_ping(ctx)} - {await user_ping(ctx, user)} timed out for {display}.")
                 return
 
         # Pattern match for s/d/h
         match = re.match(r"^(\d+)([smh])$", time.strip().lower())
         if not match:
-            return await ctx.send(f"{ctx.author.mention} Invalid format. Use like ``!mute <user> <time> (10s``, ``5m``, ``1h``), <reason>")
+            return await ctx.send(f"{await author_ping(ctx)} Invalid format. Use like ``!mute <user> <time> (10s``, ``5m``, ``1h``), <reason>")
         
         value, unit = match.groups()
         value = int(value)
@@ -832,7 +832,7 @@ class ModerationCog(commands.Cog):
             seconds = value * 3600
 
         if seconds > 21600:
-            return await ctx.send(f"{ctx.author.mention} Rate too high! Must be below 21600 seconds (6 hours).")
+            return await ctx.send(f"{await author_ping(ctx)} Rate too high! Must be below 21600 seconds (6 hours).")
 
         # trim the .0
         if unit == 's':
@@ -876,4 +876,4 @@ class ModerationCog(commands.Cog):
         duration = datetime.timedelta(seconds=seconds)
         await user.timeout_for(duration, reason=reason)
 
-        await ctx.send(f"{ctx.author.mention} - {user.mention} timed out for {display}.{dm_status}")
+        await ctx.send(f"{await author_ping(ctx)} - {await user_ping(ctx, user)} timed out for {display}.{dm_status}")

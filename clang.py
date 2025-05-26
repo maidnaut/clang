@@ -142,7 +142,7 @@ async def on_ready():
 
     await random_decimal_sleep(0.1, 0.4)
 
-    await change_presence(activity=discord.Game(name="!help"))
+    await self.change_presence(activity=discord.Game(name="!help"))
     random_status.start()
 
 #################################################################################

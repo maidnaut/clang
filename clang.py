@@ -24,7 +24,7 @@ class ClangBot(commands.Bot):
 
 # Pycord stuff
 activity = discord.Game(name="!help")
-bot = ClangBot(command_prefix="!", activity=activity, help_command=None, intents=discord.Intents.all())
+bot = ClangBot(command_prefix="!", activity=activity, help_command=None, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions.none())
 
 # global dict
 bot.globals = {}

@@ -136,7 +136,7 @@ class UtilsCog(commands.Cog):
         # Do whois embed + warnings
         warnings = db_read("warnings", [f"guild_id:{ctx.guild.id}", f"user_id:{user.id}"])
 
-        await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(embed=embed)
 
         warnings_text = f"{member.mention if isinstance(member, discord.Member) else user.mention}'s Warnings:\n"
 
@@ -159,7 +159,7 @@ class UtilsCog(commands.Cog):
 
             warnings_text += f"**{note_id})** {date}, by <@{author_id}>  — {reason}\n"
 
-        await ctx.send(warnings_text.strip(), allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(warnings_text.strip())
 
 
 
@@ -224,7 +224,7 @@ class UtilsCog(commands.Cog):
                 user = None
 
         if user is None:
-            await ctx.send(f"I have no record for that user.")
+            await ctx.send(f"{ctx.author.mention} I have no record for that user.")
             return
 
         embed = discord.Embed(
@@ -233,4 +233,4 @@ class UtilsCog(commands.Cog):
         )
 
         embed.set_image(url=user.avatar.url)
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())

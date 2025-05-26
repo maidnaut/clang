@@ -76,11 +76,11 @@ class SettingsCog(commands.Cog):
         user_id = ctx.author.id
 
         if status == None:
-            return await ctx.send(f"{author_ping(ctx)}Please supply a valid argument: `!setping [on, off]`")
+            return await ctx.send(f"{author_ping(ctx)} Please supply a valid argument: `!setping [on, off]`")
 
         options = ["on", "off"]
         if status not in options:
-            return await ctx.send(f"{await author_ping(ctx)}Please supply a valid argument: `!setping [on, off]`")
+            return await ctx.send(f"{await author_ping(ctx)} Please supply a valid argument: `!setping [on, off]`")
 
         check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"])
 
@@ -89,7 +89,7 @@ class SettingsCog(commands.Cog):
         else:
             db_update("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"], [("status", status)])
 
-        return await ctx.send(f"{await author_ping(ctx)}Ping status set to `{status}`")
+        return await ctx.send(f"{await author_ping(ctx)} Ping status set to `{status}`")
 
 
 
@@ -106,10 +106,10 @@ class SettingsCog(commands.Cog):
         if user_level >= 4 or author == owner:
             if status == "on":
                 db_update("config", [f"guild_id:{guild_id}", f"name:elevation_enabled"], [("enabled", "y")])
-                return await ctx.send(f"{await check_pings(ctx)}!op is now required on this server.")
+                return await ctx.send(f"{await check_pings(ctx)} !op is now required on this server.")
             if status == "off":
                 db_update("config", [f"guild_id:{guild_id}", f"name:elevation_enabled"], [("enabled", "n")])
-                return await ctx.send(f"{await check_pings(ctx)}!op is now disabled on this server.")
+                return await ctx.send(f"{await check_pings(ctx)} !op is now disabled on this server.")
 
 
 
@@ -139,19 +139,19 @@ class SettingsCog(commands.Cog):
             all_roles = ", ".join(roles)
 
             if not role:
-                await ctx.send(f"{await check_pings(ctx)}Please select a role: `{all_roles}` \n-# !setrole <role> <id>")
+                await ctx.send(f"{await check_pings(ctx)} Please select a role: `{all_roles}` \n-# !setrole <role> <id>")
                 return
             
             if not id:
-                await ctx.send(f"{await check_pings(ctx)}Please provide an ID \n-# !setrole <role> <id>")
+                await ctx.send(f"{await check_pings(ctx)} Please provide an ID \n-# !setrole <role> <id>")
                 return
 
             if role not in roles:
-                await ctx.send(f"{await check_pings(ctx)}Please select a valid role: `{all_roles}` \n-# !setrole <role> <id>")
+                await ctx.send(f"{await check_pings(ctx)} Please select a valid role: `{all_roles}` \n-# !setrole <role> <id>")
                 return
 
             if not id.isdigit():
-                await ctx.send(f"{await check_pings(ctx)}Please provide a valid role ID \n-# !setrole <rold> <id>")
+                await ctx.send(f"{await check_pings(ctx)} Please provide a valid role ID \n-# !setrole <rold> <id>")
                 return
 
             await self.update(ctx, role, id, "role")
@@ -185,19 +185,19 @@ class SettingsCog(commands.Cog):
             all_channels = ", ".join(channels)
 
             if not channel:
-                await ctx.send(f"{await check_pings(ctx)}Please select a channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
+                await ctx.send(f"{await check_pings(ctx)} Please select a channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
                 return
             
             if not id:
-                await ctx.send(f"{await check_pings(ctx)}Please provide an ID \n-# !setchannel <channel> <id>")
+                await ctx.send(f"{await check_pings(ctx)} Please provide an ID \n-# !setchannel <channel> <id>")
                 return
 
             if channel not in channels:
-                await ctx.send(f"{await check_pings(ctx)}Please select a valid channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
+                await ctx.send(f"{await check_pings(ctx)} Please select a valid channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
                 return
 
             if not id.isdigit():
-                await ctx.send(f"{await check_pings(ctx)}Please provide a valid channel or category ID \n-# !setchannel <channel> <id>")
+                await ctx.send(f"{await check_pings(ctx)} Please provide a valid channel or category ID \n-# !setchannel <channel> <id>")
                 return
 
 

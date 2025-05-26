@@ -20,19 +20,45 @@ class ClangBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.globals = {}
+        self.avatar_paths = []
         self.status_messages = [
             "discord.gg/archverse",
             "!help",
             "CLANG 👏 CLANG 👏 CLANG 👏",
+            "No maidens?",
+            "i use arch btw",
+            "aaaaaAAAAA????",
+            "https://github.com/maidnaut/clang",
+            "The virtual plaza welcomes you",
+            "Present day, present time",
+            "Let's all love Lain",
+            "Despite everything, it's still you",
+            "Pasting ￼ in a dangerous neighborhood",
+            "Pronouns: any/all",
         ]
 
+    # Status Change
     @tasks.loop(seconds=3900)
     async def random_status(self):
         new_status = random.choice(self.status_messages)
         await self.change_presence(activity=discord.Game(name=new_status))
-
     @random_status.before_loop
     async def before_random_status(self):
+        await self.wait_until_ready()
+
+    # Avatar change
+    @tasks.loop(seconds=9000)
+    async def random_avatar(self):
+        if self.avatar_paths:
+            avatar_path = random.choice(self.avatar_paths)
+            try:
+                with open(avatar_path, 'rb') as f:
+                    avatar_bytes = f.read()
+                await self.user.edit(avatar=avatar_bytes)
+            except Exception as e:
+                print(f"[bold red]Error changing avatar: {e}[/bold red]")
+    @random_avatar.before_loop
+    async def before_random_avatar(self):
         await self.wait_until_ready()
 
 # Pycord stuff
@@ -151,8 +177,22 @@ async def on_ready():
 
     await random_decimal_sleep(0.1, 0.4)
 
+    # Default status
     await bot.change_presence(activity=discord.Game(name="!help"))
     bot.random_status.start()
+
+    # Load avatar paths
+    avatar_dir = Path("avatars")
+    avatar_dir.mkdir(exist_ok=True)
+    bot.avatar_paths = [
+        f for f in avatar_dir.glob("*")
+        if f.is_file() and f.suffix.lower() in [".png", ".jpg", ".jpeg"]
+    ]
+    
+    if bot.avatar_paths:
+        bot.random_avatar.start()
+    else:
+        print("[bold yellow]No avatars found in 'avatars' directory[/bold yellow]")
     
 #################################################################################
 # Connect to database

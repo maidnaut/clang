@@ -23,8 +23,14 @@ class ClangBot(commands.Bot):
 
 
 # Pycord stuff
-activity = discord.Game(name="!help")
-bot = ClangBot(command_prefix="!", activity=activity, help_command=None, intents=discord.Intents.all(), allowed_mentions=discord.AllowedMentions.none())
+activity = discord.Game(name="Restarting...")
+bot = ClangBot(
+    command_prefix="!",
+    activity=activity,
+    help_command=None,
+    intents=discord.Intents.all(),
+    allowed_mentions=discord.AllowedMentions.none()
+)
 
 # global dict
 bot.globals = {}
@@ -131,6 +137,22 @@ async def on_ready():
         print(f"Clang is awake. (Hint: run 'help')\n")
 
     await random_decimal_sleep(0.1, 0.4)
+
+    randomstatus.start()
+
+#################################################################################
+# Random Statuses
+#################################################################################
+statusmessages = [
+    "discord.gg/archverse",
+    "!help",
+    "CLANG 👏 CLANG 👏 CLANG 👏",
+]
+
+@tasks.loop(seconds=60)
+async def randomstatus():
+    status = random.choice(statusmessages)
+    await bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game(name=status))
 
 #################################################################################
 # Connect to database

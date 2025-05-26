@@ -5,7 +5,7 @@ from discord.ext import commands, tasks
 from rich.console import Console
 from inc.utils import *
 
-version = "0.6b"
+version = "0.7b"
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)

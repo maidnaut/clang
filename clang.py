@@ -27,6 +27,7 @@ class ClangBot(commands.Bot):
             "CLANG 👏 CLANG 👏 CLANG 👏",
             "No maidens?",
             "i use arch btw",
+            "install gentoo",
             "aaaaaAAAAA????",
             "https://github.com/maidnaut/clang",
             "The virtual plaza welcomes you",
@@ -35,6 +36,18 @@ class ClangBot(commands.Bot):
             "Despite everything, it's still you",
             "Pasting ￼ in a dangerous neighborhood",
             "Pronouns: any/all",
+            "Coping with Navis",
+            "Red is not blue",
+            "Welcome to nowhere",
+            "sudo rm -rf /skull",
+            "Ping: ∞ms",
+            "🍌 Banana for scale",
+            "KERNEL PANIC",
+            "BONES = TRUE",
+            "AAAAAAAAAAAAAAAAA",
+            "NO NO NO NO NO",
+            "WHAT'S THE WIFI PASSWORD???",
+            "💀",
         ]
 
     # Status Change

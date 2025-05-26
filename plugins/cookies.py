@@ -159,7 +159,7 @@ class CookieCog(commands.Cog):
                 [f"user_id:{receiver_id}", f"guild_id:{guild_id}"],
                 [("cookies", receiver_cookies + 1)])
         
-        await ctx.send(f"{author_ping(ctx)} gave a cookie to {user_ping(ctx)}!")
+        await ctx.send(f"{await author_ping(ctx)} gave a cookie to {await user_ping(ctx)}!")
 
     # !transfer <user< <amount>
     @commands.command()

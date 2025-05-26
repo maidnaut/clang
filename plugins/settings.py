@@ -80,7 +80,7 @@ class SettingsCog(commands.Cog):
 
         options = ["on", "off"]
         if status not in options:
-            return await ctx.send(f"{author_ping(ctx)}Please supply a valid argument: `!setping [on, off]`")
+            return await ctx.send(f"{await author_ping(ctx)}Please supply a valid argument: `!setping [on, off]`")
 
         check_row = db_read("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"])
 
@@ -89,7 +89,7 @@ class SettingsCog(commands.Cog):
         else:
             db_update("pings", [f"guild_id:{guild_id}", f"user_id:{user_id}"], [("status", status)])
 
-        return await ctx.send(f"{author_ping(ctx)}Ping status set to `{status}`")
+        return await ctx.send(f"{await author_ping(ctx)}Ping status set to `{status}`")
 
 
 

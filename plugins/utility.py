@@ -133,38 +133,33 @@ class UtilsCog(commands.Cog):
         embed.add_field(name="Joined Server", value=f"{join_date}", inline=True)
         embed.add_field(name="", value=f"ID: `{user.id}`", inline=False)
 
-        if user_level >= 1:
+        # Do whois embed + warnings
+        warnings = db_read("warnings", [f"guild_id:{ctx.guild.id}", f"user_id:{user.id}"])
 
-            warnings = db_read("warnings", [f"guild_id:{ctx.guild.id}", f"user_id:{user.id}"])
+        await ctx.send(embed=embed, silent=True)
 
-            await ctx.send(embed=embed)
+        warnings_text = f"{member.mention if isinstance(member, discord.Member) else user.mention}'s Warnings:\n"
 
-            warnings_text = f"{member.mention if isinstance(member, discord.Member) else user.mention}'s Warnings:\n"
+        if not warnings:
+            warnings_text += "No warnings found for this user."
 
-            if not warnings:
-                warnings_text += "No warnings found for this user."
+            await ctx.send(warnings_text, silent=True)
 
-                await ctx.send(warnings_text)
-
-                return
-
-            for i, result in enumerate(warnings, start=1):
-                note_id = result[3]
-                user_id = result[2]
-                full_date = result[6]
-                author_id = result[5]
-                reason = result[4]
-
-                dt = datetime.fromisoformat(full_date)
-                date = dt.strftime("%B %d, %Y")
-
-                warnings_text += f"**{note_id})** {date}, by <@{author_id}>  — {reason}\n"
-
-            await ctx.send(warnings_text.strip())
-
-        else:
-            await ctx.send(embed=embed)
             return
+
+        for i, result in enumerate(warnings, start=1):
+            note_id = result[3]
+            user_id = result[2]
+            full_date = result[6]
+            author_id = result[5]
+            reason = result[4]
+
+            dt = datetime.fromisoformat(full_date)
+            date = dt.strftime("%B %d, %Y")
+
+            warnings_text += f"**{note_id})** {date}, by <@{author_id}>  — {reason}\n"
+
+        await ctx.send(warnings_text.strip(), silent=True)
 
 
 

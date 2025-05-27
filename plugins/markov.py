@@ -188,14 +188,13 @@ class MarkovCog(commands.Cog):
 
     # respond on reply
     @commands.Cog.listener()
-    async def on_message(self, ctx, message):
+    async def on_message(self, message):
         if message.author.bot or not message.content:
             return
 
         if message.guild:
             await self.train_markov(message)
 
-        # check if clang is mentioned
         if self.bot.user in message.mentions:
             if not message.guild:
                 return
@@ -206,4 +205,4 @@ class MarkovCog(commands.Cog):
             
             response = self.generate_response(guild_id, seed_words)
             
-            await message.channel.send(f"{await author_ping(ctx.author)} {response}")
+            await message.channel.send(f"{await self.author_ping(message.author)} {response}")

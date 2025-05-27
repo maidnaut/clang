@@ -205,4 +205,5 @@ class MarkovCog(commands.Cog):
             
             response = self.generate_response(guild_id, seed_words)
             
-            await message.channel.send(f"{await author_ping(message.author)} {response}")
+            ctx = await self.bot.get_context(message)
+            await message.channel.send(f"{await user_ping(ctx, message.author)} {response}")

@@ -43,7 +43,6 @@ class ClangBot(commands.Bot):
             "Ping: ∞ms",
             "🍌 Banana for scale",
             "KERNEL PANIC",
-            "BONES = TRUE",
             "AAAAAAAAAAAAAAAAA",
             "NO NO NO NO NO",
             "WHAT'S THE WIFI PASSWORD???",

@@ -331,11 +331,13 @@ class CookieCog(commands.Cog):
                     db_update("cookies",
                             [f"user_id:{uid}", f"guild_id:{guild_id}"],
                             [("cookies", current + 1)])
+
+                ctx = await self.bot.get_context(message)
                 
                 if len(thanked_users) == 1:
-                    await message.channel.send(f"{await check_ping(thanked_users[0])} received a thank you cookie!")
+                    await message.channel.send(f"{await check_ping(ctx, thanked_users[0])} received a thank you cookie!")
                 else:
-                    names = ", ".join(u.mention for u in thanked_users[:-1]) + f" and {await check_ping(thanked_users[-1])}"
+                    names = ", ".join(u.mention for u in thanked_users[:-1]) + f" and {await check_ping(ctx, thanked_users[-1])}"
                     await message.channel.send(f"{names} received thank you cookies!")
 
     @commands.command()

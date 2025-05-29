@@ -440,11 +440,9 @@ class CookieCog(commands.Cog):
         # Ultra rare jackpot flag
         ultra_rare_hit = False
         
-        if roll == 0:
-            winnings = 0
-            multiplier = "0x"
-        else:
-            if roll >= 250:
+        # Calculate the roll
+        if amount.lower() == "all":
+            if roll >= 125:
                 ultra_rare = random.randint(1, 50)
                 if ultra_rare == 50:
                     winnings = amount_int * 50
@@ -453,35 +451,51 @@ class CookieCog(commands.Cog):
                 else:
                     winnings = amount_int * 10
                     multiplier = "10x"
-            elif roll >= 200:
-                winnings = amount_int * 2
-                multiplier = "2x"
-            elif roll >= 175:
-                winnings = round(amount_int * 1.75)
-                multiplier = "1.75x"
-            elif roll >= 150:
-                winnings = round(amount_int * 1.5)
-                multiplier = "1.5x"
-            elif roll >= 100:
-                winnings = round(amount_int * 1.25)
-                multiplier = "1.25x"
-            elif roll >= 50:
-                winnings = amount_int
-                multiplier = "1x"
-            elif roll >= 25:
-                winnings = round(amount_int * 0.25)
-                multiplier = "0.25x"
-            elif roll >= 5:
-                winnings = round(amount_int * 0.5)
-                multiplier = "0.5x"
-            else:  # Rolls 1-4
-                winnings = round(amount_int * 0.75)
-                multiplier = "0.75x"
+            else:
+                winnings = 0
+                multiplier = "0x"
+                new_balance = 0
+                net_gain = 0
 
-        if amount.lower() == "all" and roll == 0:
-            new_balance = 0
-            net_gain = 0
         else:
+            if roll == 0:
+                winnings = 0
+                multiplier = "0x"
+            else:
+                if roll >= 250:
+                    ultra_rare = random.randint(1, 50)
+                    if ultra_rare == 50:
+                        winnings = amount_int * 50
+                        multiplier = "50x"
+                        ultra_rare_hit = True
+                    else:
+                        winnings = amount_int * 10
+                        multiplier = "10x"
+                elif roll >= 200:
+                    winnings = amount_int * 2
+                    multiplier = "2x"
+                elif roll >= 175:
+                    winnings = round(amount_int * 1.75)
+                    multiplier = "1.75x"
+                elif roll >= 150:
+                    winnings = round(amount_int * 1.5)
+                    multiplier = "1.5x"
+                elif roll >= 100:
+                    winnings = round(amount_int * 1.25)
+                    multiplier = "1.25x"
+                elif roll >= 50:
+                    winnings = amount_int
+                    multiplier = "1x"
+                elif roll >= 25:
+                    winnings = round(amount_int * 0.25)
+                    multiplier = "0.25x"
+                elif roll >= 5:
+                    winnings = round(amount_int * 0.5)
+                    multiplier = "0.5x"
+                else:  # Rolls 1-4
+                    winnings = round(amount_int * 0.75)
+                    multiplier = "0.75x"
+
             new_balance = current - amount_int + winnings
             net_gain = winnings - amount_int
         

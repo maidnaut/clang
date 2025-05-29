@@ -377,16 +377,17 @@ class CookieCog(commands.Cog):
         user_id = ctx.author.id
         current_time = time.time()
         
-        # Cooldown logic
+        # Init cooldown
         if user_id not in self.gamble_cooldowns:
             self.gamble_cooldowns[user_id] = []
         
+        # Clean up old cooldowns
         self.gamble_cooldowns[user_id] = [
             t for t in self.gamble_cooldowns[user_id] 
             if current_time - t < self.GAMBLE_WINDOW
         ]
         
-        # Check for cooldown
+        # Cooldown
         if len(self.gamble_cooldowns[user_id]) >= self.GAMBLE_LIMIT:
             if user_id not in self.gamble_warnings or current_time - self.gamble_warnings[user_id] > 5:
                 wait_time = self.GAMBLE_WINDOW - int(current_time - self.gamble_cooldowns[user_id][0])
@@ -395,9 +396,13 @@ class CookieCog(commands.Cog):
                     f"Try again in {wait_time} seconds."
                 )
                 self.gamble_warnings[user_id] = current_time
-            return 
+            return
         
         self.gamble_cooldowns[user_id].append(current_time)
+        
+        # Clear cooldown if timer up
+        if user_id in self.gamble_warnings:
+            del self.gamble_warnings[user_id]
         
         if amount is None:
             await ctx.send(f"{await author_ping(ctx)} You must gamble at least 1 cookie: `!gamble <amount/all>`")

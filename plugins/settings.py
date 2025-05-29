@@ -49,18 +49,18 @@ class SettingsCog(commands.Cog):
             if not check_row:
                 if row_type == "role":
                     db_insert("roles", ["guild_id", "name", "role"], [guild_id, name, value])
-                    return await ctx.send(f"{await check_pings(ctx)} {name} role set!")
+                    return await ctx.send(f"{await author_ping(ctx)} {name} role set!")
                 elif row_type == "channel":
                     db_insert("logchans", ["guild_id", "name", "channel"], [guild_id, name, value])
-                    return await ctx.send(f"{await check_pings(ctx)} {name} channel/category set!")
+                    return await ctx.send(f"{await author_ping(ctx)} {name} channel/category set!")
 
             else:
                 if row_type == "role":
                     db_update("roles", [f"guild_id:{guild_id}", f"name:{name}"], [("role", value)])
-                    return await ctx.send(f"{await check_pings(ctx)} {name} role set!")
+                    return await ctx.send(f"{await author_ping(ctx)} {name} role set!")
                 elif row_type == "channel":
                     db_update("logchans", [f"guild_id:{guild_id}", f"name:{name}"], [("channel", value)])
-                    return await ctx.send(f"{await check_pings(ctx)} {name} channel/category set!")
+                    return await ctx.send(f"{await author_ping(ctx)} {name} channel/category set!")
 
         except Exception as e:
             await ctx.send(f"Database error: {e}")
@@ -106,10 +106,10 @@ class SettingsCog(commands.Cog):
         if user_level >= 4 or author == owner:
             if status == "on":
                 db_update("config", [f"guild_id:{guild_id}", f"name:elevation_enabled"], [("enabled", "y")])
-                return await ctx.send(f"{await check_pings(ctx)} !op is now required on this server.")
+                return await ctx.send(f"{await author_ping(ctx)} !op is now required on this server.")
             if status == "off":
                 db_update("config", [f"guild_id:{guild_id}", f"name:elevation_enabled"], [("enabled", "n")])
-                return await ctx.send(f"{await check_pings(ctx)} !op is now disabled on this server.")
+                return await ctx.send(f"{await author_ping(ctx)} !op is now disabled on this server.")
 
 
 
@@ -139,19 +139,19 @@ class SettingsCog(commands.Cog):
             all_roles = ", ".join(roles)
 
             if not role:
-                await ctx.send(f"{await check_pings(ctx)} Please select a role: `{all_roles}` \n-# !setrole <role> <id>")
+                await ctx.send(f"{await author_ping(ctx)} Please select a role: `{all_roles}` \n-# !setrole <role> <id>")
                 return
             
             if not id:
-                await ctx.send(f"{await check_pings(ctx)} Please provide an ID \n-# !setrole <role> <id>")
+                await ctx.send(f"{await author_ping(ctx)} Please provide an ID \n-# !setrole <role> <id>")
                 return
 
             if role not in roles:
-                await ctx.send(f"{await check_pings(ctx)} Please select a valid role: `{all_roles}` \n-# !setrole <role> <id>")
+                await ctx.send(f"{await author_ping(ctx)} Please select a valid role: `{all_roles}` \n-# !setrole <role> <id>")
                 return
 
             if not id.isdigit():
-                await ctx.send(f"{await check_pings(ctx)} Please provide a valid role ID \n-# !setrole <rold> <id>")
+                await ctx.send(f"{await author_ping(ctx)} Please provide a valid role ID \n-# !setrole <rold> <id>")
                 return
 
             await self.update(ctx, role, id, "role")
@@ -185,19 +185,19 @@ class SettingsCog(commands.Cog):
             all_channels = ", ".join(channels)
 
             if not channel:
-                await ctx.send(f"{await check_pings(ctx)} Please select a channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
+                await ctx.send(f"{await author_ping(ctx)} Please select a channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
                 return
             
             if not id:
-                await ctx.send(f"{await check_pings(ctx)} Please provide an ID \n-# !setchannel <channel> <id>")
+                await ctx.send(f"{await author_ping(ctx)} Please provide an ID \n-# !setchannel <channel> <id>")
                 return
 
             if channel not in channels:
-                await ctx.send(f"{await check_pings(ctx)} Please select a valid channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
+                await ctx.send(f"{await author_ping(ctx)} Please select a valid channel or category: `{all_channels}` \n-# !setchannel <channel> <id>")
                 return
 
             if not id.isdigit():
-                await ctx.send(f"{await check_pings(ctx)} Please provide a valid channel or category ID \n-# !setchannel <channel> <id>")
+                await ctx.send(f"{await author_ping(ctx)} Please provide a valid channel or category ID \n-# !setchannel <channel> <id>")
                 return
 
 

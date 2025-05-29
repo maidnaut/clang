@@ -62,6 +62,11 @@ class CookieCog(commands.Cog):
                 "desc": "Hack in cookies",
                 "perm": "admin"
             },
+            "take": {
+                "args": "<user> (amount)",
+                "desc": "Delete cookies",
+                "perm": "admin"
+            },
             "setrate": {
                 "args": "(amount)",
                 "desc": "Sets the rate for the random chance to recieve cookies on every message",
@@ -264,6 +269,37 @@ class CookieCog(commands.Cog):
                 [("cookies", cookies + amount)])
 
         await ctx.send(f"{await author_ping(ctx)} Airdropped {amount} cookies to {await user_ping(ctx, user)}! They now have {cookies + amount} cookies.")
+
+
+    # !take <user> <int>
+    @commands.command()
+    async def airdrop(self, ctx, user: discord.User = None, amount: int = None):
+        
+        user_level = await get_level(ctx)
+
+        if user_level < 4:
+            return
+
+        if user_level == 4:
+            return await ctx.send("!op?")
+        
+        if user is None or amount is None:
+            await ctx.send(f"{await author_ping(ctx)} ``!take <@user> <int>``")
+            return
+        
+        if amount <= 0:
+            await ctx.send(f"{await author_ping(ctx)} Amount must be positive!")
+            return
+
+        guild_id = ctx.guild.id
+        user_id = str(user.id)
+
+        cookies = self.check_cookies(guild_id, user_id)
+        db_update("cookies", 
+                [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
+                [("cookies", cookies - amount)])
+
+        await ctx.send(f"{await author_ping(ctx)} Took {amount} cookies from {await user_ping(ctx, user)}! They now have {cookies + amount} cookies.")
 
     # Cookie drop & thanks
     @commands.Cog.listener()

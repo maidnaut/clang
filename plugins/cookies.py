@@ -436,6 +436,6 @@ class CookieCog(commands.Cog):
             if roll == 200:
                 response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a {multiplier} and got {amount_str}! "
             else:
-                response = f"🥳 You won with a {multipler} multiplier! You got {amount_str}!"
+                response = f"🥳 You won with a {multiplier} multiplier! You got {amount_str}!"
 
         await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: {new_balance}.")

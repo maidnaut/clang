@@ -423,7 +423,7 @@ class CookieCog(commands.Cog):
             multiplier = "0x"
 
         # Figure out balance
-        if amount_int != current:
+        if amount.lower() != "all":
             new_balance = current - amount_int + winnings
             net_gain = winnings - amount_int
         else:
@@ -443,7 +443,7 @@ class CookieCog(commands.Cog):
         elif net_gain == 0:
             response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
         else:
-            if amount_int == current:
+            if amount.lower() == "all":
                 response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:cri:1369238296479273042>"
             else:
                 loss_amount = amount_int - winnings

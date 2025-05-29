@@ -410,8 +410,8 @@ class CookieCog(commands.Cog):
             winnings = (amount_int * 3 + 1) // 2  # 1.5x rounded
             multiplier = "1.5x"
         elif roll >= 50:
-            winnings = (amount_int * 11 + 9) // 10  # 1.1x rounded
-            multiplier = "1.1x"
+            winnings = (amount_int * 5 + 2) // 4  # 1.25x rounded
+            multiplier = "1.25x"
         else:
             winnings = 0
             multiplier = "0x"
@@ -434,8 +434,8 @@ class CookieCog(commands.Cog):
             response = f"Better luck next time! You lost {amount_str}."
         else:
             if roll == 200:
-                response = f"💰 💰 💰 **JACKPOT** - You WON BIG and got {amount_str}! "
+                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a {multiplier} and got {amount_str}! "
             else:
-                response = f"You won {amount_str}!"
+                response = f"🥳 You won with a {multipler} multiplier! You got {amount_str}!"
 
-        await ctx.send(f"{await author_ping(ctx)} {response} You now have {new_balance} cookies.")
+        await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: {new_balance}.")

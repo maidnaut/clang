@@ -344,7 +344,7 @@ class CookieCog(commands.Cog):
                 [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
                 [("cookies", cookies - amount)])
 
-        await ctx.send(f"{await author_ping(ctx)} Took {amount} cookies from {await user_ping(ctx, user)}! They now have {cookies + amount} cookies.")
+        await ctx.send(f"{await author_ping(ctx)} Took {amount} cookies from {await user_ping(ctx, user)}! They now have {cookies - amount} cookies.")
 
     # !setcookies <user> <int>
     @commands.command()

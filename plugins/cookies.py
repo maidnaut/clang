@@ -428,7 +428,7 @@ class CookieCog(commands.Cog):
         if amount.lower() == "all":
             amount_str = "``ALL`` your cookies"
         else:
-            amount_str = f"``{amount_int}`` cookies"
+            amount_str = f"``{net_gain}`` cookies"
 
         if winnings == 0:
             response = f"Better luck next time! You lost {amount_str}."

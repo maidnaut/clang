@@ -410,8 +410,8 @@ class CookieCog(commands.Cog):
             winnings = round(amount_int * 1.5)  # 1.5x
             multiplier = "1.5x"
         elif roll >= 50:
-            winnings = round(amount_int * 1.25)  # 1.25x
-            multiplier = "1.25x"
+            winnings = amount_int  # 1x
+            multiplier = "1x"
         else:
             winnings = 0
             multiplier = "0x"

@@ -409,6 +409,24 @@ class CookieCog(commands.Cog):
         
         await ctx.send(f"{await author_ping(ctx)} {response}")
 
+    # !resetcookies
+    @commands.command()
+    async def resetcookies(self, ctx):
+        # Permission check
+        user_level = await get_level(ctx)
+        if user_level < 4:
+            return
+        if user_level == 4:
+            return await ctx.send("!op?")
+
+        guild_id = ctx.guild.id
+        
+        db_update("cookies", 
+                [f"guild_id:{guild_id}"], 
+                [("cookies", 0)])
+        
+        await ctx.send(f"{await author_ping(ctx)} All cookies in this server have been reset to 0!")
+
     # Cookie drop & thanks
     @commands.Cog.listener()
     async def on_message(self, message):

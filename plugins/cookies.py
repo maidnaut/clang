@@ -68,6 +68,11 @@ class CookieCog(commands.Cog):
                 "desc": "Shows the cookie leaderboard",
                 "perm": "everyone"
             },
+            "gamble": {
+                "args": "<amount/all>",
+                "desc": "Gamble your cookies for a chance to win more",
+                "perm": "everyone"
+            },
         }
 
     # Make sure the cookies for the user exists and return an amouunt
@@ -340,6 +345,7 @@ class CookieCog(commands.Cog):
                     names = ", ".join(u.mention for u in thanked_users[:-1]) + f" and {await check_ping(ctx, thanked_users[-1])}"
                     await message.channel.send(f"{names} received thank you cookies!")
 
+    # !leaderboard
     @commands.command()
     async def leaderboard(self, ctx):
         guild_id = ctx.guild.id
@@ -359,3 +365,74 @@ class CookieCog(commands.Cog):
             description=leaderboard or "No cookie data found.",
             color=discord.Color.gold()
         ))
+
+    # !gamba
+    @commands.command()
+    async def gamble(self, ctx, amount: str = None):
+        
+        if amount is None:
+            await ctx.send(f"{await author_ping(ctx)} You must gamble at least 1 cookie: `!gamble <amount/all>`")
+            return
+
+        guild_id = ctx.guild.id
+        user_id = str(ctx.author.id)
+        current = self.check_cookies(guild_id, user_id)
+
+        if amount.lower() == "all":
+            if current <= 0:
+                await ctx.send(f"{await author_ping(ctx)} You don't have any cookies to gamble!")
+                return
+            amount_int = current
+        else:
+            try:
+                amount_int = int(amount)
+            except ValueError:
+                await ctx.send(f"{await author_ping(ctx)} Please enter a valid number or 'all'")
+                return
+
+        if amount_int <= 0:
+            await ctx.send(f"{await author_ping(ctx)} Amount must be positive!")
+            return
+
+        if current < amount_int:
+            await ctx.send(f"Sorry {await author_ping(ctx)}, I don't had out cookies for free. Come back when you're a little mmm, richer.")
+            return
+
+        roll = random.randint(1, 100)
+        
+        if roll == 100:  # Jackpot (1% chance)
+            winnings = amount_int * 10
+            multiplier = "10x"
+        elif roll >= 90:  # 10% chance (90-99)
+            winnings = amount_int * 2
+            multiplier = "2x"
+        elif roll >= 50:  # 40% chance (50-89)
+            winnings = (amount_int * 3 + 1) // 2  # 1.5x rounded
+            multiplier = "1.5x"
+        else:  # 49% chance (1-49)
+            winnings = 0
+            multiplier = "0x"
+
+        # Figure out balance
+        new_balance = current - amount_int + winnings
+        net_gain = winnings - amount_int
+        
+        db_update("cookies",
+                 [f"user_id:{user_id}", f"guild_id:{guild_id}"],
+                 [("cookies", new_balance)])
+
+        # Respond
+        if amount.lower() == "all":
+            amount_str = "ALL your cookies"
+        else:
+            amount_str = f"{amount_int} cookies"
+
+        if winnings == 0:
+            response = f"Better luck next time! You lost {amount_str} with a roll of {roll}."
+        else:
+            if roll == 100:
+                response = f"💰 💰 💰 **JACKPOT** - You rolled a {roll} and won {winnings} cookies! "
+            else:
+                response = f"You rolled a {roll} and won {winnings} cookies!"
+
+        await ctx.send(f"{await author_ping(ctx)} {response}\nYou now have {new_balance} cookies.")

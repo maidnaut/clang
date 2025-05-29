@@ -398,10 +398,10 @@ class CookieCog(commands.Cog):
             await ctx.send(f"Sorry {await author_ping(ctx)}, I don't hand out cookies for free. Come back when you're a little mmm, richer.")
             return
 
-        roll = random.randint(1, 200)
+        roll = random.randint(1, 250)
         
         ultra_rare = 0
-        if roll == 200:
+        if roll == 250:
             ulra_rare = random.randint(1, 100)
 
             if ulta_rare == 100:
@@ -410,22 +410,25 @@ class CookieCog(commands.Cog):
             else:
                 winnings = amount_int * 10
                 multiplier = "10x"
-        elif roll >= 175:
+        elif roll >= 200:
             winnings = amount_int * 2
             multiplier = "2x"
-        elif roll >= 150:
+        elif roll >= 175:
             winnings = round(amount_int * 1.75)
             multiplier = "1.75x"
-        elif roll >= 125:
+        elif roll >= 150:
             winnings = round(amount_int * 1.5)  # 1.5x
             multiplier = "1.5x"
         elif roll >= 100:
+            winnings = round(amount_int * 1.25)  # 1.25x
+            multiplier = "1.25x"
+        elif roll >= 50:
             winnings = amount_int  # 1x
             multiplier = "1x"
-        elif roll >= 50:
+        elif roll >= 25:
             winnings = round(amount_int * 0.25)  # 0.25x
             multiplier = "0.25x"
-        elif roll >= 25:
+        elif roll >= 1:
             winnings = round(amount_int * 0.5)  # 0.5x
             multiplier = "0.5x"
         else:

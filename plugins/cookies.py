@@ -400,40 +400,44 @@ class CookieCog(commands.Cog):
 
         roll = random.randint(0, 250)
         
-        ultra_rare = 0
-        if roll == 250:
-            ulra_rare = random.randint(1, 100)
-
-            if ulta_rare == 100:
-                winnings = amount_int * 50
-                multiplier = "50x"
-            else:
-                winnings = amount_int * 10
-                multiplier = "10x"
-        elif roll >= 200:
-            winnings = amount_int * 2
-            multiplier = "2x"
-        elif roll >= 175:
-            winnings = round(amount_int * 1.75)
-            multiplier = "1.75x"
-        elif roll >= 150:
-            winnings = round(amount_int * 1.5)  # 1.5x
-            multiplier = "1.5x"
-        elif roll >= 100:
-            winnings = round(amount_int * 1.25)  # 1.25x
-            multiplier = "1.25x"
-        elif roll >= 50:
-            winnings = amount_int  # 1x
-            multiplier = "1x"
-        elif roll >= 25:
-            winnings = round(amount_int * 0.25)  # 0.25x
-            multiplier = "0.25x"
-        elif roll >= 1:
-            winnings = round(amount_int * 0.5)  # 0.5x
-            multiplier = "0.5x"
-        else:
+        if roll == 0:
             winnings = 0
             multiplier = "0x"
+        else:
+            ultra_rare = 0
+            if roll == 250:
+                ulra_rare = random.randint(1, 100)
+
+                if ulta_rare == 100:
+                    winnings = amount_int * 50
+                    multiplier = "50x"
+                else:
+                    winnings = amount_int * 10
+                    multiplier = "10x"
+            elif roll >= 200:
+                winnings = amount_int * 2
+                multiplier = "2x"
+            elif roll >= 175:
+                winnings = round(amount_int * 1.75)
+                multiplier = "1.75x"
+            elif roll >= 150:
+                winnings = round(amount_int * 1.5)  # 1.5x
+                multiplier = "1.5x"
+            elif roll >= 100:
+                winnings = round(amount_int * 1.25)  # 1.25x
+                multiplier = "1.25x"
+            elif roll >= 50:
+                winnings = amount_int  # 1x
+                multiplier = "1x"
+            elif roll >= 25:
+                winnings = round(amount_int * 0.25)  # 0.25x
+                multiplier = "0.25x"
+            elif roll >= 5:
+                winnings = round(amount_int * 0.5)  # 0.5x
+                multiplier = "0.5x"
+            else:
+                winnings = round(amount_int * 0.75)  # 0.75x
+                multiplier = "0.75x"
 
         new_balance = current - amount_int + winnings
         net_gain = winnings - amount_int

@@ -195,6 +195,7 @@ class CookieCog(commands.Cog):
     # !transfer <user< <amount>
     @commands.command()
     async def transfer(self, ctx, user_input: str = None, amount: str = None):
+
         if user_input is None or amount is None:
             return await ctx.send(f"{await author_ping(ctx)} Usage: `!transfer @user amount`")
 
@@ -208,6 +209,10 @@ class CookieCog(commands.Cog):
 
         member = await self.membercheck(ctx, user_input)
         if not member:
+            return
+
+        if member == ctx.author:
+            return await ctx.send(f"{await author_ping(ctx)} You can't transfer cookies to yourself!")
             return
 
         sender_id = str(ctx.author.id)

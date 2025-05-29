@@ -461,6 +461,6 @@ class CookieCog(commands.Cog):
                 if winnings > 0:
                     response = f"😔 You lost ``{loss_amount}`` cookies!"
                 else:
-                    response = f"😔 You lost all ``{amount_int}`` cookies!"
+                    response = f"🎲 🎲 **SNAKE EYES** - You lost ALL {amount_int} cookies!! <:cri:1369238296479273042>"
 
         await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{new_balance}``")

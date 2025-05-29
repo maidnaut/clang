@@ -166,19 +166,30 @@ class CookieCog(commands.Cog):
 
         receiver_cookies = self.check_cookies(guild_id, receiver_id)
 
-        if reciever_cookies < self.MAX_COOKIES:
-            db_update("cookies",
-                    [f"user_id:{sender_id}", f"guild_id:{guild_id}"],
-                    [("cookies", sender_cookies - 1)])
-            
-            db_update("cookies",
-                    [f"user_id:{receiver_id}", f"guild_id:{guild_id}"],
-                    [("cookies", receiver_cookies + 1)])
-            await ctx.send(f"{await author_ping(ctx)} gave a cookie to {await user_ping(ctx, member)}!")
-            return
+        # Check if receiver is at cookie cap
+        if receiver_cookies >= self.MAX_COOKIES:
+            return await ctx.send(f"{await author_ping(ctx)} I can't give a cookie to {await user_ping(ctx, member)}, they've already won capitalism!")
+
+        # Calculate remaineder from max
+        available_space = self.MAX_COOKIES - receiver_cookies
+        actual_give = min(1, available_space)
+
+        db_update("cookies",
+                [f"user_id:{sender_id}", f"guild_id:{guild_id}"],
+                [("cookies", sender_cookies - 1)])
+        
+        db_update("cookies",
+                [f"user_id:{receiver_id}", f"guild_id:{guild_id}"],
+                [("cookies", receiver_cookies + actual_give)])
+
+        # Handle 1,000,000 case
+        if receiver_cookies + actual_give == self.MAX_COOKIES:
+            await ctx.send(
+                f"{await author_ping(ctx)} gave a cookie to {await user_ping(ctx, member)}!\n"
+                f"💎💎💎 **{await user_ping(ctx, member)} YOU WON CAPITALISM!** 💎💎💎"
+            )
         else:
-            await ctx.send(f"{await author_ping(ctx)} I can't give a cookie to {await user_ping(ctx, member)}, they've already won capitalism!")
-            return
+            await ctx.send(f"{await author_ping(ctx)} gave a cookie to {await user_ping(ctx, member)}!")
         
 
     # !transfer <user< <amount>
@@ -188,11 +199,11 @@ class CookieCog(commands.Cog):
             return await ctx.send(f"{await author_ping(ctx)} Usage: `!transfer @user amount`")
 
         try:
-            amount = int(amount)
+            amount_int = int(amount)
         except ValueError:
             return await ctx.send(f"{await author_ping(ctx)} Please provide a valid amount.")
         
-        if amount <= 0:
+        if amount_int <= 0:
             return await ctx.send(f"{await author_ping(ctx)} Amount must be positive!")
 
         member = await self.membercheck(ctx, user_input)
@@ -204,41 +215,47 @@ class CookieCog(commands.Cog):
         guild_id = str(ctx.guild.id)
 
         sender_cookies = self.check_cookies(guild_id, sender_id)
-        if sender_cookies < amount:
-            return await ctx.send(f"{await author_ping(ctx)} You don't have enough cookies to transfer {amount}!")
+        if sender_cookies < amount_int:
+            return await ctx.send(f"{await author_ping(ctx)} You don't have enough cookies to transfer {amount_int}!")
 
         receiver_cookies = self.check_cookies(guild_id, receiver_id)
 
+        # Check if they won capitalism
+        if receiver_cookies >= self.MAX_COOKIES:
+            return await ctx.send(f"{await author_ping(ctx)} I can't transfer cookies to {await user_ping(ctx, member)}, they've already won capitalism!")
 
-        if receiver_cookies > self.MAX_COOKIES:
-
-            # Calculate remainder to max
-            actual_cookies = self.MAX_COOKIES - (reciever_cookies - amount)
-            actual_amount = actual_cookies - amount
-            
-            # Cap balance
-            db_update("cookies", 
-                    [f"user_id:{sender_id}", f"guild_id:{guild_id}"], 
-                    [("cookies", sender_cookies - actual_amount)])
-            
-            db_update("cookies", 
-                    [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], 
-                    [("cookies", receiver_cookies + actual_amount)])
+        # Calc remainder from limit
+        available_space = self.MAX_COOKIES - receiver_cookies
+        actual_transfer = min(amount_int, available_space)
         
-            await ctx.send(f"{await author_ping(ctx)} The most I could transfer was {actual_amount} cookies to {await user_ping(ctx, member)}!")
-            return
+        # Actual cookie transfer
+        receiver_new_balance = receiver_cookies + actual_transfer
+        
+        # Update balances
+        db_update("cookies",
+                [f"user_id:{sender_id}", f"guild_id:{guild_id}"],
+                [("cookies", sender_cookies - actual_transfer)])
+        
+        db_update("cookies",
+                [f"user_id:{receiver_id}", f"guild_id:{guild_id}"],
+                [("cookies", receiver_new_balance)])
 
+        # Did they win?
+        if actual_transfer < amount_int:
+            # Partial transfer
+            response = (
+                f"{await author_ping(ctx)} transferred {actual_transfer:,} of {amount_int:,} cookies to "
+                f"{await user_ping(ctx, member)} (reached capitalism cap)"
+            )
         else:
-            db_update("cookies", 
-                    [f"user_id:{sender_id}", f"guild_id:{guild_id}"], 
-                    [("cookies", sender_cookies - amount)])
-            
-            db_update("cookies", 
-                    [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], 
-                    [("cookies", receiver_cookies + amount)])
+            # Full transfer
+            response = f"{await author_ping(ctx)} transferred {actual_transfer:,} cookies to {await user_ping(ctx, member)}!"
 
-            await ctx.send(f"{await author_ping(ctx)} Transferred {amount} cookies to {await user_ping(ctx, member)}!")
-            return
+        # They won!
+        if receiver_new_balance == self.MAX_COOKIES:
+            response += f"\💎💎💎 **{await user_ping(ctx, member)} YOU WON CAPITALISM!** 💎💎💎"
+
+        await ctx.send(response)
 
     # !setrate <int>
     @commands.command()
@@ -270,49 +287,53 @@ class CookieCog(commands.Cog):
     # !airdrop <user> <int>
     @commands.command()
     async def airdrop(self, ctx, user: discord.User = None, amount: int = None):
-        
-        user_level = await get_level(ctx)
 
+        # Permission check
+        user_level = await get_level(ctx)
         if user_level < 4:
             return
-
         if user_level == 4:
             return await ctx.send("!op?")
         
+        # Input validation
         if user is None or amount is None:
-            await ctx.send(f"{await author_ping(ctx)} ``!airdrop <@user> <int>``")
-            return
-        
+            return await ctx.send(f"{await author_ping(ctx)} ``!airdrop <@user> <int>``")
         if amount <= 0:
-            await ctx.send(f"{await author_ping(ctx)} Amount must be positive!")
-            return
+            return await ctx.send(f"{await author_ping(ctx)} Amount must be positive!")
 
         guild_id = ctx.guild.id
         user_id = str(user.id)
+        current = self.check_cookies(guild_id, user_id)
 
-        cookies = self.check_cookies(guild_id, user_id)
+        # Calc remainder from cap
+        available_space = max(0, self.MAX_COOKIES - current)
+        actual_airdrop = min(amount, available_space)
+        new_balance = current + actual_airdrop
 
+        # Update database
+        db_update("cookies", 
+                 [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
+                 [("cookies", new_balance)])
 
-        if cookies > self.MAX_COOKIES:
-
-            # Calculate remainder to max
-            actual_cookies = self.MAX_COOKIES - (cookies - amount)
-            actual_amount = actual_cookies - amount
-
-            db_update("cookies", 
-                    [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
-                    [("cookies", cookies + amount)])
-
-            await ctx.send(f"{await author_ping(ctx)} The most I could airdrop to {await user_ping(ctx, user)} was {actual_amount}! They now have {cookies + actual_amount} cookies.")
-            return
-            
+        # Response
+        if actual_airdrop == 0:
+            response = f"{await user_ping(ctx, user)} already has {current:,} cookies - no airdrop needed!"
+        elif actual_airdrop < amount:
+            response = (
+                f"Airdropped {actual_airdrop:,} of {amount:,} cookies to {await user_ping(ctx, user)} "
+                f"(reached capitalism cap). New balance: {new_balance:,}"
+            )
         else:
-            db_update("cookies", 
-                [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
-                [("cookies", cookies + amount)])
-
-            await ctx.send(f"{await author_ping(ctx)} Airdropped {amount} cookies to {await user_ping(ctx, user)}! They now have {cookies + amount} cookies.")
-            return
+            response = (
+                f"Airdropped {actual_airdrop:,} cookies to {await user_ping(ctx, user)}! "
+                f"New balance: {new_balance:,}"
+            )
+            
+        # Did they win?
+        if new_balance == self.MAX_COOKIES:
+            response += f"\n💎💎💎 **{await user_ping(ctx, user)} HAS WON CAPITALISM!** 💎💎💎"
+        
+        await ctx.send(f"{await author_ping(ctx)} {response}")
 
 
 
@@ -349,38 +370,48 @@ class CookieCog(commands.Cog):
     # !setcookies <user> <int>
     @commands.command()
     async def setcookies(self, ctx, user: discord.User = None, amount: int = None):
-        
+        # Permission check
         user_level = await get_level(ctx)
-
         if user_level < 4:
             return
-
         if user_level == 4:
             return await ctx.send("!op?")
         
+        # Input validation
         if user is None or amount is None:
-            await ctx.send(f"{await author_ping(ctx)} ``!setcookies <@user> <int>``")
-            return
-        
+            return await ctx.send(f"{await author_ping(ctx)} ``!setcookies <@user> <int>``")
         if amount <= 0:
-            await ctx.send(f"{await author_ping(ctx)} Amount must be positive!")
-            return
+            return await ctx.send(f"{await author_ping(ctx)} Amount must be positive!")
 
         guild_id = ctx.guild.id
         user_id = str(user.id)
-
-        cookies = self.check_cookies(guild_id, user_id)
+        
+        # Cap
+        capped_amount = min(amount, self.MAX_COOKIES)
+        
+        # Update database
         db_update("cookies", 
                 [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
-                [("cookies", amount)])
+                [("cookies", capped_amount)])
 
-        await ctx.send(f"{await author_ping(ctx)} Set {await user_ping(ctx, user)}'s cookies to {amount}! They now have {amount} cookies.")
+        # Response
+        if amount > self.MAX_COOKIES:
+            response = (
+                f"Set {await user_ping(ctx, user)}'s cookies to {capped_amount:,} "
+                f"(capped from {amount:,} due to capitalism limit)"
+            )
+        else:
+            response = f"Set {await user_ping(ctx, user)}'s cookies to {capped_amount:,}"
 
+        # Did they win?
+        if capped_amount == self.MAX_COOKIES:
+            response += f"\n💎💎💎 **{await user_ping(ctx, user)} HAS WON CAPITALISM!** 💎💎💎"
+        
+        await ctx.send(f"{await author_ping(ctx)} {response}")
 
     # Cookie drop & thanks
     @commands.Cog.listener()
     async def on_message(self, message):
-
         # Don't self check
         if message.author.bot:
             return
@@ -398,11 +429,13 @@ class CookieCog(commands.Cog):
         
         if random.randint(1, rate) == 1:
             current = self.check_cookies(guild_id, user_id)
-            db_update("cookies",
-                    [f"user_id:{user_id}", f"guild_id:{guild_id}"],
-                    [("cookies", current + 1)])
+            if current < self.MAX_COOKIES:
+                new_balance = min(current + 1, self.MAX_COOKIES)
+                db_update("cookies",
+                         [f"user_id:{user_id}", f"guild_id:{guild_id}"],
+                         [("cookies", new_balance)])
 
-        # Thanks
+        # Thanks handling with capitalism cap
         preNoPattern1 = r"\b(?<!no)"
         preNoPattern2 = r"\b(?<!no\s)"
         postNoPattern = r"(?! but)"
@@ -421,9 +454,7 @@ class CookieCog(commands.Cog):
             current_time = int(time.time())
             if current_time - user_cooldown["time"] < self.THANK_COOLDOWN:
                 if user_cooldown["count"] >= self.THANK_LIMIT:
-                    await message.channel.send(
-                        "Too many thank you's!!!",
-                    )
+                    await message.channel.send("Too many thank you's!!!")
                     return
                 else:
                     user_cooldown["count"] += 1
@@ -446,20 +477,42 @@ class CookieCog(commands.Cog):
             thanked_users = list({u.id: u for u in thanked_users}.values())
             
             if thanked_users:
+                capitalism_achievers = []
+                valid_recipients = []
+                
                 for user in thanked_users:
                     uid = str(user.id)
-                    current = self.check_cookies(guild_id, uid)
+                    current_cookies = self.check_cookies(guild_id, uid)
+                    
+                    # Skip if user has already won capitalism
+                    if current_cookies >= self.MAX_COOKIES:
+                        continue
+                    
+                    # Calculate new balance with cap
+                    new_balance = min(current_cookies + 1, self.MAX_COOKIES)
                     db_update("cookies",
-                            [f"user_id:{uid}", f"guild_id:{guild_id}"],
-                            [("cookies", current + 1)])
-
-                ctx = await self.bot.get_context(message)
+                             [f"user_id:{uid}", f"guild_id:{guild_id}"],
+                             [("cookies", new_balance)])
+                    
+                    valid_recipients.append(user)
+                    
+                    # Check if this thank made them reach exactly 1M
+                    if new_balance == self.MAX_COOKIES:
+                        capitalism_achievers.append(user)
                 
-                if len(thanked_users) == 1:
-                    await message.channel.send(f"{await check_ping(ctx, thanked_users[0])} received a thank you cookie!")
-                else:
-                    names = ", ".join(u.mention for u in thanked_users[:-1]) + f" and {await check_ping(ctx, thanked_users[-1])}"
-                    await message.channel.send(f"{names} received thank you cookies!")
+                # Only send messages if there are valid recipients
+                if valid_recipients:
+                    ctx = await self.bot.get_context(message)
+                    
+                    if len(valid_recipients) == 1:
+                        await message.channel.send(f"{await check_ping(ctx, valid_recipients[0])} received a thank you cookie!")
+                    else:
+                        names = ", ".join(u.mention for u in valid_recipients[:-1]) + f" and {await check_ping(ctx, valid_recipients[-1])}"
+                        await message.channel.send(f"{names} received thank you cookies!")
+                
+                # Celebrate capitalism achievers
+                for achiever in capitalism_achievers:
+                    await message.channel.send(f"💎💎💎 {await check_ping(ctx, achiever)} HAS WON CAPITALISM! 💎💎💎")
 
     # !leaderboard
     @commands.command()
@@ -467,20 +520,62 @@ class CookieCog(commands.Cog):
         guild_id = ctx.guild.id
         cookies = db_read("cookies", [f"guild_id:{guild_id}"])
         
-        cookies = sorted(cookies, key=lambda x: x[3], reverse=True)
-        top_10 = cookies[:10]
+        # Filter out users who have reached capitalism (1M+ cookies)
+        active_players = [c for c in cookies if c[3] < self.MAX_COOKIES]
+        active_players = sorted(active_players, key=lambda x: x[3], reverse=True)
+        top_10 = active_players[:10]
 
         leaderboard = ""
         for i, cookie in enumerate(top_10, start=1):
             user = await get_user(ctx, cookie[2])
             if user != "N/A":
-                leaderboard += f"**#{i}** {await user_ping(ctx, user)} - {cookie[3]}\n"
+                formatted_cookies = f"{cookie[3]:,}"
+                leaderboard += f"**#{i}** {await user_ping(ctx, user)} - {formatted_cookies}\n"
 
-        await ctx.send(embed=discord.Embed(
-            title="Cookie Leaderboard",
-            description=leaderboard or "No cookie data found.",
+        embed = discord.Embed(
+            title="Leaderboard",
+            description=leaderboard or "Could not generate leaderboard.",
             color=discord.Color.gold()
-        ))
+        )
+        await ctx.send(embed=embed)
+
+    # !halloffame
+    @commands.command()
+    async def halloffame(self, ctx, page: int = 1):
+        guild_id = ctx.guild.id
+        cookies = db_read("cookies", [f"guild_id:{guild_id}"])
+        
+        # Get all capitalism achievers (1M+ cookies)
+        hall_of_famers = [c for c in cookies if c[3] >= self.MAX_COOKIES]
+        hall_of_famers = sorted(hall_of_famers, key=lambda x: x[3], reverse=True)
+        
+        if not hall_of_famers:
+            await ctx.send("No one has won capitalism yet!")
+            return
+        
+        # Pagination setup
+        PER_PAGE = 10
+        total_pages = (len(hall_of_famers) + PER_PAGE - 1) // PER_PAGE
+        page = max(1, min(page, total_pages))
+        
+        start_index = (page - 1) * PER_PAGE
+        end_index = start_index + PER_PAGE
+        page_entries = hall_of_famers[start_index:end_index]
+        
+        hall_of_fame = ""
+        for i, cookie in enumerate(page_entries, start=start_index+1):
+            user = await get_user(ctx, cookie[2])
+            if user != "N/A":
+                formatted_cookies = f"{cookie[3]:,}"
+                hall_of_fame += f"**💎 #{i}** {await user_ping(ctx, user)} - {formatted_cookies}\n"
+
+        embed = discord.Embed(
+            title="🏆 Filthy Capitalist Millionaires 🏆",
+            description=hall_of_fame,
+            color=discord.Color.dark_gold()
+        )
+        embed.set_footer(text=f"Page {page}/{total_pages} | {len(hall_of_famers)} total capitalists")
+        await ctx.send(embed=embed)
 
     # !gamba
     @commands.command(aliases=['bet'])
@@ -639,13 +734,13 @@ class CookieCog(commands.Cog):
             # You win!
             if actual_winnings > 0:
                 response = (
-                    f"💲💲💲 **YOU WON CAPITALISM!** 💲💲💲\n"
+                    f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
                     f"Your winnings of {winnings} cookies were capped at 1,000,000!\n"
                     f"You received {actual_winnings} cookies instead (Net: +{actual_net_gain})."
                 )
             else:
                 response = (
-                    f"💲💲💲 **YOU WON CAPITALISM!** 💲💲💲\n"
+                    f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
                     f"Your balance was already at 1,000,000 cookies!\n"
                     f"No additional winnings were awarded."
                 )

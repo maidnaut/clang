@@ -29,6 +29,7 @@ class CookieCog(commands.Cog):
         self.bot = bot
         self.thank_cooldowns = {}
         self.gamble_cooldowns = {}
+        self.gamble_warnings = {}
         self.THANK_COOLDOWN = 60
         self.THANK_LIMIT = 3
         self.GAMBLE_LIMIT = 10
@@ -385,11 +386,16 @@ class CookieCog(commands.Cog):
             if current_time - t < self.GAMBLE_WINDOW
         ]
         
+        # Check for cooldown
         if len(self.gamble_cooldowns[user_id]) >= self.GAMBLE_LIMIT:
-            wait_time = self.GAMBLE_WINDOW - int(current_time - self.gamble_cooldowns[user_id][0])
-            if user_id not in self.gamble_cooldowns:
-                await ctx.send(f"{await author_ping(ctx)} Slow down! You've used this command too much. Try again in {wait_time} seconds.")
-            return
+            if user_id not in self.gamble_warnings or current_time - self.gamble_warnings[user_id] > 5:
+                wait_time = self.GAMBLE_WINDOW - int(current_time - self.gamble_cooldowns[user_id][0])
+                await ctx.send(
+                    f"{await author_ping(ctx)} Slow down! You've used this command too much. "
+                    f"Try again in {wait_time} seconds."
+                )
+                self.gamble_warnings[user_id] = current_time
+            return 
         
         self.gamble_cooldowns[user_id].append(current_time)
         
@@ -420,7 +426,7 @@ class CookieCog(commands.Cog):
             await ctx.send(f"Sorry {await author_ping(ctx)}, I don't hand out cookies for free. Come back when you're a little mmm, richer.")
             return
 
-        roll = random.randint(0, 250)
+        roll = random.randint(0, 300)
         
         # Ultra rare jackpot flag
         ultra_rare_hit = False
@@ -429,9 +435,9 @@ class CookieCog(commands.Cog):
             winnings = 0
             multiplier = "0x"
         else:
-            if roll == 250:
-                ultra_rare = random.randint(1, 100)
-                if ultra_rare == 100:
+            if roll >= 250:
+                ultra_rare = random.randint(1, 50)
+                if ultra_rare == 50:
                     winnings = amount_int * 50
                     multiplier = "50x"
                     ultra_rare_hit = True

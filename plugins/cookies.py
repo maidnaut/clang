@@ -412,10 +412,10 @@ class CookieCog(commands.Cog):
         elif roll >= 100:
             winnings = amount_int  # 1x
             multiplier = "1x"
-        elif roll >= 50:
+        elif roll >= 30:
             winnings = round(amount_int * 0.25)  # 0.25x
             multiplier = "0.25x"
-        elif roll >= 25:
+        elif roll >= 15:
             winnings = round(amount_int * 0.5)  # 0.5x
             multiplier = "0.5x"
         else:

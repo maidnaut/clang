@@ -737,39 +737,44 @@ class CookieCog(commands.Cog):
         new_balance = current - amount_int + winnings
         net_gain = winnings - amount_int
         
-        # Cap it out
-        if new_balance > self.MAX_COOKIES:
-
-            # Calculate remainder to max
-            actual_winnings = self.MAX_COOKIES - (current - amount_int)
-            actual_net_gain = actual_winnings - amount_int
-            
-            # Cap balance
+        if dead == True:
             db_update("cookies",
-                     [f"user_id:{user_id}", f"guild_id:{guild_id}"],
-                     [("cookies", self.MAX_COOKIES)])
-            
-            # You win!
-            if actual_winnings > 0:
-                response = (
-                    f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
-                    f"Your winnings of {winnings} cookies were capped at 1,000,000!\n"
-                    f"You received {actual_winnings} cookies instead (Net: +{actual_net_gain})."
-                )
-            else:
-                response = (
-                    f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
-                    f"Your balance was already at 1,000,000 cookies!\n"
-                    f"No additional winnings were awarded."
-                )
-            
-            await ctx.send(f"{await author_ping(ctx)} {response}")
-            return
+                [f"user_id:{user_id}", f"guild_id:{guild_id}"],
+                [("cookies", "0")])
+        else:
+            # Cap it out
+            if new_balance > self.MAX_COOKIES:
+
+                # Calculate remainder to max
+                actual_winnings = self.MAX_COOKIES - (current - amount_int)
+                actual_net_gain = actual_winnings - amount_int
+                
+                # Cap balance
+                db_update("cookies",
+                        [f"user_id:{user_id}", f"guild_id:{guild_id}"],
+                        [("cookies", self.MAX_COOKIES)])
+                
+                # You win!
+                if actual_winnings > 0:
+                    response = (
+                        f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
+                        f"Your winnings of {winnings} cookies were capped at 1,000,000!\n"
+                        f"You received {actual_winnings} cookies instead (Net: +{actual_net_gain})."
+                    )
+                else:
+                    response = (
+                        f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
+                        f"Your balance was already at 1,000,000 cookies!\n"
+                        f"No additional winnings were awarded."
+                    )
+                
+                await ctx.send(f"{await author_ping(ctx)} {response}")
+                return
         
-        # Regular update
-        db_update("cookies",
-                 [f"user_id:{user_id}", f"guild_id:{guild_id}"],
-                 [("cookies", new_balance)])
+            # Regular update
+            db_update("cookies",
+                    [f"user_id:{user_id}", f"guild_id:{guild_id}"],
+                    [("cookies", new_balance)])
 
         # Response
         if dead == True:

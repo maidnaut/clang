@@ -443,7 +443,7 @@ class CookieCog(commands.Cog):
         
         # Calculate the roll
         if amount.lower() == "all":
-            if roll == 125:
+            if roll >= 125:
                 ultra_rare = random.randint(1, 50)
                 if ultra_rare == 50:
                     winnings = amount_int * 50

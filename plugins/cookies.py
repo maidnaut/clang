@@ -444,7 +444,7 @@ class CookieCog(commands.Cog):
             response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
         else:
             if amount_int == current:
-                response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:nooo~1:1368707455139184640>"
+                response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:cri:1369238296479273042>"
             else:
                 loss_amount = amount_int - winnings
                 if winnings > 0:

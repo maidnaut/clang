@@ -423,8 +423,12 @@ class CookieCog(commands.Cog):
             multiplier = "0x"
 
         # Figure out balance
-        new_balance = current - amount_int + winnings
-        net_gain = winnings - amount_int
+        if amount_int != current:
+            new_balance = current - amount_int + winnings
+            net_gain = winnings - amount_int
+        else:
+            new_balance = int(0)
+            net_gain = -current
         
         db_update("cookies",
                  [f"user_id:{user_id}", f"guild_id:{guild_id}"],

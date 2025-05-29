@@ -413,11 +413,11 @@ class CookieCog(commands.Cog):
             winnings = amount_int  # 1x
             multiplier = "1x"
         elif roll >= 50:
-            winnings = round(amount_int * 0.25)  # -0.25x
-            multiplier = "-0.25x"
+            winnings = round(amount_int * 0.25)  # 0.25x
+            multiplier = "0.25x"
         elif roll >= 25:
-            winnings = round(amount_int * 0.5)  # -0.5x
-            multiplier = "-0.5x"
+            winnings = round(amount_int * 0.5)  # 0.5x
+            multiplier = "0.5x"
         else:
             winnings = 0
             multiplier = "0x"
@@ -430,21 +430,20 @@ class CookieCog(commands.Cog):
                  [f"user_id:{user_id}", f"guild_id:{guild_id}"],
                  [("cookies", new_balance)])
 
-        # Respond
-        if amount.lower() == "all":
-            amount_str = "``ALL`` your cookies"
-        else:
-            amount_str = f"``{net_gain}`` cookies"
-
+        # Respond with accurate information
         if net_gain > 0:
             if roll == 200:
-                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` and got {amount_str}!"
+                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies"
             else:
-                if winnings == amount_int:
-                    response = f"You broke even! You got your {amount_int} cookies back."
-                else:
-                    response = f"🥳 You won with a ``{multiplier}`` multiplier! You got {amount_str}!"
+                response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies"
+        elif net_gain == 0:
+            response = f"➖ You broke even! You got your ``{amount_int}`` cookies back"
         else:
-            response = f"Better luck next time! You lost {amount_str}."
+            # For losses, show the actual amount lost
+            loss_amount = amount_int - winnings
+            if winnings > 0:
+                response = f"You lost ``{loss_amount}`` cookies"
+            else:
+                response = f"You lost all ``{amount_int}`` cookies"
 
-        await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{new_balance}``")
+        await ctx.send(f"{await author_ping(ctx)} {response}\nCurrent cookies: ``{new_balance}``")

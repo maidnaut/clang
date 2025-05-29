@@ -367,7 +367,7 @@ class CookieCog(commands.Cog):
         ))
 
     # !gamba
-    @commands.command()
+    @commands.command(aliases=['bet'])
     async def gamble(self, ctx, amount: str = None):
 
         if amount is None:
@@ -422,13 +422,8 @@ class CookieCog(commands.Cog):
             winnings = 0
             multiplier = "0x"
 
-        # Figure out balance
-        if amount.lower() != "all":
-            new_balance = current - amount_int + winnings
-            net_gain = winnings - amount_int
-        else:
-            new_balance = int(0)
-            net_gain = -current
+        new_balance = current - amount_int + winnings
+        net_gain = winnings - amount_int
         
         db_update("cookies",
                  [f"user_id:{user_id}", f"guild_id:{guild_id}"],
@@ -443,10 +438,13 @@ class CookieCog(commands.Cog):
         elif net_gain == 0:
             response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
         else:
+            loss_amount = amount_int - winnings
             if amount.lower() == "all":
-                response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:cri:1369238296479273042>"
+                if winnings > 0:
+                    response = f"😔 You lost ``{loss_amount}`` cookies!"
+                else:
+                    response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:cri:1369238296479273042>"
             else:
-                loss_amount = amount_int - winnings
                 if winnings > 0:
                     response = f"😔 You lost ``{loss_amount}`` cookies!"
                 else:

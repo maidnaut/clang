@@ -118,15 +118,16 @@ class CookieCog(commands.Cog):
             await ctx.send(f"{await author_ping(ctx)} Invalid user format: {user_input}")
             return None
 
-    # !coomies
+    # !cookies
     @commands.command()
     async def cookies(self, ctx):
         user_id = str(ctx.author.id)
         guild_id = ctx.guild.id
 
         cookies = self.check_cookies(guild_id, user_id)
+        formatted_cookies = f"{cookies:,}"
 
-        await ctx.send(f"{await author_ping(ctx)} You have {cookies} cookies.\n-# Use ``!give <@user>``, or reply with the word thanks to give. Use ``!nom`` to eat one.")
+        await ctx.send(f"{await author_ping(ctx)} You have {formatted_cookies} cookies.\n-# Use ``!give <@user>``, or reply with the word thanks to give. Use ``!nom`` to eat one.")
 
     # !nom
     @commands.command()
@@ -140,8 +141,18 @@ class CookieCog(commands.Cog):
             await ctx.send(f"{await author_ping(ctx)} You don't have any cookies to eat!")
             return
 
-        db_update("cookies", [f"user_id:{user_id}", f"guild_id:{guild_id}"], [("cookies", cookies - 1)])
-        await ctx.send(f"{await author_ping(ctx)} You ate a cookie. You now have {cookies - 1} cookies.")
+        new_balance = cookies - 1
+        formatted_new = f"{new_balance:,}"
+        formatted_old = f"{cookies:,}"
+
+        db_update("cookies", 
+                 [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
+                 [("cookies", new_balance)])
+        
+        await ctx.send(
+            f"{await author_ping(ctx)} You ate a cookie. "
+            f"You now have {formatted_new} cookies."
+        )
 
     # !give <user>
     @commands.command()

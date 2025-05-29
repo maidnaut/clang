@@ -435,6 +435,10 @@ class CookieCog(commands.Cog):
             await ctx.send(f"Sorry {await author_ping(ctx)}, I don't hand out cookies for free. Come back when you're a little mmm, richer.")
             return
 
+        if amount_int > 1000:
+            await ctx.send(f"{await author_ping(ctx)} You can only spend 1000 cookies at a time!")
+            return
+
         roll = random.randint(0, 300)
         
         # Ultra rare jackpot flag

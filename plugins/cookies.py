@@ -437,7 +437,7 @@ class CookieCog(commands.Cog):
                 response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` and got {amount_str}!"
             else:
                 if winnings == amount_int:
-                    response = f"You broke even! You got your {amount_str} back."
+                    response = f"You broke even! You got your {amount_int} back."
                 else:
                     response = f"🥳 You won with a ``{multiplier}`` multiplier! You got {amount_str}!"
 

@@ -70,7 +70,7 @@ class CookieCog(commands.Cog):
             },
             "gamble": {
                 "args": "<amount/all>",
-                "desc": "Gamble your cookies for a chance to win more",
+                "desc": "(Alias: !bet) Gamble your cookies for a chance to win more",
                 "perm": "everyone"
             },
         }

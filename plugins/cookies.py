@@ -28,8 +28,11 @@ class CookieCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.thank_cooldowns = {}
+        self.gamble_cooldowns = {}
         self.THANK_COOLDOWN = 60
         self.THANK_LIMIT = 3
+        self.GAMBLE_LIMIT = 10
+        self.GAMBLE_WINDOW = 30
 
         # Help info
         self.__help__ = {
@@ -369,14 +372,32 @@ class CookieCog(commands.Cog):
     # !gamba
     @commands.command(aliases=['bet'])
     async def gamble(self, ctx, amount: str = None):
-
+        
+        user_id = ctx.author.id
+        current_time = time.time()
+        
+        # Cooldown logic
+        if user_id not in self.gamble_cooldowns:
+            self.gamble_cooldowns[user_id] = []
+        
+        self.gamble_cooldowns[user_id] = [
+            t for t in self.gamble_cooldowns[user_id] 
+            if current_time - t < self.GAMBLE_WINDOW
+        ]
+        
+        if len(self.gamble_cooldowns[user_id]) >= self.GAMBLE_LIMIT:
+            wait_time = self.GAMBLE_WINDOW - int(current_time - self.gamble_cooldowns[user_id][0])
+            #await ctx.send(f"{await author_ping(ctx)} Slow down! You've used this command too much. Try again in {wait_time} seconds.")
+            return
+        
+        self.gamble_cooldowns[user_id].append(current_time)
+        
         if amount is None:
             await ctx.send(f"{await author_ping(ctx)} You must gamble at least 1 cookie: `!gamble <amount/all>`")
             return
 
         guild_id = ctx.guild.id
-        user_id = str(ctx.author.id)
-        current = self.check_cookies(guild_id, user_id)
+        current = self.check_cookies(guild_id, str(user_id))
 
         if amount.lower() == "all":
             if current <= 0:
@@ -400,15 +421,19 @@ class CookieCog(commands.Cog):
 
         roll = random.randint(0, 250)
         
+        # Ultra rare jackpot flag
+        ultra_rare_hit = False
+        
         if roll == 0:
             winnings = 0
             multiplier = "0x"
         else:
             if roll == 250:
                 ultra_rare = random.randint(1, 100)
-                if ultra_rare == 100:  # Fixed variable name
+                if ultra_rare == 100:
                     winnings = amount_int * 50
                     multiplier = "50x"
+                    ultra_rare_hit = True
                 else:
                     winnings = amount_int * 10
                     multiplier = "10x"
@@ -446,26 +471,16 @@ class CookieCog(commands.Cog):
 
         # Response
         if net_gain > 0:
-            if roll == 200:
-                if ultra_rare == 100:
-                    response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBLE** - You won THE HIGHEST PAYOUT with a ``{multiplier}`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-                else:
-                    response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
+            if roll == 250 and ultra_rare_hit:
+                response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBLE** - You won THE HIGHEST PAYOUT with a ``{multiplier}`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+            elif roll == 250:
+                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
             else:
                 response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
         elif net_gain == 0:
             response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
         else:
             loss_amount = amount_int - winnings
-            if amount.lower() == "all":
-                if winnings > 0:
-                    response = f"😔 You lost ``{loss_amount}`` cookies!"
-                else:
-                    response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:cri:1369238296479273042>"
-            else:
-                if winnings > 0:
-                    response = f"😔 You lost ``{loss_amount}`` cookies!"
-                else:
-                    response = f"🎲 🎲 **SNAKE EYES** - You lost ALL {amount_int} cookies!! <:cri:1369238296479273042>"
+            response = f"😔 You lost ``{loss_amount}`` cookies!"
 
         await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{new_balance}``")

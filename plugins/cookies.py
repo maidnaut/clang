@@ -369,7 +369,7 @@ class CookieCog(commands.Cog):
     # !gamba
     @commands.command()
     async def gamble(self, ctx, amount: str = None):
-        
+
         if amount is None:
             await ctx.send(f"{await author_ping(ctx)} You must gamble at least 1 cookie: `!gamble <amount/all>`")
             return
@@ -400,16 +400,16 @@ class CookieCog(commands.Cog):
 
         roll = random.randint(1, 100)
         
-        if roll == 100:  # Jackpot (1% chance)
+        if roll == 100:
             winnings = amount_int * 10
             multiplier = "10x"
-        elif roll >= 90:  # 10% chance (90-99)
+        elif roll >= 90:
             winnings = amount_int * 2
             multiplier = "2x"
-        elif roll >= 50:  # 40% chance (50-89)
-            winnings = (amount_int * 3 + 1) // 2  # 1.5x rounded
+        elif roll >= 75:
+            winnings = (amount_int * 3 + 1) // 2
             multiplier = "1.5x"
-        else:  # 49% chance (1-49)
+        else:
             winnings = 0
             multiplier = "0x"
 

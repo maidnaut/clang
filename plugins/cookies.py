@@ -684,12 +684,12 @@ class CookieCog(commands.Cog):
             if roll >= 250:
                 ultra_rare = random.randint(1, 50)
                 if ultra_rare == 50:
-                    winnings = amount_int * 50
-                    multiplier = "50x"
-                    ultra_rare_hit = True
-                else:
                     winnings = amount_int * 10
                     multiplier = "10x"
+                    ultra_rare_hit = True
+                else:
+                    winnings = amount_int * 5
+                    multiplier = "5x"
             elif roll >= 200:
                 winnings = round(amount_int * 2)
                 multiplier = "2x"
@@ -736,12 +736,12 @@ class CookieCog(commands.Cog):
                 if roll >= 275:
                     ultra_rare = random.randint(1, 50)
                     if ultra_rare == 50:
-                        winnings = amount_int * 50
-                        multiplier = "50x"
-                        ultra_rare_hit = True
-                    else:
                         winnings = amount_int * 10
                         multiplier = "10x"
+                        ultra_rare_hit = True
+                    else:
+                        winnings = amount_int * 5
+                        multiplier = "5x"
                 elif roll >= 250:
                     winnings = amount_int * 2
                     multiplier = "2x"

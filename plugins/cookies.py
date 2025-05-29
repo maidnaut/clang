@@ -677,6 +677,7 @@ class CookieCog(commands.Cog):
         # Ultra rare jackpot flag
         ultra_rare_hit = False
         dead = False
+        fail = False
         
         # Calculate the roll
         if amount.lower() == "all":
@@ -728,11 +729,9 @@ class CookieCog(commands.Cog):
 
         else:
             if roll == 0:
-                winnings = 0
+                winnings =amount_int0
                 multiplier = "0x"
-                new_balance = 0
-                net_gain = 0
-                dead = True
+                fail = True
             else:
                 if roll >= 275:
                     ultra_rare = random.randint(1, 50)
@@ -831,8 +830,11 @@ class CookieCog(commands.Cog):
             elif net_gain == 0:
                 response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
             else:
-                loss_amount = amount_int - winnings
-                response = f"😔 You lost ``{loss_amount}`` cookies!"
+                if fail == True:
+                    response = f"🎲 🎲 **SNAKE EYES** - You lost {amount_int} cookies!! <:cri:1369238296479273042>"
+                else:
+                    loss_amount = amount_int - winnings
+                    response = f"😔 You lost ``{loss_amount}`` cookies!"
 
         current = self.check_cookies(guild_id, str(user_id))
         await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{current}``")

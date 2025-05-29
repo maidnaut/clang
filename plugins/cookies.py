@@ -398,7 +398,7 @@ class CookieCog(commands.Cog):
             await ctx.send(f"Sorry {await author_ping(ctx)}, I don't hand out cookies for free. Come back when you're a little mmm, richer.")
             return
 
-        roll = random.randint(1, 250)
+        roll = random.randint(0, 250)
         
         ultra_rare = 0
         if roll == 250:

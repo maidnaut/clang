@@ -441,7 +441,7 @@ class CookieCog(commands.Cog):
             else:
                 response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
         elif net_gain == 0:
-            response = f"<:bruh:1371231771462729730> You broke even! You got your ``{amount_int}`` cookies back."
+            response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
         else:
             if amount_int == current:
                 response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:nooo~1:1368707455139184640>"

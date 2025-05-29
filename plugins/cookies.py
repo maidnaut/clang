@@ -794,4 +794,5 @@ class CookieCog(commands.Cog):
                 loss_amount = amount_int - winnings
                 response = f"😔 You lost ``{loss_amount}`` cookies!"
 
-        await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{new_balance}``")
+        current = self.check_cookies(guild_id, str(user_id))
+        await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{current}``")

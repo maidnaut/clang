@@ -131,16 +131,30 @@ class MarkovCog(commands.Cog):
         if len(words) < 3:
             return
 
+        # Init guild data
+        if guild_id not in self.chains:
+            self.chains[guild_id] = {}
+        if guild_id not in self.key_order:
+            self.key_order[guild_id] = deque()
+
         for i in range(len(words) - 2):
             key = (words[i], words[i+1])
+            
+            if key not in self.chains[guild_id]:
+                self.chains[guild_id][key] = []
+                
             self.chains[guild_id][key].append(words[i+2])
             
-            # Max entries = 50k
+            # Add to key_order if new key
             if key not in self.key_order[guild_id]:
                 self.key_order[guild_id].append(key)
+                
+                # Max entries = 50k - remove old keys
                 while len(self.key_order[guild_id]) > self.MAX_ENTRIES:
                     oldest_key = self.key_order[guild_id].popleft()
-                    del self.chains[guild_id][oldest_key]
+                    
+                    if oldest_key in self.chains[guild_id]:
+                        del self.chains[guild_id][oldest_key]
 
 
 

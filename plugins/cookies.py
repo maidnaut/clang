@@ -387,7 +387,8 @@ class CookieCog(commands.Cog):
         
         if len(self.gamble_cooldowns[user_id]) >= self.GAMBLE_LIMIT:
             wait_time = self.GAMBLE_WINDOW - int(current_time - self.gamble_cooldowns[user_id][0])
-            #await ctx.send(f"{await author_ping(ctx)} Slow down! You've used this command too much. Try again in {wait_time} seconds.")
+            if user_id not in self.gamble_cooldowns:
+                await ctx.send(f"{await author_ping(ctx)} Slow down! You've used this command too much. Try again in {wait_time} seconds.")
             return
         
         self.gamble_cooldowns[user_id].append(current_time)

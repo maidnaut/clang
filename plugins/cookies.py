@@ -166,15 +166,20 @@ class CookieCog(commands.Cog):
 
         receiver_cookies = self.check_cookies(guild_id, receiver_id)
 
-        db_update("cookies",
-                [f"user_id:{sender_id}", f"guild_id:{guild_id}"],
-                [("cookies", sender_cookies - 1)])
+        if reciever_cookies < self.MAX_COOKIES:
+            db_update("cookies",
+                    [f"user_id:{sender_id}", f"guild_id:{guild_id}"],
+                    [("cookies", sender_cookies - 1)])
+            
+            db_update("cookies",
+                    [f"user_id:{receiver_id}", f"guild_id:{guild_id}"],
+                    [("cookies", receiver_cookies + 1)])
+            await ctx.send(f"{await author_ping(ctx)} gave a cookie to {await user_ping(ctx, member)}!")
+            return
+        else:
+            await ctx.send(f"{await author_ping(ctx)} I can't give a cookie to {await user_ping(ctx, member)}, they've already won capitalism!")
+            return
         
-        db_update("cookies",
-                [f"user_id:{receiver_id}", f"guild_id:{guild_id}"],
-                [("cookies", receiver_cookies + 1)])
-        
-        await ctx.send(f"{await author_ping(ctx)} gave a cookie to {await user_ping(ctx, member)}!")
 
     # !transfer <user< <amount>
     @commands.command()
@@ -204,15 +209,36 @@ class CookieCog(commands.Cog):
 
         receiver_cookies = self.check_cookies(guild_id, receiver_id)
 
-        db_update("cookies", 
-                [f"user_id:{sender_id}", f"guild_id:{guild_id}"], 
-                [("cookies", sender_cookies - amount)])
-        
-        db_update("cookies", 
-                [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], 
-                [("cookies", receiver_cookies + amount)])
 
-        await ctx.send(f"{await author_ping(ctx)}Transferred {amount} cookies to {await user_ping(ctx, member)}!")
+        if receiver_cookies > self.MAX_COOKIES:
+
+            # Calculate remainder to max
+            actual_cookies = self.MAX_COOKIES - (reciever_cookies - amount)
+            actual_amount = actual_cookies - amount
+            
+            # Cap balance
+            db_update("cookies", 
+                    [f"user_id:{sender_id}", f"guild_id:{guild_id}"], 
+                    [("cookies", sender_cookies - actual_amount)])
+            
+            db_update("cookies", 
+                    [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], 
+                    [("cookies", receiver_cookies + actual_amount)])
+        
+            await ctx.send(f"{await author_ping(ctx)} The most I could transfer was {actual_amount} cookies to {await user_ping(ctx, member)}!")
+            return
+
+        else:
+            db_update("cookies", 
+                    [f"user_id:{sender_id}", f"guild_id:{guild_id}"], 
+                    [("cookies", sender_cookies - amount)])
+            
+            db_update("cookies", 
+                    [f"user_id:{receiver_id}", f"guild_id:{guild_id}"], 
+                    [("cookies", receiver_cookies + amount)])
+
+            await ctx.send(f"{await author_ping(ctx)} Transferred {amount} cookies to {await user_ping(ctx, member)}!")
+            return
 
     # !setrate <int>
     @commands.command()
@@ -265,11 +291,29 @@ class CookieCog(commands.Cog):
         user_id = str(user.id)
 
         cookies = self.check_cookies(guild_id, user_id)
-        db_update("cookies", 
+
+
+        if cookies > self.MAX_COOKIES:
+
+            # Calculate remainder to max
+            actual_cookies = self.MAX_COOKIES - (cookies - amount)
+            actual_amount = actual_cookies - amount
+
+            db_update("cookies", 
+                    [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
+                    [("cookies", cookies + amount)])
+
+            await ctx.send(f"{await author_ping(ctx)} The most I could airdrop to {await user_ping(ctx, user)} was {actual_amount}! They now have {cookies + actual_amount} cookies.")
+            return
+            
+        else:
+            db_update("cookies", 
                 [f"user_id:{user_id}", f"guild_id:{guild_id}"], 
                 [("cookies", cookies + amount)])
 
-        await ctx.send(f"{await author_ping(ctx)} Airdropped {amount} cookies to {await user_ping(ctx, user)}! They now have {cookies + amount} cookies.")
+            await ctx.send(f"{await author_ping(ctx)} Airdropped {amount} cookies to {await user_ping(ctx, user)}! They now have {cookies + amount} cookies.")
+            return
+
 
 
     # !take <user> <int>

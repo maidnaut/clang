@@ -430,7 +430,7 @@ class CookieCog(commands.Cog):
                  [f"user_id:{user_id}", f"guild_id:{guild_id}"],
                  [("cookies", new_balance)])
 
-        # Respond with accurate information
+        # Response
         if net_gain > 0:
             if roll == 200:
                 response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies"
@@ -439,7 +439,6 @@ class CookieCog(commands.Cog):
         elif net_gain == 0:
             response = f"➖ You broke even! You got your ``{amount_int}`` cookies back"
         else:
-            # For losses, show the actual amount lost
             loss_amount = amount_int - winnings
             if winnings > 0:
                 response = f"You lost ``{loss_amount}`` cookies"

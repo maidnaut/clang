@@ -433,16 +433,19 @@ class CookieCog(commands.Cog):
         # Response
         if net_gain > 0:
             if roll == 200:
-                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies"
+                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
             else:
-                response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies"
+                response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
         elif net_gain == 0:
-            response = f"➖ You broke even! You got your ``{amount_int}`` cookies back"
+            response = f"➖ You broke even! You got your ``{amount_int}`` cookies back."
         else:
-            loss_amount = amount_int - winnings
-            if winnings > 0:
-                response = f"You lost ``{loss_amount}`` cookies"
+            if amount_int == current:
+                response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!!"
             else:
-                response = f"You lost all ``{amount_int}`` cookies"
+                loss_amount = amount_int - winnings
+                if winnings > 0:
+                    response = f"You lost ``{loss_amount}`` cookies!"
+                else:
+                    response = f"You lost all ``{amount_int}`` cookies!"
 
-        await ctx.send(f"{await author_ping(ctx)} {response}\nCurrent cookies: ``{new_balance}``")
+        await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{new_balance}``")

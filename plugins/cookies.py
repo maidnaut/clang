@@ -426,16 +426,16 @@ class CookieCog(commands.Cog):
 
         # Respond
         if amount.lower() == "all":
-            amount_str = "ALL your cookies"
+            amount_str = "``ALL`` your cookies"
         else:
-            amount_str = f"{amount_int} cookies"
+            amount_str = f"``{amount_int}`` cookies"
 
         if winnings == 0:
-            response = f"Better luck next time! You lost ``{amount_str}``."
+            response = f"Better luck next time! You lost {amount_str}."
         else:
             if roll == 200:
-                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` and got ``{amount_str}``!"
+                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` and got {amount_str}!"
             else:
-                response = f"🥳 You won with a ``{multiplier}`` multiplier! You got ``{amount_str}``!"
+                response = f"🥳 You won with a ``{multiplier}`` multiplier! You got {amount_str}!"
 
-        await ctx.send(f"{await author_ping(ctx)} {response} ``Current cookies: {new_balance}``")
+        await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{new_balance}``")

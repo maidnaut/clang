@@ -483,10 +483,11 @@ class CookieCog(commands.Cog):
 
         # Response
         if net_gain > 0:
-            if roll == 250 and ultra_rare_hit:
-                response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBLE** - You won THE HIGHEST PAYOUT with a ``{multiplier}`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-            elif roll == 250:
-                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
+            if roll >= 250:
+                if ultra_rare_hit:
+                    response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBLE** - You won THE HIGHEST PAYOUT with a ``{multiplier}`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                else:
+                    response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
             else:
                 response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
         elif net_gain == 0:

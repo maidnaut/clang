@@ -436,7 +436,7 @@ class CookieCog(commands.Cog):
         else:
             amount_str = f"``{net_gain}`` cookies"
 
-        if winnings == 0:
+        if winnings <= 0:
             response = f"Better luck next time! You lost {amount_str}."
         else:
             if roll == 200:

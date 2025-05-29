@@ -29,7 +29,7 @@ class CookieCog(commands.Cog):
         self.bot = bot
         self.thank_cooldowns = {}
         self.gamble_cooldowns = {}
-        self.gamble_warnings = {}
+        self.gamble_blocks = {}
         self.THANK_COOLDOWN = 60
         self.THANK_LIMIT = 3
         self.GAMBLE_LIMIT = 10
@@ -377,32 +377,36 @@ class CookieCog(commands.Cog):
         user_id = ctx.author.id
         current_time = time.time()
         
-        # Init cooldown
+        if user_id in self.gamble_blocks:
+            if current_time < self.gamble_blocks[user_id]:
+                return
+            del self.gamble_blocks[user_id]
+        
         if user_id not in self.gamble_cooldowns:
             self.gamble_cooldowns[user_id] = []
         
-        # Clean up old cooldowns
         self.gamble_cooldowns[user_id] = [
             t for t in self.gamble_cooldowns[user_id] 
             if current_time - t < self.GAMBLE_WINDOW
         ]
         
-        # Cooldown
         if len(self.gamble_cooldowns[user_id]) >= self.GAMBLE_LIMIT:
-            if user_id not in self.gamble_warnings or current_time - self.gamble_warnings[user_id] > 5:
-                wait_time = self.GAMBLE_WINDOW - int(current_time - self.gamble_cooldowns[user_id][0])
-                await ctx.send(
-                    f"{await author_ping(ctx)} Slow down! You've used this command too much. "
-                    f"Try again in {wait_time} seconds."
-                )
-                self.gamble_warnings[user_id] = current_time
+            # Calculate when the block should expire
+            oldest = self.gamble_cooldowns[user_id][0]
+            block_until = oldest + self.GAMBLE_WINDOW
+            
+            self.gamble_blocks[user_id] = block_until
+            
+            wait_time = int(block_until - current_time)
+            await ctx.send(
+                f"{await author_ping(ctx)} You've been rate limited! "
+                f"Please wait {wait_time} seconds before gambling again."
+            )
+            
+            del self.gamble_cooldowns[user_id]
             return
         
         self.gamble_cooldowns[user_id].append(current_time)
-        
-        # Clear cooldown if timer up
-        if user_id in self.gamble_warnings:
-            del self.gamble_warnings[user_id]
         
         if amount is None:
             await ctx.send(f"{await author_ping(ctx)} You must gamble at least 1 cookie: `!gamble <amount/all>`")
@@ -474,8 +478,12 @@ class CookieCog(commands.Cog):
                 winnings = round(amount_int * 0.75)
                 multiplier = "0.75x"
 
-        new_balance = current - amount_int + winnings
-        net_gain = winnings - amount_int
+        if amount.lower() == "all" and roll == 0:
+            new_balance = 0
+            net_gain = 0
+        else:
+            new_balance = current - amount_int + winnings
+            net_gain = winnings - amount_int
         
         db_update("cookies",
                  [f"user_id:{user_id}", f"guild_id:{guild_id}"],

@@ -400,9 +400,16 @@ class CookieCog(commands.Cog):
 
         roll = random.randint(1, 200)
         
+        ultra_rare = 0
         if roll == 200:
-            winnings = amount_int * 10
-            multiplier = "10x"
+            ulra_rare = random.randint(1, 100)
+
+            if ulta_rare == 100:
+                winnings = amount_int * 50
+                multiplier = "50x"
+            else:
+                winnings = amount_int * 10
+                multiplier = "10x"
         elif roll >= 185:
             winnings = amount_int * 2
             multiplier = "2x"
@@ -432,7 +439,10 @@ class CookieCog(commands.Cog):
         # Response
         if net_gain > 0:
             if roll == 200:
-                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
+                if ultra_rare == 100:
+                    response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBLE** - You won THE HIGHEST PAYOUT with a ``{multiplier}`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                else:
+                    response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
             else:
                 response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
         elif net_gain == 0:

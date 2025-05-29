@@ -380,7 +380,7 @@ class CookieCog(commands.Cog):
 
         if amount.lower() == "all":
             if current <= 0:
-                await ctx.send(f"{await author_ping(ctx)} You don't have any cookies to gamble!")
+                await ctx.send(f"Sorry {await author_ping(ctx)}, you don't have any cookies. Come back when you're a little mmm, richer.")
                 return
             amount_int = current
         else:

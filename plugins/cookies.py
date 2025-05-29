@@ -439,10 +439,11 @@ class CookieCog(commands.Cog):
         
         # Ultra rare jackpot flag
         ultra_rare_hit = False
+        dead = False
         
         # Calculate the roll
         if amount.lower() == "all":
-            if roll >= 125:
+            if roll == 125:
                 ultra_rare = random.randint(1, 50)
                 if ultra_rare == 50:
                     winnings = amount_int * 50
@@ -456,11 +457,13 @@ class CookieCog(commands.Cog):
                 multiplier = "0x"
                 new_balance = 0
                 net_gain = 0
+                dead = True
 
         else:
             if roll == 0:
                 winnings = 0
                 multiplier = "0x"
+                dead = True
             else:
                 if roll >= 250:
                     ultra_rare = random.randint(1, 50)
@@ -504,18 +507,21 @@ class CookieCog(commands.Cog):
                  [("cookies", new_balance)])
 
         # Response
-        if net_gain > 0:
-            if roll >= 250:
-                if ultra_rare_hit:
-                    response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBLE** - You won THE HIGHEST PAYOUT with a ``{multiplier}`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-                else:
-                    response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
-            else:
-                response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
-        elif net_gain == 0:
-            response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
+        if dead == True:
+            response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:cri:1369238296479273042>"
         else:
-            loss_amount = amount_int - winnings
-            response = f"😔 You lost ``{loss_amount}`` cookies!"
+            if net_gain > 0:
+                if roll >= 250:
+                    if ultra_rare_hit:
+                        response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBLE** - You won THE HIGHEST PAYOUT with a ``{multiplier}`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                    else:
+                        response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
+                else:
+                    response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
+            elif net_gain == 0:
+                response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
+            else:
+                loss_amount = amount_int - winnings
+                response = f"😔 You lost ``{loss_amount}`` cookies!"
 
         await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{new_balance}``")

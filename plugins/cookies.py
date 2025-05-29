@@ -463,6 +463,8 @@ class CookieCog(commands.Cog):
             if roll == 0:
                 winnings = 0
                 multiplier = "0x"
+                new_balance = 0
+                net_gain = 0
                 dead = True
             else:
                 if roll >= 250:
@@ -499,8 +501,8 @@ class CookieCog(commands.Cog):
                     winnings = round(amount_int * 0.75)
                     multiplier = "0.75x"
 
-            new_balance = current - amount_int + winnings
-            net_gain = winnings - amount_int
+                new_balance = current - amount_int + winnings
+                net_gain = winnings - amount_int
         
         db_update("cookies",
                  [f"user_id:{user_id}", f"guild_id:{guild_id}"],

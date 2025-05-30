@@ -1,4 +1,4 @@
-import discord, os, random, asyncio, argparse, time, re
+import discord, os, random, asyncio, argparse, time, re, math
 from discord.ext import commands
 from inc.utils import *
 

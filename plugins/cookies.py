@@ -656,7 +656,7 @@ class CookieCog(commands.Cog):
             await ctx.send(f"""
 {await author_ping(ctx)} <:spamton:1377920510666739712> NOW'S YOUR CHANCE TO BE A [[BIGSHOT]]\n
 How to gamba: Use ``!gamble`` or ``!bet`` with an amount under 100 to roll the dice to see how much you can win!\n
-Betting ``half`` breaks the betting limit, but the higher you bet, the more dangerous the odds. Going all in with ``!bet all`` is even more risky than a half bet.\n\n
+Betting ``half`` breaks the betting limit, but the higher you bet, the more dangerous the odds. Going all in with ``!bet all`` is even more risky than a half bet.\n
 Remember, if you wanna win, big always bet on CLANG <:clang:1373291982528577566>
 """)
             return

@@ -227,7 +227,7 @@ async def user_ping(ctx, user):
     if ping == True:
         return f"{user.mention} "
     else:
-        return f"{user.name}"
+        return f"{user.display_name}"
 
 # Check ping status
 async def check_ping(ctx, user):
@@ -246,7 +246,7 @@ async def check_ping(ctx, user):
     if ping == True:
         return f"{user.mention} "
     else:
-        return f"{user.name}"
+        return f"{user.display_name}"
 
 # Check ping status
 async def check_ping_id(ctx, user_id: str):
@@ -275,7 +275,7 @@ async def check_ping_id(ctx, user_id: str):
     if ping == True:
         return f"{user.mention} "
     else:
-        return f"{user.name}"
+        return f"{user.display_name}"
 
 # Get channels
 async def get_channel(guild_id, name):

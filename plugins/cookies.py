@@ -664,6 +664,11 @@ class CookieCog(commands.Cog):
                 await ctx.send(f"Sorry {await author_ping(ctx)}, you don't have any cookies. Come back when you're a little mmm, richer.")
                 return
             amount_int = current
+        elif amount.lower() == "half":
+            if current <= 0:
+                await ctx.send(f"Sorry {await author_ping(ctx)}, you don't have any cookies. Come back when you're a little mmm, richer.")
+                return
+            amount_int = int(current / 2)
         else:
             try:
                 amount_int = int(amount)

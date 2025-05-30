@@ -825,6 +825,13 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                     [f"user_id:{user_id}", f"guild_id:{guild_id}"],
                     [("cookies", new_balance)])
 
+        # Fudge the response to snake eyes if the loss is equal to the pot
+        if loss_amount == amount_int:
+            if bet_type == "all":
+                dead = True
+            else:
+                snake_eyes = True
+
         # Response with ORIGINAL MESSAGES
         if dead:
             response = f"🎲 🎲 **SNAKE EYES** - Your cookies have CRUMBLED!! You lost them all! <:cri:1369238296479273042>"

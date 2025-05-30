@@ -691,7 +691,7 @@ class CookieCog(commands.Cog):
 
         # Logarithmic scaling
         if current <= 1000:
-            penalty = 0
+            penalty = -min(penalty, 100) # Inverse penalty
         else:
             wealth_factor = min(1.0, math.log10(current) / math.log10(self.MAX_COOKIES))
             penalty = int(wealth_factor * 40)

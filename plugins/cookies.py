@@ -789,11 +789,6 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         new_balance = current - amount_int + winnings
         net_gain = winnings - amount_int
         loss_amount = amount_int - winnings
-        
-        # Special case for "all" bets with 0 multiplier
-        dead = (bet_type == "all" and multiplier == 0)
-        if dead:
-            new_balance = 0  # Lose all cookies
 
         # Balance update logic
         if new_balance > self.MAX_COOKIES:

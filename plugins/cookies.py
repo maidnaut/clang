@@ -697,12 +697,12 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         # Logarithmic scaling
         if current <= 1000:
             boost_factor = (1000 - current) / 1000
-            boost = int(25 * boost_factor)
+            boost = int(10 + 20 * boost_factor)
             base_roll = random.randint(0, 300)
             adjusted_roll = min(300, base_roll + boost)
         else:
             wealth_factor = min(1.0, math.log10(current) / math.log10(self.MAX_COOKIES))
-            penalty = int(wealth_factor * 40)
+            penalty = int(wealth_factor * 30)
             base_roll = random.randint(0, 300)
             adjusted_roll = max(0, base_roll - penalty)
             
@@ -740,25 +740,39 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                     (0, 0.0)
                 ]
 
-            # Ultra rare mythic gamba
-            if roll_val >= 280 and random.random() < 0.01:
-                
-                ultra_rare = random.randint(1, 50)
-                if ultra_rare >= 40:
-                    return 4.0, True
-                elif ultra_rare >= 30:
-                    return 3.8, True
-                elif ultra_rare >= 20:
-                    return 3.6, True
-                elif ultra_rare >= 10:
-                    return 3.2, True
-                elif ultra_rare >= 0:
-                    return 3.0, True
-            
+            # Regular thresholds
             for threshold, mult in thresholds:
                 if roll_val >= threshold:
-                    return mult, False
-            return 0.0, False
+                    base_multiplier = mult
+                    break
+            else:
+                base_multiplier = 0.0
+
+            # Ultra rare gambas
+            ultra_rare_hit = False
+            if roll_val >= 280:
+                ultra_rare = random.randint(1, 50)
+                if ultra_rare >= 40:
+                    final_multiplier = 4.0
+                    ultra_rare_hit = True
+                elif ultra_rare >= 30:
+                    final_multiplier = 3.8
+                    ultra_rare_hit = True
+                elif ultra_rare >= 20:
+                    final_multiplier = 3.6
+                    ultra_rare_hit = True
+                elif ultra_rare >= 10:
+                    final_multiplier = 3.2
+                    ultra_rare_hit = True
+                elif ultra_rare >= 0:
+                    final_multiplier = 3.0
+                    ultra_rare_hit = True
+                else:
+                    final_multiplier = base_multiplier
+            else:
+                final_multiplier = base_multiplier
+
+            return final_multiplier, ultra_rare_hit
 
         # Determine outcome
         bet_type = "all" if amount.lower() == "all" else "fixed"

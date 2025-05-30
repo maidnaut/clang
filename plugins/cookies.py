@@ -684,7 +684,7 @@ class CookieCog(commands.Cog):
             await ctx.send(f"Sorry {await author_ping(ctx)}, I don't hand out cookies for free. Come back when you're a little mmm, richer.")
             return
 
-        if amount.lower() != "all" or amount.lower() != "half":
+        if amount.lower() != "all" and amount.lower() != "half":
             if amount_int > max_bet:
                 await ctx.send(f"{await author_ping(ctx)} You can only spend {max_bet} cookies at a time!")
                 return

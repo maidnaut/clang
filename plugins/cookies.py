@@ -653,7 +653,7 @@ class CookieCog(commands.Cog):
         self.gamble_cooldowns[user_id].append(current_time)
         
         if amount is None:
-            await ctx.send(f"{await author_ping(ctx)} You must gamble at least 1 cookie: `!gamble <amount/all>`")
+            await ctx.send(f"{await author_ping(ctx)} You must gamble at least 1 cookie: `!gamble <amount/all/half>`")
             return
 
         guild_id = ctx.guild.id
@@ -673,7 +673,7 @@ class CookieCog(commands.Cog):
             try:
                 amount_int = int(amount)
             except ValueError:
-                await ctx.send(f"{await author_ping(ctx)} Please enter a valid number or 'all'")
+                await ctx.send(f"{await author_ping(ctx)} Please enter a valid number or 'all/half'")
                 return
 
         if amount_int <= 0:
@@ -684,7 +684,7 @@ class CookieCog(commands.Cog):
             await ctx.send(f"Sorry {await author_ping(ctx)}, I don't hand out cookies for free. Come back when you're a little mmm, richer.")
             return
 
-        if amount.lower() != "all":
+        if amount.lower() != "all" or amount.lower() != "half":
             if amount_int > max_bet:
                 await ctx.send(f"{await author_ping(ctx)} You can only spend {max_bet} cookies at a time!")
                 return

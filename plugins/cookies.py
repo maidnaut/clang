@@ -695,9 +695,9 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                 return
 
         # Logarithmic scaling
-        if current <= 1000:
-            boost_factor = (1000 - current) / 1000
-            boost = int(10 + 20 * boost_factor)
+        if current <= 5000:
+            boost_factor = (5000 - current) / 5000
+            boost = int(20 + 30 * boost_factor)
             base_roll = random.randint(0, 300)
             adjusted_roll = min(300, base_roll + boost)
         else:

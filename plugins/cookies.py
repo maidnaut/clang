@@ -612,7 +612,7 @@ class CookieCog(commands.Cog):
         await ctx.send(embed=embed)
 
     # !gamba
-    @commands.command(aliases=['bet', 'gamba'])
+    @commands.command(aliases=['bet'])
     async def gamble(self, ctx, amount: str = None):
 
         max_bet = 100
@@ -703,21 +703,37 @@ class CookieCog(commands.Cog):
             
         # Outcomes
         def get_outcome(roll_val, bet_type):
-            thresholds = [
-                # Roll / Multiplier
-                (285, 2.0),
-                (270, 1.5),
-                (240, 1.3),
-                (210, 1.2),
-                (180, 1.1),
-                (150, 1.0),
-                (120, 0.5),
-                (90, 0.4),
-                (60, 0.3),
-                (30, 0.2),
-                (15, 0.1),
-                (0, 0.0)
-            ]
+            if bet_type == "all":
+                thresholds = [
+                    # Roll / Multiplier
+                    (285, 2.5),
+                    (270, 1.8),
+                    (240, 1.6),
+                    (210, 1.4),
+                    (180, 1.2),
+                    (150, 1.0),
+                    (120, 0.8),
+                    (90, 0.6),
+                    (60, 0.4),
+                    (30, 0.2),
+                    (15, 0.1),
+                    (0, 0.0)
+                ]
+            else:
+                thresholds = [
+                    (280, 2.0),
+                    (260, 1.5),
+                    (245, 1.4),
+                    (230, 1.3),
+                    (200, 1.2),
+                    (150, 1.0),
+                    (100, 0.8),
+                    (80, 0.6),
+                    (60, 0.4),
+                    (40, 0.2),
+                    (20, 0.1),
+                    (0, 0.0)
+                ]
 
             # Ultra rare mythic gamba
             if roll_val >= 280 and random.random() < 0.01:

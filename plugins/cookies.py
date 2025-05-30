@@ -751,22 +751,28 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
             # Ultra rare gambas
             ultra_rare_hit = False
             if roll_val >= 280:
-                ultra_rare = random.randint(1, 50)
-                if ultra_rare >= 40:
+                ultra_rare = random.randint(1, 60)
+                if ultra_rare >= 50:
                     final_multiplier = 4.0
                     ultra_rare_hit = True
-                elif ultra_rare >= 30:
+                elif ultra_rare >= 40:
                     final_multiplier = 3.8
                     ultra_rare_hit = True
-                elif ultra_rare >= 20:
+                elif ultra_rare >= 30:
                     final_multiplier = 3.6
                     ultra_rare_hit = True
-                elif ultra_rare >= 10:
+                elif ultra_rare >= 20:
                     final_multiplier = 3.2
                     ultra_rare_hit = True
-                elif ultra_rare >= 0:
+                elif ultra_rare >= 10:
                     final_multiplier = 3.0
                     ultra_rare_hit = True
+                elif ultra_rate >= 0:
+                    if bet_type == "all":
+                        final_multiplier = 2.5
+                    else:
+                        final_multiplier = 2.0
+                        ultra_rate_hit = False
                 else:
                     final_multiplier = base_multiplier
             else:

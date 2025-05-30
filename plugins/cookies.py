@@ -657,7 +657,7 @@ class CookieCog(commands.Cog):
 {await author_ping(ctx)} <:spamton:1377920510666739712> NOW'S YOUR CHANCE TO BE A [[BIGSHOT]]\n
 How to gamba: Use ``!gamble`` or ``!bet`` with an amount under 100 to roll the dice to see how much you can win!\n
 Betting ``half`` breaks the betting limit, but the higher you bet, the more dangerous the odds. Going all in with ``!bet all`` is even more risky than a half bet.\n
-Remember, if you wanna win, big always bet on CLANG <:clang:1373291982528577566>
+Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
 """)
             return
 
@@ -742,7 +742,18 @@ Remember, if you wanna win, big always bet on CLANG <:clang:1373291982528577566>
 
             # Ultra rare mythic gamba
             if roll_val >= 280 and random.random() < 0.01:
-                return 3.0, True
+                
+                ultra_rare = random.randint(1, 50)
+                if ultra_rare >= 40:
+                    return 4.0, True
+                elif ultra_rare >= 30:
+                    return 3.8, True
+                elif ultra_rare >= 20:
+                    return 3.6, True
+                elif ultra_rare >= 10:
+                    return 3.2, True
+                elif ultra_rare >= 0:
+                    return 3.0, True
             
             for threshold, mult in thresholds:
                 if roll_val >= threshold:
@@ -806,7 +817,22 @@ Remember, if you wanna win, big always bet on CLANG <:clang:1373291982528577566>
             response = f"🎲 🎲 **SNAKE EYES** - You lost {amount_int} cookies!! <:cri:1369238296479273042>"
         elif net_gain > 0:
             if ultra_rare_hit:
-                response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBA** - You won THE HIGHEST PAYOUT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                
+                if multiplier == 4.0:
+                    response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBA** - You won THE HIGHEST PAYOUT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                
+                if multiplier == 3.8:
+                    response = f"✨✨✨ **EXTRA RARE SPARKLY GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                
+                if multiplier == 3.6:
+                    response = f"⭐⭐⭐ **RARE GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                
+                if multiplier == 3.2:
+                    response = f"🎉🎉🎉 **EXTRA SPECIAL GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                
+                if multiplier == 3.0:
+                    response = f"7️7️7️ **SPECIAL GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+
             elif multiplier >= 2.0:
                 response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}x`` multiplier! Net gain: ``{net_gain}`` cookies."
             else:

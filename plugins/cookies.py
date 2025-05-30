@@ -774,6 +774,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         winnings = round(amount_int * multiplier)
         new_balance = current - amount_int + winnings
         net_gain = winnings - amount_int
+        loss_amount = amount_int - winnings
         
         # Special case for "all" bets with 0 multiplier
         dead = (bet_type == "all" and multiplier == 0)
@@ -810,6 +811,10 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                     [f"user_id:{user_id}", f"guild_id:{guild_id}"],
                     [("cookies", new_balance)])
 
+        # Fudge the response to snake eyes if the loss is equal to the pot
+        if loss_amount == amount_int:
+            dead = True
+
         # Response with ORIGINAL MESSAGES
         if dead:
             response = f"🎲 🎲 **SNAKE EYES** - Your cookies have CRUMBLED!! You lost them all! <:cri:1369238296479273042>"
@@ -840,7 +845,6 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         elif net_gain == 0:
             response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
         else:
-            loss_amount = amount_int - winnings
             response = f"😔 You lost ``{loss_amount}`` cookies!"
 
         # Final response with current balance

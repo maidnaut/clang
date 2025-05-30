@@ -691,14 +691,14 @@ class CookieCog(commands.Cog):
 
         # Logarithmic scaling
         if current <= 1000:
-            penalty = -min(penalty, 100) # Inverse penalty
+            boost = 30
+            base_roll = random.randint(0, 300)
+            adjusted_roll = min(300, base_roll + boost)
         else:
             wealth_factor = min(1.0, math.log10(current) / math.log10(self.MAX_COOKIES))
             penalty = int(wealth_factor * 40)
-            penalty = min(penalty, 100)
-
-        base_roll = random.randint(0, 300)
-        adjusted_roll = max(0, base_roll - penalty)
+            base_roll = random.randint(0, 300)
+            adjusted_roll = max(0, base_roll - penalty)
 
         # Outcomes
         def get_outcome(roll_val, bet_type):

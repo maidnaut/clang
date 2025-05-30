@@ -812,7 +812,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
 
         # Response with ORIGINAL MESSAGES
         if dead:
-            response = f"🎲 🎲 **SNAKE EYES** - Your cookies have CRUMBLED!! You now have ``0`` cookies <:cri:1369238296479273042>"
+            response = f"🎲 🎲 **SNAKE EYES** - Your cookies have CRUMBLED!! You lost them all! <:cri:1369238296479273042>"
         elif snake_eyes:
             response = f"🎲 🎲 **SNAKE EYES** - You lost {amount_int} cookies!! <:cri:1369238296479273042>"
         elif net_gain > 0:

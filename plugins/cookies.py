@@ -691,7 +691,8 @@ class CookieCog(commands.Cog):
 
         # Logarithmic scaling
         if current <= 1000:
-            adjusted_roll = random.randint(0, 300)
+            base_roll = random.randint(0, 300)
+            adjusted_roll = base_roll
         else:
             wealth_factor = min(1.0, math.log10(current) / math.log10(self.MAX_COOKIES))
             penalty = int(wealth_factor * 40)

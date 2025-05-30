@@ -612,7 +612,7 @@ class CookieCog(commands.Cog):
         await ctx.send(embed=embed)
 
     # !gamba
-    @commands.command(aliases=['bet'])
+    @commands.command(aliases=['bet', 'gamba'])
     async def gamble(self, ctx, amount: str = None):
 
         max_bet = 100

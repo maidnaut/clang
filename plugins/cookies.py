@@ -620,6 +620,7 @@ class CookieCog(commands.Cog):
         user_id = ctx.author.id
         current_time = time.time()
         
+        # Cooldown spam prevention
         if user_id in self.gamble_blocks:
             if current_time < self.gamble_blocks[user_id]:
                 return
@@ -683,169 +684,122 @@ class CookieCog(commands.Cog):
                 await ctx.send(f"{await author_ping(ctx)} You can only spend {max_bet} cookies at a time!")
                 return
 
-        roll = random.randint(0, 300)
-        
-        # Ultra rare jackpot flag
-        ultra_rare_hit = False
-        dead = False
-        fail = False
-        
-        # Calculate the roll
-        if amount.lower() == "all":
-            if roll >= 250:
-                ultra_rare = random.randint(1, 50)
-                if ultra_rare == 50:
-                    winnings = amount_int * 10
-                    multiplier = "10x"
-                    ultra_rare_hit = True
-                else:
-                    winnings = amount_int * 5
-                    multiplier = "5x"
-            elif roll >= 200:
-                winnings = round(amount_int * 2)
-                multiplier = "2x"
-            elif roll >= 180:
-                winnings = round(amount_int * 1.8)
-                multiplier = "1.8x"
-            elif roll >= 160:
-                winnings = round(amount_int * 1.6)
-                multiplier = "1.6x"
-            elif roll >= 140:
-                winnings = round(amount_int * 1.4)
-                multiplier = "1.4x"
-            elif roll >= 120:
-                winnings = round(amount_int * 1.2)
-                multiplier = "1.2x"
-            elif roll >= 100:
-                winnings = amount_int
-                multiplier = "1x"
-            elif roll >= 80:
-                winnings = round(amount_int * 0.8)
-                multiplier = "0.8x"
-            elif roll >= 60:
-                winnings = round(amount_int * 0.6)
-                multiplier = "0.6x"
-            elif roll >= 40:
-                winnings = round(amount_int * 0.4)
-                multiplier = "0.4x"
-            elif roll >= 20:
-                winnings = round(amount_int * 0.2)
-                multiplier = "0.2x"
-            else:
-                winnings = 0
-                multiplier = "0x"
-                new_balance = 0
-                net_gain = 0
-                dead = True
+        # Penalty/scaling
+        wealth_factor = min(1.0, math.log10(current + 10) / math.log10(self.MAX_COOKIES))
+        penalty = int(wealth_factor * 80)
+        base_roll = random.randint(0, 300)
+        adjusted_roll = max(0, base_roll - penalty)
 
-        else:
-            if roll == 0:
-                winnings =amount_int0
-                multiplier = "0x"
-                fail = True
+        # Outcomes
+        def get_outcome(roll_val, bet_type):
+            if bet_type == "all":
+                thresholds = [
+                    # Roll / Multiplier
+                    (285, 2.5),
+                    (270, 2.0),
+                    (240, 1.8),
+                    (210, 1.6),
+                    (180, 1.4),
+                    (150, 1.2),
+                    (120, 1.0),
+                    (90, 0.8),
+                    (60, 0.6),
+                    (30, 0.4),
+                    (15, 0.2),
+                    (0, 0.0)
+                ]
             else:
-                if roll >= 275:
-                    ultra_rare = random.randint(1, 50)
-                    if ultra_rare == 50:
-                        winnings = amount_int * 10
-                        multiplier = "10x"
-                        ultra_rare_hit = True
-                    else:
-                        winnings = amount_int * 5
-                        multiplier = "5x"
-                elif roll >= 250:
-                    winnings = amount_int * 2
-                    multiplier = "2x"
-                elif roll >= 225:
-                    winnings = round(amount_int * 1.75)
-                    multiplier = "1.75x"
-                elif roll >= 200:
-                    winnings = round(amount_int * 1.5)
-                    multiplier = "1.5x"
-                elif roll >= 150:
-                    winnings = round(amount_int * 1.25)
-                    multiplier = "1.25x"
-                elif roll >= 100:
-                    winnings = amount_int
-                    multiplier = "1x"
-                elif roll >= 75:
-                    winnings = round(amount_int * 0.25)
-                    multiplier = "0.25x"
-                elif roll >= 50:
-                    winnings = round(amount_int * 0.5)
-                    multiplier = "0.50x"
-                elif roll >= 25:
-                    winnings = round(amount_int * 0.75)
-                    multiplier = "0.75x"
-                else:
-                    winnings = amount_int
-                    multiplier = "1x"
+                thresholds = [
+                    (280, 2.5),
+                    (260, 2.0),
+                    (230, 1.5),
+                    (200, 1.2),
+                    (170, 1.0),
+                    (140, 0.8),
+                    (110, 0.6),
+                    (80, 0.4),
+                    (50, 0.2),
+                    (20, 0.1),
+                    (0, 0.0)
+                ]
 
-                new_balance = current - amount_int + winnings
-                net_gain = winnings - amount_int
+            # Ultra rare mythic gamba
+            if roll_val >= 280 and random.random() < 0.01:
+                return 3.0, True
+            
+            for threshold, mult in thresholds:
+                if roll_val >= threshold:
+                    return mult, False
+            return 0.0, False
+
+        # Determine outcome
+        bet_type = "all" if amount.lower() == "all" else "fixed"
+        multiplier, ultra_rare_hit = get_outcome(adjusted_roll, bet_type)
         
+        # Snake eyes
+        snake_eyes = False
+        if base_roll == 0:
+            multiplier = 0.0
+            snake_eyes = True
+
+        # Calculate winnings
+        winnings = round(amount_int * multiplier)
         new_balance = current - amount_int + winnings
         net_gain = winnings - amount_int
         
-        if dead == True:
-            db_update("cookies",
-                [f"user_id:{user_id}", f"guild_id:{guild_id}"],
-                [("cookies", "0")])
-        else:
-            # Cap it out
-            if new_balance > self.MAX_COOKIES:
+        # Special case for "all" bets with 0 multiplier
+        dead = (bet_type == "all" and multiplier == 0)
+        if dead:
+            new_balance = 0  # Lose all cookies
 
-                # Calculate remainder to max
-                actual_winnings = self.MAX_COOKIES - (current - amount_int)
-                actual_net_gain = actual_winnings - amount_int
-                
-                # Cap balance
-                db_update("cookies",
-                        [f"user_id:{user_id}", f"guild_id:{guild_id}"],
-                        [("cookies", self.MAX_COOKIES)])
-                
-                # You win!
-                if actual_winnings > 0:
-                    response = (
-                        f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
-                        f"Your winnings of {winnings} cookies were capped at 1,000,000!\n"
-                        f"You received {actual_winnings} cookies instead (Net: +{actual_net_gain})."
-                    )
-                else:
-                    response = (
-                        f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
-                        f"Your balance was already at 1,000,000 cookies!\n"
-                        f"No additional winnings were awarded."
-                    )
-                
-                await ctx.send(f"{await author_ping(ctx)} {response}")
-                return
-        
+        # Balance update logic
+        if new_balance > self.MAX_COOKIES:
+            actual_winnings = self.MAX_COOKIES - (current - amount_int)
+            actual_net_gain = actual_winnings - amount_int
+            
+            db_update("cookies",
+                    [f"user_id:{user_id}", f"guild_id:{guild_id}"],
+                    [("cookies", self.MAX_COOKIES)])
+            
+            if actual_winnings > 0:
+                response = (
+                    f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
+                    f"Your winnings of {winnings} cookies were capped at 1,000,000!\n"
+                    f"You received {actual_winnings} cookies instead (Net: +{actual_net_gain})."
+                )
+            else:
+                response = (
+                    f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
+                    f"Your balance was already at 1,000,000 cookies!\n"
+                    f"No additional winnings were awarded."
+                )
+            
+            await ctx.send(f"{await author_ping(ctx)} {response}")
+            return
+        else:
             # Regular update
             db_update("cookies",
                     [f"user_id:{user_id}", f"guild_id:{guild_id}"],
                     [("cookies", new_balance)])
 
-        # Response
-        if dead == True:
+        # Response with ORIGINAL MESSAGES
+        if dead:
             response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:cri:1369238296479273042>"
-        else:
-            if net_gain > 0:
-                if roll >= 250:
-                    if ultra_rare_hit:
-                        response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBLE** - You won THE HIGHEST PAYOUT with a ``{multiplier}`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-                    else:
-                        response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
-                else:
-                    response = f"🥳 You won with a ``{multiplier}`` multiplier! Net gain: ``{net_gain}`` cookies."
-            elif net_gain == 0:
-                response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
+        elif snake_eyes:
+            response = f"🎲 🎲 **SNAKE EYES** - You lost {amount_int} cookies!! <:cri:1369238296479273042>"
+        elif net_gain > 0:
+            if ultra_rare_hit:
+                response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBA** - You won THE HIGHEST PAYOUT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+            elif multiplier >= 2.0:
+                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}x`` multiplier! Net gain: ``{net_gain}`` cookies."
             else:
-                if fail == True:
-                    response = f"🎲 🎲 **SNAKE EYES** - You lost {amount_int} cookies!! <:cri:1369238296479273042>"
-                else:
-                    loss_amount = amount_int - winnings
-                    response = f"😔 You lost ``{loss_amount}`` cookies!"
+                response = f"🥳 You won with a ``{multiplier}x`` multiplier! Net gain: ``{net_gain}`` cookies."
+        elif net_gain == 0:
+            response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
+        else:
+            loss_amount = amount_int - winnings
+            response = f"😔 You lost ``{loss_amount}`` cookies!"
 
+        # Final response with current balance
         current = self.check_cookies(guild_id, str(user_id))
         await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{current}``")

@@ -772,7 +772,8 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                         final_multiplier = 2.5
                     else:
                         final_multiplier = 2.0
-                        ultra_rate_hit = False
+                    
+                    ultra_rate_hit = False
                 else:
                     final_multiplier = base_multiplier
             else:

@@ -668,7 +668,7 @@ class CookieCog(commands.Cog):
             if current <= 0:
                 await ctx.send(f"Sorry {await author_ping(ctx)}, you don't have any cookies. Come back when you're a little mmm, richer.")
                 return
-            amount_int = int(current / 2)
+            amount_int = round(int(current / 2))
         else:
             try:
                 amount_int = int(amount)
@@ -689,7 +689,7 @@ class CookieCog(commands.Cog):
                 await ctx.send(f"{await author_ping(ctx)} You can only spend {max_bet} cookies at a time!")
                 return
 
-        # Logorithmic scaling
+        # Logarithmic scaling
         if current <= 1000:
             penalty = 0
         else:

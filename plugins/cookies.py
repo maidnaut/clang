@@ -767,13 +767,13 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                 elif ultra_rare >= 10:
                     final_multiplier = 3.0
                     ultra_rare_hit = True
-                elif ultra_rate >= 0:
+                elif ultra_rare >= 0:
                     if bet_type == "all":
                         final_multiplier = 2.5
                     else:
                         final_multiplier = 2.0
                     
-                    ultra_rate_hit = False
+                    ultra_rare_hit = False
                 else:
                     final_multiplier = base_multiplier
             else:

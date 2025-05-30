@@ -692,7 +692,7 @@ class CookieCog(commands.Cog):
         # Logarithmic scaling
         if current <= 1000:
             boost_factor = (1000 - current) / 1000
-            boost = int(15 + 15 * boost_factor)
+            boost = int(25 * boost_factor)
             base_roll = random.randint(0, 300)
             adjusted_roll = min(300, base_roll + boost)
         else:

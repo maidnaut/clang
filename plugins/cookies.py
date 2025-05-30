@@ -796,7 +796,7 @@ class CookieCog(commands.Cog):
 
         # Response with ORIGINAL MESSAGES
         if dead:
-            response = f"🎲 🎲 **SNAKE EYES** - You lost ALL your cookies!! <:cri:1369238296479273042>"
+            response = f"🎲 🎲 **SNAKE EYES** - Your cookies have CRUMBLED!! You now have ``0`` cookies <:cri:1369238296479273042>"
         elif snake_eyes:
             response = f"🎲 🎲 **SNAKE EYES** - You lost {amount_int} cookies!! <:cri:1369238296479273042>"
         elif net_gain > 0:

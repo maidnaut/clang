@@ -86,6 +86,8 @@ class WikiCog(commands.Cog):
             if len(segments) > 2:
                 new_path = '/' + '/'.join(segments[:-1])
                 page_url = parsed._replace(path=new_path).geturl()
+            else:
+                page_url = url
 
         if query == "clang":
             await ctx.send(f"Yes hello, that's me. Also here's the search result:")

@@ -81,11 +81,13 @@ class WikiCog(commands.Cog):
         else:
             url = f"{base_url}/wiki/{title.replace(' ', '_')}"
             parsed = urllib.parse.urlparse(url)
-            segments = parsed.path.strip('/').split('/')
+            segments = [seg for seg in parsed.path.split('/') if seg]
             
             if len(segments) > 2:
-                new_path = '/' + '/'.join(segments[:-1])
-                page_url = parsed._replace(path=new_path).geturl()
+                segments = segments[:2]
+                new_path = '/' + '/'.join(segments)
+                new_url = parsed._replace(path=new_path).geturl()
+                page_url = new_url
             else:
                 page_url = url
 

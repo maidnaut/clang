@@ -61,7 +61,7 @@ class FunCog(commands.Cog):
     @commands.command()
     async def clang(self, ctx):
         # Generate a random number for the response
-        choice = random.randint(1, 24)
+        choice = random.randint(1, 25)
 
         # Response dict
         messages = {
@@ -89,6 +89,7 @@ class FunCog(commands.Cog):
             22: "ah, crumbs.",
             23: "i use arch btw",
             24: "install gentoo",
+            25: "HOUSE IS CLANG. CLANG ALWAYS WINS.",
         }
 
         # Get the message corresponding to the chosen number

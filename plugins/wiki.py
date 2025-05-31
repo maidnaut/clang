@@ -1,4 +1,4 @@
-import discord, os, asyncio, argparse
+import discord, os, asyncio, argparse, urllib.parse
 from discord.ext import commands
 from inc.utils import *
 import aiohttp
@@ -79,7 +79,13 @@ class WikiCog(commands.Cog):
         if wiki_name == "arch":
             page_url = f"{base_url}/title/{title.replace(' ', '_')}"
         else:
-            page_url = f"{base_url}/wiki/{title.replace(' ', '_')}"
+            url = f"{base_url}/wiki/{title.replace(' ', '_')}"
+            parsed = urllib.parse.urlparse(url)
+            segments = parsed.path.strip('/').split('/')
+            
+            if len(segments) > 2:
+                new_path = '/' + '/'.join(segments[:-1])
+                page_url = parsed._replace(path=new_path).geturl()
 
         if query == "clang":
             await ctx.send(f"Yes hello, that's me. Also here's the search result:")

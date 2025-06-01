@@ -12,7 +12,7 @@ class StarboardCog(commands.Cog):
         self.scan_lock = asyncio.Lock()
         
         # Create database tables if they don't exist
-        if not table_exists("starboard_config")
+        if not table_exists("starboard_config"):
             new_db("starboard_config", [
                 ("guild_id", "TEXT PRIMARY KEY"),
                 ("emoji", "TEXT"),
@@ -20,7 +20,7 @@ class StarboardCog(commands.Cog):
                 ("channel_id", "TEXT")
             ])
         
-        if not table_exists("starboard_posts")
+        if not table_exists("starboard_posts"):
             new_db("starboard_posts", [
                 ("original_id", "TEXT PRIMARY KEY"),
                 ("starboard_id", "TEXT"),

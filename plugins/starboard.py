@@ -228,12 +228,14 @@ class StarboardCog(commands.Cog):
 
                     reply_embed = discord.Embed(
                         description=(
-                            f"**Reply to {await check_ping(ctx, parent.author)}:** "
+                            f"**Reply to {await check_ping(ctx, parent.author)}**\n"
                             f"{parent.content}"
                         ),
                         color=discord.Color.dark_gray(),
                         timestamp=parent.created_at
                     )
+
+                    reply_embed.set_thumbnail(url=parent.author.display_avatar.url)
                 except:
                     reply_embed = None
 

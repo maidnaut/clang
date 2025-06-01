@@ -52,7 +52,7 @@ class StarboardCog(commands.Cog):
         }
 
     @commands.command()
-    def starboard_droptable(ctx, self):
+    async def starboard_droptable(ctx, self):
         user_level = await get_level(ctx)
         if user_level >= 4 or ctx.author == ctx.guild.owner:
             try:

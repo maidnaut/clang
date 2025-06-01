@@ -81,7 +81,12 @@ class StarboardCog(commands.Cog):
             db_insert(
                 "starboard_config",
                 ["guild_id", "emoji", "threshold", "channel_id"],
-                [str(guild_id), config["emoji"], config["threshold"], config["channel_id"]]
+                [
+                    str(guild_id),
+                    config["emoji"],
+                    config["threshold"],
+                    config["channel_id"]
+                ]
             )
         else:
             updates = [
@@ -90,6 +95,7 @@ class StarboardCog(commands.Cog):
             ]
             if config["channel_id"] is not None:
                 updates.append(("channel_id", config["channel_id"]))
+
             db_update(
                 "starboard_config",
                 [f"guild_id:{guild_id}"],

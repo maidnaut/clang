@@ -55,8 +55,12 @@ class StarboardCog(commands.Cog):
     def starboard_droptable(ctx, self):
         user_level = await get_level(ctx)
         if user_level >= 4 or ctx.author == ctx.guild.owner:
-            drop_table("starboard_config")
-            drop_table("starboard_posts")
+            try:
+                drop_table("starboard_config")
+                drop_table("starboard_posts")
+                await ctx.send("Tables dropped.")
+            except Exception as e:
+                await ctx.send(f"{e}")
 
     # Database helper methods
     def get_starboard_config(self, guild_id):

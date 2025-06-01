@@ -231,14 +231,19 @@ class StarboardCog(commands.Cog):
                         timestamp=parent.created_at
                     )
                     reply_embed.set_author(
-                        name="",
+                        name="Reply to",
                         icon_url=parent.author.display_avatar.url
                     )
                     reply_embed.add_field(
-                        value=(
-                            f"**Reply to {await check_ping(ctx, parent.author)}:** "
-                            f"{parent.content}"
-                        )
+                        name="",
+                        value=f"{await check_ping(ctx, parent.author)}",
+                        inline=False
+                    )
+                    raw = parent.content or ""
+                    reply_embed.add_field(
+                        name="",
+                        value=raw,
+                        inline=False
                     )
                 except:
                     reply_embed = None

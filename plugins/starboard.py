@@ -74,7 +74,7 @@ class StarboardCog(commands.Cog):
                 [str(guild_id), "⭐", 3, None]
             )
         else:
-            db_update("starboard_config", [f"guild_id:{guild_id}", f"emoji:{config['emoji']}"], [(f"threshold:{config['threshold']}")], f"channel_id:{str(config['channel_id'])}")
+            db_update("starboard_config", [f"guild_id:{guild_id}"], [(f"emoji:{config['emoji']}"), (f"threshold:{config['threshold']}"), (f"channel_id:{str(config['channel_id']})]")
 
     def get_starboard_message(self, original_id):
         rows = db_read("starboard_posts", [f"original_id:{original_id}"])

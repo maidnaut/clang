@@ -55,13 +55,14 @@ class StarboardCog(commands.Cog):
     def get_starboard_config(self, guild_id):
         rows = db_read("starboard_config", [f"guild_id:{guild_id}"])
         if rows:
+            raw_id = rows[0][3]
             return {
-                "emoji": rows[0][1],
+                "emoji":     rows[0][1],
                 "threshold": rows[0][2],
-                "channel_id": rows[0][3]
+                "channel_id": int(raw_id) if raw_id and raw_id.isdigit() else None
             }
         return {
-            "emoji": "⭐",
+            "emoji":     "⭐",
             "threshold": 3,
             "channel_id": None
         }
@@ -69,21 +70,24 @@ class StarboardCog(commands.Cog):
     def save_starboard_config(self, guild_id, config):
         check_row = db_read("starboard_config", [f"guild_id:{guild_id}"])
         if not check_row:
-            db_insert("starboard_config", 
+            db_insert(
+                "starboard_config",
                 ["guild_id", "emoji", "threshold", "channel_id"],
-                [str(guild_id), "⭐", 3, None]
+                [str(guild_id), config["emoji"], config["threshold"], config["channel_id"]]
             )
         else:
+            updates = [
+                ("emoji",     config["emoji"]),
+                ("threshold", config["threshold"])
+            ]
+            
+            if config["channel_id"] is not None:
+                updates.append(("channel_id", config["channel_id"]))
             db_update(
                 "starboard_config",
                 [f"guild_id:{guild_id}"],
-                [
-                    ("emoji",      config["emoji"]),
-                    ("threshold",  config["threshold"]),
-                    ("channel_id", str(config["channel_id"]))
-                ]
+                updates
             )
-
 
     def get_starboard_message(self, original_id):
         rows = db_read("starboard_posts", [f"original_id:{original_id}"])

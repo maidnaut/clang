@@ -234,7 +234,8 @@ class StarboardCog(commands.Cog):
                     )
                     # 2) Then set its author (so the “Reply to:” line appears)
                     reply_embed.set_author(
-                        name=f"Reply to: {await check_ping(ctx, parent.author)}",
+                        name="",
+                        value=f"Reply to: {await check_ping(ctx, parent.author)}",
                         icon_url=parent.author.display_avatar.url
                     )
                 except:
@@ -246,18 +247,13 @@ class StarboardCog(commands.Cog):
             )
             main_embed.add_field(
                 name="",
-                value=f"{await check_ping(ctx, message.author)}",
+                value=f"{await check_ping(ctx, message.author)} - [Jump to Message]({message.jump_url})",
                 inline=False
             )
             raw = message.content or ""
             main_embed.add_field(
                 name="",
                 value=raw,
-                inline=False
-            )
-            main_embed.add_field(
-                name="",
-                value=f"[Jump to Message]({message.jump_url})",
                 inline=False
             )
             main_embed.set_footer(text=f"{config['emoji']} {star_count}")

@@ -1,7 +1,7 @@
-import discord
+import discord, asyncio
 from discord.ext import commands
-import asyncio
 from inc.utils import *
+from inc.db import *
 
 def setup(bot):
     bot.add_cog(StarboardCog(bot))

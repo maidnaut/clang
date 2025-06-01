@@ -71,7 +71,7 @@ class StarboardCog(commands.Cog):
                     ("starboard_id", "TEXT"),
                     ("channel_id", "TEXT")
                 ])
-                
+
                 await ctx.send("Tables dropped.")
             except Exception as e:
                 await ctx.send(f"{e}")
@@ -235,7 +235,7 @@ class StarboardCog(commands.Cog):
 
             main_embed.add_field(
                 name="",
-                value=f"{await check_ping(ctx, message.author)} - {message.created_at.strftime('%Y-%m-%d %H:%M UTC')}",
+                value=f"{await check_ping(ctx, message.author)} - {message.created_at.strftime("%B %d, %Y - %H:%M")}",
                 inline=False
             )
             main_embed.add_field(

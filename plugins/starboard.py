@@ -234,6 +234,7 @@ class StarboardCog(commands.Cog):
                         name="Reply to",
                         icon_url=parent.author.display_avatar.url
                     )
+                    raw = parent.content or ""
                     reply_embed.add_field(
                         name="",
                         value=f"{await check_ping(ctx, parent.author)} - {raw}",

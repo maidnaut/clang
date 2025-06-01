@@ -187,8 +187,7 @@ class StarboardCog(commands.Cog):
         if star_count >= config["threshold"]:
             embed = discord.Embed(
                 description=message.content,
-                color=discord.Color.gold(),
-                timestamp=message.created_at
+                color=discord.Color.gold()
             )
             
             embed.set_author(

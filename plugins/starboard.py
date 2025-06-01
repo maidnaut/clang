@@ -171,6 +171,9 @@ class StarboardCog(commands.Cog):
 
     # Starboard core functionality
     async def process_starboard(self, payload, added=True):
+
+        ctx = await self.bot.get_context(message)
+        
         guild = self.bot.get_guild(payload.guild_id)
         if not guild:
             return
@@ -224,14 +227,14 @@ class StarboardCog(commands.Cog):
                         parent_chan = guild.get_channel(message.reference.channel_id) or channel
                         parent = await parent_chan.fetch_message(message.reference.message_id)
 
+                    reply_embed.set_author(
+                        name=f"Reply to: {await check_ping(ctx, parent.author)}",
+                        icon_url=parent.author.display_avatar.url
+                    )
                     reply_embed = discord.Embed(
-                        description=f"**Reply to {parent.author.display_name}:** {parent.content}",
+                        description=f"{parent.content}",
                         color=discord.Color.dark_gray(),
                         timestamp=parent.created_at
-                    )
-                    reply_embed.set_author(
-                        name=parent.author.display_name,
-                        icon_url=parent.author.display_avatar.url
                     )
                 except:
                     reply_embed = None
@@ -241,18 +244,18 @@ class StarboardCog(commands.Cog):
                 timestamp=message.created_at
             )
             main_embed.add_field(
-                name="Posted by",
-                value=f"{message.author.display_name} • {message.created_at.strftime('%B %d, %Y - %H:%M')}",
+                name=f"{await check_ping(ctx, message.author)}",
+                value="",
                 inline=False
             )
             raw = message.content or ""
             main_embed.add_field(
-                name="Message",
+                name="",
                 value=raw,
                 inline=False
             )
             main_embed.add_field(
-                name="Link",
+                name="",
                 value=f"[Jump to Message]({message.jump_url})",
                 inline=False
             )

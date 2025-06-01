@@ -200,7 +200,7 @@ class StarboardCog(commands.Cog):
                         parent = await parent_chan.fetch_message(message.reference.message_id)
 
                     reply_embed = discord.Embed(
-                        description=f"**Reply to {await author_ping(ctx, parent.author)}:** {parent.content}",
+                        description=f"**Reply to {await check_ping(ctx, parent.author)}:** {parent.content}",
                         color=discord.Color.dark_gray(),
                         timestamp=parent.created_at
                     )
@@ -221,7 +221,7 @@ class StarboardCog(commands.Cog):
 
             main_embed.add_field(
                 name="",
-                value=f"{await author_ping(ctx, message.author)} - {message.created_at.strftime('%Y-%m-%d %H:%M UTC')}",
+                value=f"{await check_ping(ctx, message.author)} - {message.created_at.strftime('%Y-%m-%d %H:%M UTC')}",
                 inline=False
             )
             main_embed.add_field(

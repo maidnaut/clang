@@ -215,9 +215,10 @@ class StarboardCog(commands.Cog):
                 color=discord.Color.gold(),
                 timestamp=message.created_at
             )
-            main_embed.set_author(
+            main_embed.add_field(
                 name="",
-                value=f"{message.author.display_name} - {message.created_at}"
+                value=f"{message.author.display_name} - {message.created_at.strftime("%Y-%m-%d %H:%M UTC")}",
+                inline=False
             )
             if message.author.avatar:
                 main_embed.set_thumbnail(url=message.author.avatar.url)

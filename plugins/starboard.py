@@ -226,14 +226,16 @@ class StarboardCog(commands.Cog):
                         parent_chan = guild.get_channel(message.reference.channel_id) or channel
                         parent = await parent_chan.fetch_message(message.reference.message_id)
 
-                    reply_embed.set_author(
-                        name=f"Reply to: {await check_ping(ctx, parent.author)}",
-                        icon_url=parent.author.display_avatar.url
-                    )
+                    # 1) Create the embed first
                     reply_embed = discord.Embed(
                         description=f"{parent.content}",
                         color=discord.Color.dark_gray(),
                         timestamp=parent.created_at
+                    )
+                    # 2) Then set its author (so the “Reply to:” line appears)
+                    reply_embed.set_author(
+                        name=f"Reply to: {await check_ping(ctx, parent.author)}",
+                        icon_url=parent.author.display_avatar.url
                     )
                 except:
                     reply_embed = None

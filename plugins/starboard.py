@@ -171,6 +171,8 @@ class StarboardCog(commands.Cog):
             return
 
         config = self.get_starboard_config(guild.id)
+        print(f">>> DEBUG: threshold = {repr(config['threshold'])} (type: {type(config['threshold'])})")
+
         if not config or not config.get("channel_id"):
             return
 

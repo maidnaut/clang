@@ -185,6 +185,8 @@ class StarboardCog(commands.Cog):
 
         # Create/update starboard message
         if star_count >= config["threshold"]:
+
+            ctx = await self.bot.get_context(message)
             
             reply_embed = None
             if message.reference and message.reference.message_id:
@@ -198,7 +200,7 @@ class StarboardCog(commands.Cog):
                         parent = await parent_chan.fetch_message(message.reference.message_id)
 
                     reply_embed = discord.Embed(
-                        description=f"**Reply to {parent.author.display_name}:** {parent.content}",
+                        description=f"**Reply to {await author_ping(ctx, parent.author)}:** {parent.content}",
                         color=discord.Color.dark_gray(),
                         timestamp=parent.created_at
                     )
@@ -211,18 +213,22 @@ class StarboardCog(commands.Cog):
 
             raw = message.content
             main_embed = discord.Embed(
-                description=raw,
                 color=discord.Color.gold(),
                 timestamp=message.created_at
-            )
-            main_embed.add_field(
-                name="",
-                value=f"{message.author.display_name} - {message.created_at.strftime('%Y-%m-%d %H:%M UTC')}",
-                inline=False
             )
             if message.author.avatar:
                 main_embed.set_thumbnail(url=message.author.avatar.url)
 
+            main_embed.add_field(
+                name="",
+                value=f"{await author_ping(ctx, message.author)} - {message.created_at.strftime('%Y-%m-%d %H:%M UTC')}",
+                inline=False
+            )
+            main_embed.add_field(
+                name="",
+                value=raw,
+                inline=False
+            )
             main_embed.add_field(
                 name="",
                 value=f"[Jump to Message]({message.jump_url})",

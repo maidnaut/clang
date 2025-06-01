@@ -198,7 +198,6 @@ class StarboardCog(commands.Cog):
             await asyncio.sleep(0.5)
             try:
                 message = await channel.fetch_message(payload.message_id)
-                ctx = await self.bot.get_context(message)
             except:
                 return
 
@@ -213,6 +212,7 @@ class StarboardCog(commands.Cog):
         if not starboard_channel:
             return
 
+        ctx = await self.bot.get_context(message)
         if star_count >= threshold:
             reply_embed = None
             if message.reference and message.reference.message_id:

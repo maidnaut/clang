@@ -67,10 +67,14 @@ class StarboardCog(commands.Cog):
         }
 
     def save_starboard_config(self, guild_id, config):
-        db_insert("starboard_config", 
-            ["guild_id", "emoji", "threshold", "channel_id"],
-            [str(guild_id), config["emoji"], config["threshold"], str(config["channel_id"])]
-        )
+        check_row = db_read("starboard_config", [f"guild_id:{guild_id}"])
+        if not check_row:
+            db_insert("starboard_config", 
+                ["guild_id", "emoji", "threshold", "channel_id"],
+                [str(guild_id), "⭐", 3, None]
+            )
+        else:
+            db_update("starboard_config", [f"guild_id:{guild_id}", f"emoji:{config['emoji']}"], [(f"threshold:{config['threshold']}")], f"channel_id:{str(config['channel_id'])}")
 
     def get_starboard_message(self, original_id):
         rows = db_read("starboard_posts", [f"original_id:{original_id}"])

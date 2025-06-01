@@ -236,13 +236,7 @@ class StarboardCog(commands.Cog):
                     )
                     reply_embed.add_field(
                         name="",
-                        value=f"{await check_ping(ctx, parent.author)}",
-                        inline=False
-                    )
-                    raw = parent.content or ""
-                    reply_embed.add_field(
-                        name="",
-                        value=raw,
+                        value=f"{await check_ping(ctx, parent.author)} - {raw}",
                         inline=False
                     )
                 except:

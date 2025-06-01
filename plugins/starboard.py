@@ -171,8 +171,6 @@ class StarboardCog(commands.Cog):
 
     # Starboard core functionality
     async def process_starboard(self, payload, added=True):
-
-        ctx = await self.bot.get_context(message)
         
         guild = self.bot.get_guild(payload.guild_id)
         if not guild:
@@ -200,6 +198,7 @@ class StarboardCog(commands.Cog):
             await asyncio.sleep(0.5)
             try:
                 message = await channel.fetch_message(payload.message_id)
+                ctx = await self.bot.get_context(message)
             except:
                 return
 

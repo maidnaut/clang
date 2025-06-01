@@ -192,7 +192,8 @@ class StarboardCog(commands.Cog):
             )
             embed.set_author(
                 name=message.author.display_name,
-                embed.set_thumbnail(url=message.author.display_avatar.url)
+                if getattr(user, "avatar", None):
+                    embed.set_thumbnail(url=message.author.avatar.url)
             )
             embed.add_field(
                 name="Source",

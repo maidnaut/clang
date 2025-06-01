@@ -51,6 +51,13 @@ class StarboardCog(commands.Cog):
             }
         }
 
+    @commands.command()
+    def starboard_droptable(ctx, self):
+        user_level = await get_level(ctx)
+        if user_level >= 4 or ctx.author == ctx.guild.owner:
+            drop_table("starboard_config")
+            drop_table("starboard_posts")
+
     # Database helper methods
     def get_starboard_config(self, guild_id):
         rows = db_read("starboard_config", [f"guild_id:{guild_id}"])

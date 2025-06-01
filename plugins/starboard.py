@@ -185,49 +185,65 @@ class StarboardCog(commands.Cog):
 
         # Create/update starboard message
         if star_count >= config["threshold"]:
-            embed = discord.Embed(
-                description=message.content,
-                color=discord.Color.gold()
-            )
             
-            embed.set_author(
+            reply_embed = None
+            if message.reference and message.reference.message_id:
+                try:
+                    if message.reference.resolved and isinstance(message.reference.resolved, discord.Message):
+                        parent = message.reference.resolved
+                    else:
+                        parent_channel = guild.get_channel(message.reference.channel_id) or channel
+                        parent = await parent_channel.fetch_message(message.reference.message_id)
+                    
+                    reply_embed = discord.Embed(
+                        description=f"**Reply to {parent.author.display_name}:** {parent.content}",
+                        color=discord.Color.dark_gray(),
+                        timestamp=parent.created_at
+                    )
+                    reply_embed.set_author(
+                        name=parent.author.display_name,
+                        icon_url=parent.author.display_avatar.url
+                    )
+                    # if parent.attachments:
+                    #     reply_embed.set_image(url=parent.attachments[0].url)
+                except:
+                    reply_embed = None
+            
+            main_embed = discord.Embed(
+                description=message.content,
+                color=discord.Color.gold(),
+                timestamp=message.created_at
+            )
+            main_embed.set_author(
                 name=message.author.display_name,
                 icon_url=message.author.display_avatar.url
             )
             
             if message.author.avatar:
-                embed.set_thumbnail(url=message.author.avatar.url)
-
-            embed.add_field(
-                name="Source",
-                value=f"[Jump to Message]({message.jump_url})",
-                inline=False
-            )
+                main_embed.set_thumbnail(url=message.author.avatar.url)
+            main_embed.set_footer(text=f"{config['emoji']} {star_count} | [Jump to Message]({message.jump_url})")
             
-            # Add image if exists
             if message.attachments:
                 image = message.attachments[0]
-                if image.filename.lower().endswith(('png', 'jpg', 'jpeg', 'gif', 'webp')):
-                    embed.set_image(url=image.url)
+                if image.filename.lower().endswith(("png","jpg","jpeg","gif","webp")):
+                    main_embed.set_image(url=image.url)
             
             if starboard_post:
                 try:
                     star_msg = await starboard_channel.fetch_message(int(starboard_post["starboard_id"]))
-                    await star_msg.edit(embed=embed)
+                    if reply_embed:
+                        await star_msg.edit(embeds=[reply_embed, main_embed])
+                    else:
+                        await star_msg.edit(embed=main_embed)
                 except:
                     self.delete_starboard_message(message.id)
             else:
-                star_msg = await starboard_channel.send(embed=embed)
+                if reply_embed:
+                    star_msg = await starboard_channel.send(embeds=[reply_embed, main_embed])
+                else:
+                    star_msg = await starboard_channel.send(embed=main_embed)
                 self.save_starboard_message(message.id, star_msg.id, starboard_channel.id)
-        
-        # Remove starboard entry if below threshold
-        elif starboard_post:
-            try:
-                star_msg = await starboard_channel.fetch_message(int(starboard_post["starboard_id"]))
-                await star_msg.delete()
-            except:
-                pass
-            self.delete_starboard_message(message.id)
+
 
     # Event listeners
     @commands.Cog.listener()

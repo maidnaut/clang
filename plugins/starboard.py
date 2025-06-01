@@ -185,16 +185,18 @@ class StarboardCog(commands.Cog):
 
         # Create/update starboard message
         if star_count >= config["threshold"]:
-            
+            # 1) Build reply‐embed if this is a reply…
             reply_embed = None
             if message.reference and message.reference.message_id:
                 try:
-                    if message.reference.resolved and isinstance(message.reference.resolved, discord.Message):
+                    if (message.reference.resolved 
+                        and isinstance(message.reference.resolved, discord.Message)
+                    ):
                         parent = message.reference.resolved
                     else:
-                        parent_channel = guild.get_channel(message.reference.channel_id) or channel
-                        parent = await parent_channel.fetch_message(message.reference.message_id)
-                    
+                        parent_chan = guild.get_channel(message.reference.channel_id) or channel
+                        parent = await parent_chan.fetch_message(message.reference.message_id)
+
                     reply_embed = discord.Embed(
                         description=f"**Reply to {parent.author.display_name}:** {parent.content}",
                         color=discord.Color.dark_gray(),
@@ -204,13 +206,16 @@ class StarboardCog(commands.Cog):
                         name=parent.author.display_name,
                         icon_url=parent.author.display_avatar.url
                     )
-                    # if parent.attachments:
-                    #     reply_embed.set_image(url=parent.attachments[0].url)
                 except:
                     reply_embed = None
-            
+
+            # 2) Build main embed, passing the raw string into description
+            raw = message.content
+            # (strip stray newlines if needed:
+            # raw = raw.replace("\n", "")
+            # )
             main_embed = discord.Embed(
-                description=message.content,
+                description=raw,
                 color=discord.Color.gold(),
                 timestamp=message.created_at
             )
@@ -218,23 +223,31 @@ class StarboardCog(commands.Cog):
                 name=message.author.display_name,
                 icon_url=message.author.display_avatar.url
             )
-            
             if message.author.avatar:
                 main_embed.set_thumbnail(url=message.author.avatar.url)
-            main_embed.set_footer(text=f"{config['emoji']} {star_count} | [Jump to Message]({message.jump_url})")
-            
+
+            # Put the clickable “Jump to Message” into a field, not footer
+            main_embed.add_field(
+                name="Link",
+                value=f"[Jump to Message]({message.jump_url})",
+                inline=False
+            )
+            main_embed.set_footer(text=f"{config['emoji']} {star_count}")
+
+            # Add image if there is one:
             if message.attachments:
-                image = message.attachments[0]
-                if image.filename.lower().endswith(("png","jpg","jpeg","gif","webp")):
-                    main_embed.set_image(url=image.url)
-            
+                img = message.attachments[0]
+                if img.filename.lower().endswith(("png", "jpg", "jpeg", "gif", "webp")):
+                    main_embed.set_image(url=img.url)
+
+            # 3) Send or edit exactly as a list of embeds
             if starboard_post:
                 try:
                     star_msg = await starboard_channel.fetch_message(int(starboard_post["starboard_id"]))
                     if reply_embed:
                         await star_msg.edit(embeds=[reply_embed, main_embed])
                     else:
-                        await star_msg.edit(embed=main_embed)
+                        await star_msg.edit(embeds=[main_embed])
                 except:
                     self.delete_starboard_message(message.id)
             else:
@@ -243,7 +256,6 @@ class StarboardCog(commands.Cog):
                 else:
                     star_msg = await starboard_channel.send(embed=main_embed)
                 self.save_starboard_message(message.id, star_msg.id, starboard_channel.id)
-
 
     # Event listeners
     @commands.Cog.listener()

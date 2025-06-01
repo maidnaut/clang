@@ -227,15 +227,19 @@ class StarboardCog(commands.Cog):
                         parent = await parent_chan.fetch_message(message.reference.message_id)
 
                     reply_embed = discord.Embed(
-                        description=(
-                            f"**Reply to {await check_ping(ctx, parent.author)}**\n"
-                            f"{parent.content}"
-                        ),
                         color=discord.Color.dark_gray(),
                         timestamp=parent.created_at
                     )
-
-                    reply_embed.set_icon(url=parent.author.display_avatar.url)
+                    reply_embed.set_author(
+                        name="",
+                        icon_url=parent.author.display_avatar.url
+                    )
+                    reply_embed.add_field(
+                        value=(
+                            f"**Reply to {await check_ping(ctx, parent.author)}:** "
+                            f"{parent.content}"
+                        )
+                    )
                 except:
                     reply_embed = None
 

@@ -55,7 +55,6 @@ class StarboardCog(commands.Cog):
     def get_starboard_config(self, guild_id):
         rows = db_read("starboard_config", [f"guild_id:{guild_id}"])
         if rows:
-            # (guild_id, emoji, threshold, channel_id)
             return {
                 "emoji": rows[0][1],
                 "threshold": rows[0][2],
@@ -76,7 +75,6 @@ class StarboardCog(commands.Cog):
     def get_starboard_message(self, original_id):
         rows = db_read("starboard_posts", [f"original_id:{original_id}"])
         if rows:
-            # (original_id, starboard_id, channel_id)
             return {
                 "starboard_id": rows[0][1],
                 "channel_id": rows[0][2]
@@ -91,6 +89,25 @@ class StarboardCog(commands.Cog):
 
     def delete_starboard_message(self, original_id):
         db_remove("starboard_posts", ["original_id"], [str(original_id)])
+    
+    # Unified emoji comparison
+    def emoji_matches(self, emoji, config_emoji):
+        """Compare emoji objects with stored emoji strings"""
+        # Handle unicode emojis
+        if isinstance(emoji, str):
+            return emoji == config_emoji
+        
+        # Handle PartialEmoji objects
+        if hasattr(emoji, 'name') and hasattr(emoji, 'id'):
+            # For custom emojis, compare using formatted string
+            custom_str = f"<{'a' if emoji.animated else ''}:{emoji.name}:{emoji.id}>"
+            return custom_str == config_emoji
+        
+        # Handle Reaction objects
+        if hasattr(emoji, 'emoji'):
+            return self.emoji_matches(emoji.emoji, config_emoji)
+        
+        return str(emoji) == config_emoji
 
     # Starboard core functionality
     async def process_starboard(self, payload, added=True):
@@ -114,7 +131,7 @@ class StarboardCog(commands.Cog):
         # Count relevant reactions
         star_count = 0
         for reaction in message.reactions:
-            if str(reaction.emoji) == config["emoji"]:
+            if self.emoji_matches(reaction.emoji, config["emoji"]):
                 star_count = reaction.count
                 break
 
@@ -209,10 +226,18 @@ class StarboardCog(commands.Cog):
 
     @starboard.command(name="set_emoji")
     async def set_emoji(self, ctx, emoji: str):
+        # Handle custom emoji input
+        if isinstance(emoji, discord.Emoji):
+            emoji_str = f"<:{emoji.name}:{emoji.id}>"
+        elif isinstance(emoji, discord.PartialEmoji):
+            emoji_str = f"<{'a' if emoji.animated else ''}:{emoji.name}:{emoji.id}>"
+        else:
+            emoji_str = emoji
+            
         config = self.get_starboard_config(ctx.guild.id)
-        config["emoji"] = emoji
+        config["emoji"] = emoji_str
         self.save_starboard_config(ctx.guild.id, config)
-        await ctx.send(f"{await author_ping(ctx)} Starboard emoji set to {emoji}")
+        await ctx.send(f"{await author_ping(ctx)} Starboard emoji set to {emoji_str}")
 
     @starboard.command(name="set_threshold")
     async def set_threshold(self, ctx, threshold: int):
@@ -257,22 +282,33 @@ class StarboardCog(commands.Cog):
                             
                         # Check if message has our emoji
                         for reaction in message.reactions:
-                            if str(reaction.emoji) == config["emoji"]:
-                                # Create a fake payload for processing
+                            if self.emoji_matches(reaction.emoji, config["emoji"]):
+                                # Create a proper payload for processing
+                                emoji_data = {
+                                    "name": reaction.emoji.name if hasattr(reaction.emoji, 'name') else str(reaction.emoji),
+                                    "id": str(reaction.emoji.id) if hasattr(reaction.emoji, 'id') else None,
+                                    "animated": getattr(reaction.emoji, 'animated', False)
+                                }
+                                
                                 fake_payload = discord.RawReactionActionEvent(
                                     {
                                         "message_id": message.id,
                                         "channel_id": channel.id,
                                         "guild_id": ctx.guild.id,
                                         "user_id": self.bot.user.id,
-                                        "emoji": {"name": config["emoji"]}
+                                        "emoji": emoji_data
                                     },
-                                    "REACTION_ADD"  # Fake event type
+                                    "REACTION_ADD"
                                 )
                                 await self.process_starboard(fake_payload)
                                 found += 1
                                 break
                         processed += 1
+                        
+                        # Prevent API rate limits
+                        if processed % 100 == 0:
+                            await asyncio.sleep(1)
+                            
                 except Exception as e:
                     await ctx.send(f"{await author_ping(ctx)} Error scanning {channel.mention}: {str(e)}")
             

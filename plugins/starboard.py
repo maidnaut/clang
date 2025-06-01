@@ -213,7 +213,7 @@ class StarboardCog(commands.Cog):
             main_embed = discord.Embed(
                 description=raw,
                 color=discord.Color.gold(),
-                timestamp=
+                timestamp=message.created_at
             )
             main_embed.set_author(
                 name="",

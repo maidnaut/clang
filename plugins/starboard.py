@@ -58,6 +58,20 @@ class StarboardCog(commands.Cog):
             try:
                 drop_table("starboard_config")
                 drop_table("starboard_posts")
+
+                new_db("starboard_config", [
+                    ("guild_id", "TEXT PRIMARY KEY"),
+                    ("emoji", "TEXT"),
+                    ("threshold", "INTEGER"),
+                    ("channel_id", "TEXT")
+                ])
+
+                new_db("starboard_posts", [
+                    ("original_id", "TEXT PRIMARY KEY"),
+                    ("starboard_id", "TEXT"),
+                    ("channel_id", "TEXT")
+                ])
+                
                 await ctx.send("Tables dropped.")
             except Exception as e:
                 await ctx.send(f"{e}")

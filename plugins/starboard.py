@@ -56,11 +56,19 @@ class StarboardCog(commands.Cog):
         rows = db_read("starboard_config", [f"guild_id:{guild_id}"])
         if rows:
             raw_id = rows[0][3]
+            if isinstance(raw_id, int):
+                channel_id = raw_id
+            elif isinstance(raw_id, str) and raw_id.isdigit():
+                channel_id = int(raw_id)
+            else:
+                channel_id = None
+
             return {
                 "emoji":     rows[0][1],
                 "threshold": rows[0][2],
-                "channel_id": int(raw_id) if raw_id and raw_id.isdigit() else None
+                "channel_id": channel_id
             }
+
         return {
             "emoji":     "⭐",
             "threshold": 3,
@@ -80,7 +88,6 @@ class StarboardCog(commands.Cog):
                 ("emoji",     config["emoji"]),
                 ("threshold", config["threshold"])
             ]
-            
             if config["channel_id"] is not None:
                 updates.append(("channel_id", config["channel_id"]))
             db_update(

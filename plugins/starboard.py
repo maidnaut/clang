@@ -185,7 +185,7 @@ class StarboardCog(commands.Cog):
 
         # Create/update starboard message
         if star_count >= config["threshold"]:
-            # 1) Build reply‐embed if this is a reply…
+            
             reply_embed = None
             if message.reference and message.reference.message_id:
                 try:
@@ -209,38 +209,31 @@ class StarboardCog(commands.Cog):
                 except:
                     reply_embed = None
 
-            # 2) Build main embed, passing the raw string into description
             raw = message.content
-            # (strip stray newlines if needed:
-            # raw = raw.replace("\n", "")
-            # )
             main_embed = discord.Embed(
                 description=raw,
                 color=discord.Color.gold(),
-                timestamp=message.created_at
+                timestamp=
             )
             main_embed.set_author(
-                name=message.author.display_name,
-                icon_url=message.author.display_avatar.url
+                name="",
+                value=f"{message.author.display_name} - {message.created_at}"
             )
             if message.author.avatar:
                 main_embed.set_thumbnail(url=message.author.avatar.url)
 
-            # Put the clickable “Jump to Message” into a field, not footer
             main_embed.add_field(
-                name="Link",
+                name="",
                 value=f"[Jump to Message]({message.jump_url})",
                 inline=False
             )
             main_embed.set_footer(text=f"{config['emoji']} {star_count}")
 
-            # Add image if there is one:
             if message.attachments:
                 img = message.attachments[0]
                 if img.filename.lower().endswith(("png", "jpg", "jpeg", "gif", "webp")):
                     main_embed.set_image(url=img.url)
 
-            # 3) Send or edit exactly as a list of embeds
             if starboard_post:
                 try:
                     star_msg = await starboard_channel.fetch_message(int(starboard_post["starboard_id"]))

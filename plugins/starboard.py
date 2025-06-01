@@ -235,7 +235,7 @@ class StarboardCog(commands.Cog):
 
             main_embed.add_field(
                 name="",
-                value=f"{await check_ping(ctx, message.author)} - {message.created_at.strftime("%B %d, %Y - %H:%M")}",
+                value=f"{await check_ping(ctx, message.author)} - {message.created_at.strftime('%B %d, %Y - %H:%M')}",
                 inline=False
             )
             main_embed.add_field(

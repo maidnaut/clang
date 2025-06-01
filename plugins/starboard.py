@@ -176,12 +176,16 @@ class StarboardCog(commands.Cog):
             return
 
         config = self.get_starboard_config(guild.id)
-
         if not config or not config.get("channel_id"):
+            return
+        threshold = config["threshold"]
+        sb_channel_id = config["channel_id"]
+
+        if payload.channel_id == sb_channel_id:
             return
 
         channel = guild.get_channel(payload.channel_id)
-        if not channel or int(config["channel_id"]) == channel.id:
+        if not channel:
             return
 
         try:
@@ -189,29 +193,30 @@ class StarboardCog(commands.Cog):
         except:
             return
 
-        # Count relevant reactions
+        if not added:
+            await asyncio.sleep(0.5)
+            try:
+                message = await channel.fetch_message(payload.message_id)
+            except:
+                return
+
         star_count = 0
         for reaction in message.reactions:
             if self.emoji_matches(reaction.emoji, config["emoji"]):
                 star_count = reaction.count
                 break
 
-        # Handle starboard post
         starboard_post = self.get_starboard_message(message.id)
-        starboard_channel = guild.get_channel(int(config["channel_id"]))
-        
+        starboard_channel = guild.get_channel(sb_channel_id)
         if not starboard_channel:
             return
 
-        # Create/update starboard message
-        if star_count >= config["threshold"]:
-
-            ctx = await self.bot.get_context(message)
-            
+        if star_count >= threshold:
             reply_embed = None
             if message.reference and message.reference.message_id:
                 try:
-                    if (message.reference.resolved 
+                    if (
+                        message.reference.resolved
                         and isinstance(message.reference.resolved, discord.Message)
                     ):
                         parent = message.reference.resolved
@@ -220,7 +225,7 @@ class StarboardCog(commands.Cog):
                         parent = await parent_chan.fetch_message(message.reference.message_id)
 
                     reply_embed = discord.Embed(
-                        description=f"**Reply to {await check_ping(ctx, parent.author)}:** {parent.content}",
+                        description=f"**Reply to {parent.author.display_name}:** {parent.content}",
                         color=discord.Color.dark_gray(),
                         timestamp=parent.created_at
                     )
@@ -231,51 +236,64 @@ class StarboardCog(commands.Cog):
                 except:
                     reply_embed = None
 
-            raw = message.content
             main_embed = discord.Embed(
                 color=discord.Color.gold(),
                 timestamp=message.created_at
             )
-            if message.author.avatar:
-                main_embed.set_thumbnail(url=message.author.avatar.url)
-
             main_embed.add_field(
-                name="",
-                value=f"{await check_ping(ctx, message.author)} - {message.created_at.strftime('%B %d, %Y - %H:%M')}",
+                name="Posted by",
+                value=f"{message.author.display_name} • {message.created_at.strftime('%B %d, %Y - %H:%M')}",
                 inline=False
             )
+            raw = message.content or ""
             main_embed.add_field(
-                name="",
+                name="Message",
                 value=raw,
                 inline=False
             )
             main_embed.add_field(
-                name="",
+                name="Link",
                 value=f"[Jump to Message]({message.jump_url})",
                 inline=False
             )
             main_embed.set_footer(text=f"{config['emoji']} {star_count}")
 
+            if message.author.avatar:
+                main_embed.set_thumbnail(url=message.author.avatar.url)
+
             if message.attachments:
                 img = message.attachments[0]
-                if img.filename.lower().endswith(("png", "jpg", "jpeg", "gif", "webp")):
+                if img.filename.lower().endswith(("png","jpg","jpeg","gif","webp")):
                     main_embed.set_image(url=img.url)
 
-        if starboard_post:
-            try:
-                star_msg = await starboard_channel.fetch_message(int(starboard_post["starboard_id"]))
-                if reply_embed:
-                    await star_msg.edit(embeds=[reply_embed, main_embed])
-                else:
-                    await star_msg.edit(embeds=[main_embed])
-            except:
-                self.delete_starboard_message(message.id)
-        else:
-            if reply_embed:
-                star_msg = await starboard_channel.send(embeds=[reply_embed, main_embed])
+            if starboard_post:
+                try:
+                    star_msg = await starboard_channel.fetch_message(
+                        int(starboard_post["starboard_id"])
+                    )
+                    if reply_embed:
+                        await star_msg.edit(embeds=[reply_embed, main_embed])
+                    else:
+                        await star_msg.edit(embeds=[main_embed])
+                except:
+                    self.delete_starboard_message(message.id)
+
             else:
-                star_msg = await starboard_channel.send(embed=main_embed)
-            self.save_starboard_message(message.id, star_msg.id, starboard_channel.id)
+                if reply_embed:
+                    star_msg = await starboard_channel.send(embeds=[reply_embed, main_embed])
+                else:
+                    star_msg = await starboard_channel.send(embed=main_embed)
+                self.save_starboard_message(message.id, star_msg.id, starboard_channel.id)
+
+        elif starboard_post:
+            try:
+                star_msg = await starboard_channel.fetch_message(
+                    int(starboard_post["starboard_id"])
+                )
+                await star_msg.delete()
+            except:
+                pass
+            self.delete_starboard_message(message.id)
 
     # Event listeners
     @commands.Cog.listener()

@@ -235,7 +235,10 @@ class StarboardCog(commands.Cog):
                         timestamp=parent.created_at
                     )
 
-                    reply_embed.set_thumbnail(url=parent.author.display_avatar.url)
+                    reply_embed.set_author(
+                        name="",
+                        icon_url=parent.author.display_avatar.url
+                    )
                 except:
                     reply_embed = None
 

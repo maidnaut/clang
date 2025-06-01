@@ -80,6 +80,11 @@ class StarboardCog(commands.Cog):
     def get_starboard_config(self, guild_id):
         rows = db_read("starboard_config", [f"guild_id:{guild_id}"])
         if rows:
+            raw_threshold = rows[0][2]
+            try:
+                threshold = int(raw_threshold)
+            except:
+                threshold = 3
             raw_id = rows[0][3]
             if isinstance(raw_id, int):
                 channel_id = raw_id
@@ -90,7 +95,7 @@ class StarboardCog(commands.Cog):
 
             return {
                 "emoji":     rows[0][1],
-                "threshold": rows[0][2],
+                "threshold": threshold,
                 "channel_id": channel_id
             }
 
@@ -171,7 +176,6 @@ class StarboardCog(commands.Cog):
             return
 
         config = self.get_starboard_config(guild.id)
-        print(f">>> DEBUG: threshold = {repr(config['threshold'])} (type: {type(config['threshold'])})")
 
         if not config or not config.get("channel_id"):
             return
@@ -257,21 +261,21 @@ class StarboardCog(commands.Cog):
                 if img.filename.lower().endswith(("png", "jpg", "jpeg", "gif", "webp")):
                     main_embed.set_image(url=img.url)
 
-            if starboard_post:
-                try:
-                    star_msg = await starboard_channel.fetch_message(int(starboard_post["starboard_id"]))
-                    if reply_embed:
-                        await star_msg.edit(embeds=[reply_embed, main_embed])
-                    else:
-                        await star_msg.edit(embeds=[main_embed])
-                except:
-                    self.delete_starboard_message(message.id)
-            else:
+        if starboard_post:
+            try:
+                star_msg = await starboard_channel.fetch_message(int(starboard_post["starboard_id"]))
                 if reply_embed:
-                    star_msg = await starboard_channel.send(embeds=[reply_embed, main_embed])
+                    await star_msg.edit(embeds=[reply_embed, main_embed])
                 else:
-                    star_msg = await starboard_channel.send(embed=main_embed)
-                self.save_starboard_message(message.id, star_msg.id, starboard_channel.id)
+                    await star_msg.edit(embeds=[main_embed])
+            except:
+                self.delete_starboard_message(message.id)
+        else:
+            if reply_embed:
+                star_msg = await starboard_channel.send(embeds=[reply_embed, main_embed])
+            else:
+                star_msg = await starboard_channel.send(embed=main_embed)
+            self.save_starboard_message(message.id, star_msg.id, starboard_channel.id)
 
     # Event listeners
     @commands.Cog.listener()

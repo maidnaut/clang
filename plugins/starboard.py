@@ -243,8 +243,8 @@ class StarboardCog(commands.Cog):
                 timestamp=message.created_at
             )
             main_embed.add_field(
-                name=f"{await check_ping(ctx, message.author)}",
-                value="",
+                name="",
+                value=f"{await check_ping(ctx, message.author)}",
                 inline=False
             )
             raw = message.content or ""

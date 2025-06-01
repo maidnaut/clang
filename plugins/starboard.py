@@ -192,14 +192,13 @@ class StarboardCog(commands.Cog):
             )
             embed.set_author(
                 name=message.author.display_name,
-                icon_url=message.author.display_avatar.url
+                embed.set_thumbnail(url=message.author.display_avatar.url)
             )
             embed.add_field(
                 name="Source",
                 value=f"[Jump to Message]({message.jump_url})",
                 inline=False
             )
-            embed.set_footer(text=f"{config['emoji']} {star_count} | ID: {message.id}")
             
             # Add image if exists
             if message.attachments:

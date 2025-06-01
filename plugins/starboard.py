@@ -217,7 +217,7 @@ class StarboardCog(commands.Cog):
             )
             main_embed.add_field(
                 name="",
-                value=f"{message.author.display_name} - {message.created_at.strftime("%Y-%m-%d %H:%M UTC")}",
+                value=f"{message.author.display_name} - {message.created_at.strftime('%Y-%m-%d %H:%M UTC')}",
                 inline=False
             )
             if message.author.avatar:

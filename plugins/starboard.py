@@ -9,14 +9,26 @@ def setup(bot):
 class StarboardCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.scan_lock = asyncio.Lock()  # Prevent multiple concurrent scans
+        self.scan_lock = asyncio.Lock()
         
+        # Create database tables if they don't exist
+        if not table_exists("starboard_config")
+            new_db("starboard_config", [
+                ("guild_id", "TEXT PRIMARY KEY"),
+                ("emoji", "TEXT"),
+                ("threshold", "INTEGER"),
+                ("channel_id", "TEXT")
+            ])
+        
+        if not table_exists("starboard_posts")
+            new_db("starboard_posts", [
+                ("original_id", "TEXT PRIMARY KEY"),
+                ("starboard_id", "TEXT"),
+                ("channel_id", "TEXT")
+            ])
+        
+        # Help documentation
         self.__help__ = {
-            "starboard": {
-                "args": "[status|set_emoji|set_threshold|set_channel|scan]",
-                "desc": "Configure and manage the starboard system",
-                "perm": "admin"
-            },
             "starboard set_emoji": {
                 "args": "<emoji>",
                 "desc": "Set the emoji for starboard reactions",
@@ -39,37 +51,46 @@ class StarboardCog(commands.Cog):
             }
         }
 
-        if not table_exists("starboard_config"):
-            new_db("starboard_config", [
-                ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
-                ("guild_id", "INTEGER"),
-                ("emoji", "TEXT"),
-                ("threshold", "INTEGER"),
-                ("channel_id", "TEXT"),
-            ])
-
     # Database helper methods
     def get_starboard_config(self, guild_id):
-        return db_read("starboard_config", [f"guild_id:{guild_id}"]) or {
+        rows = db_read("starboard_config", [f"guild_id:{guild_id}"])
+        if rows:
+            # (guild_id, emoji, threshold, channel_id)
+            return {
+                "emoji": rows[0][1],
+                "threshold": rows[0][2],
+                "channel_id": rows[0][3]
+            }
+        return {
             "emoji": "⭐",
             "threshold": 3,
             "channel_id": None
         }
 
     def save_starboard_config(self, guild_id, config):
-        db_write("starboard_config", [f"guild_id:{guild_id}"], config)
+        db_insert("starboard_config", 
+            ["guild_id", "emoji", "threshold", "channel_id"],
+            [str(guild_id), config["emoji"], config["threshold"], str(config["channel_id"])]
+        )
 
     def get_starboard_message(self, original_id):
-        return db_read("starboard_posts", [f"original_id:{original_id}"])
+        rows = db_read("starboard_posts", [f"original_id:{original_id}"])
+        if rows:
+            # (original_id, starboard_id, channel_id)
+            return {
+                "starboard_id": rows[0][1],
+                "channel_id": rows[0][2]
+            }
+        return None
 
     def save_starboard_message(self, original_id, starboard_id, channel_id):
-        db_write("starboard_posts", [f"original_id:{original_id}"], {
-            "starboard_id": starboard_id,
-            "channel_id": channel_id
-        })
+        db_insert("starboard_posts",
+            ["original_id", "starboard_id", "channel_id"],
+            [str(original_id), str(starboard_id), str(channel_id)]
+        )
 
     def delete_starboard_message(self, original_id):
-        db_write("starboard_posts", [f"original_id:{original_id}"], None)
+        db_remove("starboard_posts", ["original_id"], [str(original_id)])
 
     # Starboard core functionality
     async def process_starboard(self, payload, added=True):
@@ -82,7 +103,7 @@ class StarboardCog(commands.Cog):
             return
 
         channel = guild.get_channel(payload.channel_id)
-        if not channel or channel.id == config["channel_id"]:
+        if not channel or int(config["channel_id"]) == channel.id:
             return
 
         try:
@@ -99,7 +120,7 @@ class StarboardCog(commands.Cog):
 
         # Handle starboard post
         starboard_post = self.get_starboard_message(message.id)
-        starboard_channel = guild.get_channel(config["channel_id"])
+        starboard_channel = guild.get_channel(int(config["channel_id"]))
         
         if not starboard_channel:
             return
@@ -120,7 +141,7 @@ class StarboardCog(commands.Cog):
                 value=f"[Jump to Message]({message.jump_url})",
                 inline=False
             )
-            embed.set_footer(text=f"⭐ {star_count} | ID: {message.id}")
+            embed.set_footer(text=f"{config['emoji']} {star_count} | ID: {message.id}")
             
             # Add image if exists
             if message.attachments:
@@ -130,7 +151,7 @@ class StarboardCog(commands.Cog):
             
             if starboard_post:
                 try:
-                    star_msg = await starboard_channel.fetch_message(starboard_post["starboard_id"])
+                    star_msg = await starboard_channel.fetch_message(int(starboard_post["starboard_id"]))
                     await star_msg.edit(embed=embed)
                 except:
                     self.delete_starboard_message(message.id)
@@ -141,7 +162,7 @@ class StarboardCog(commands.Cog):
         # Remove starboard entry if below threshold
         elif starboard_post:
             try:
-                star_msg = await starboard_channel.fetch_message(starboard_post["starboard_id"])
+                star_msg = await starboard_channel.fetch_message(int(starboard_post["starboard_id"]))
                 await star_msg.delete()
             except:
                 pass
@@ -174,7 +195,7 @@ class StarboardCog(commands.Cog):
     @starboard.command(name="status")
     async def starboard_status(self, ctx):
         config = self.get_starboard_config(ctx.guild.id)
-        channel = ctx.guild.get_channel(config["channel_id"]) if config["channel_id"] else None
+        channel = ctx.guild.get_channel(int(config["channel_id"])) if config["channel_id"] else None
         
         embed = discord.Embed(
             title="⭐ Starboard Configuration",
@@ -230,19 +251,25 @@ class StarboardCog(commands.Cog):
                     
                 try:
                     async for message in channel.history(limit=limit):
+                        # Skip if message is too old (older than 14 days)
+                        if (discord.utils.utcnow() - message.created_at).days > 14:
+                            continue
+                            
                         # Check if message has our emoji
                         for reaction in message.reactions:
                             if str(reaction.emoji) == config["emoji"]:
-                                await self.process_starboard(discord.RawReactionActionEvent(
+                                # Create a fake payload for processing
+                                fake_payload = discord.RawReactionActionEvent(
                                     {
                                         "message_id": message.id,
                                         "channel_id": channel.id,
                                         "guild_id": ctx.guild.id,
                                         "user_id": self.bot.user.id,
-                                        "emoji": reaction.emoji
+                                        "emoji": {"name": config["emoji"]}
                                     },
-                                    "REACTION_ADD"
-                                ))
+                                    "REACTION_ADD"  # Fake event type
+                                )
+                                await self.process_starboard(fake_payload)
                                 found += 1
                                 break
                         processed += 1

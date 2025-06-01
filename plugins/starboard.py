@@ -190,11 +190,15 @@ class StarboardCog(commands.Cog):
                 color=discord.Color.gold(),
                 timestamp=message.created_at
             )
+            
             embed.set_author(
                 name=message.author.display_name,
-                if getattr(user, "avatar", None):
-                    embed.set_thumbnail(url=message.author.avatar.url)
+                icon_url=message.author.display_avatar.url
             )
+            
+            if message.author.avatar:
+                embed.set_thumbnail(url=message.author.avatar.url)
+
             embed.add_field(
                 name="Source",
                 value=f"[Jump to Message]({message.jump_url})",

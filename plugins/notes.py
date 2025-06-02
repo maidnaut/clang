@@ -108,8 +108,12 @@ class NotesCog(commands.Cog):
 
         ctx = await self.bot.get_context(message)
 
-        if message.content.startswith("... ") or message.content.startswith("… "):
+        if message.content.startswith("... "):
             title = message.content[4:].strip()
+            await self._read(ctx, title, alias=True)
+
+        elif message.content.startswith("… "):
+            title = message.content[2:].strip()
             await self._read(ctx, title, alias=True)
 
         elif message.content.startswith(".. "):

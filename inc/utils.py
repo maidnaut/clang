@@ -9,7 +9,6 @@ from discord.ext.commands import CommandNotFound
 # Pretty print
 console = Console(force_terminal=True, markup=True)
 print = console.print
-ENV_PATH = Path(__file__).parent.parent / ".env"
 
 # Decimal sleep
 async def random_decimal_sleep(min_sleep: float, max_sleep: float):
@@ -56,28 +55,28 @@ def _read_token_from_env() -> str | None:
     return None
 
 async def check_for_token():
-    # 1) Try reading it
-    token = _read_token_from_env()
-    if token:
-        return token
+    env_path = Path(__file__).resolve().parent.parent / ".env"
 
-    # 2) Interactive prompt if possible
-    if sys.stdin.isatty():
-        console.print("[?] Bot token: ", end="")
-        token = (await loop.run_in_executor(None, input, "")).strip()
-        # Overwrite .env with exactly one clean line:
-        ENV_PATH.write_text(f"BOT_TOKEN={token}\n", encoding="utf-8")
-        console.print("[✔] Token saved.\n")
-        return token
+    if not env_path.exists():
+        env_path.write_text("", encoding="utf-8")
 
-    # 3) No TTY: poll until someone writes it
-    console.print("No TTY; waiting for BOT_TOKEN in .env…")
     while True:
-        await asyncio.sleep(5)
-        token = _read_token_from_env()
-        if token:
-            console.print("Found BOT_TOKEN—continuing.")
+        for raw in env_path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if line.startswith("BOT_TOKEN="):
+                token = line.split("=", 1)[1].strip()
+                if token:
+                    return token
+
+        if sys.stdin.isatty():
+            console.print("[bold yellow][?][/bold yellow] What is your bot token? ", end="")
+            token = (await asyncio.get_event_loop().run_in_executor(None, input, "")).strip()
+            env_path.write_text(f"BOT_TOKEN={token}\n", encoding="utf-8")
+            console.print("[bold green][✔][/bold green] Token saved.\n")
             return token
+
+        console.print("[bold yellow]Waiting for BOT_TOKEN in .env…[/bold yellow]")
+        await asyncio.sleep(5)
 
 # Register Plugins
 PLUGIN: dict[str, dict[str, any]] = {}

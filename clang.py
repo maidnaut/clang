@@ -10,12 +10,6 @@ version = "0.9b"
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
-try:
-    TOKEN = loop.run_until_complete(check_for_token())
-finally:
-    pass
-
-
 class ClangBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

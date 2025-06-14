@@ -26,7 +26,7 @@ Clang.
 1) Git clone the pkgbuild version (made by Jorgen): `https://github.com/Jorgen10/clang-pkgbuild.git`
 2) cd into Clang's directory: `cd clang-pkgbuild`
 3) Run makepkg: `makepkg -si`
-4) Modify `/opt/python-clang/.env` to add your bot token
+4) Modify `/opt/python-clang/.env` to add your bot token as `BOT_TOKEN=(token)` (without parentheses)
 5) Run Clang:
     - To run it as a systemd service, use `sudo systemctl enable --now python-clang`
     - Alternatively, you can manually run `cd /opt/python-clang && sudo -u python-clang ./venv/bin/python ./clang.py`

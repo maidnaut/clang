@@ -1,6 +1,5 @@
-import discord, random, asyncio, os, sys
+import discord, random, asyncio, sys, re
 from inc.db import *
-from dotenv import *
 from pathlib import Path
 from rich.console import Console
 from discord.ext import commands
@@ -55,35 +54,25 @@ def _read_token_from_env() -> str | None:
     return None
 
 async def check_for_token():
-    env_path = Path(__file__).resolve().parent.parent / ".env"
-
-    if not env_path.exists():
-        env_path.write_text("", encoding="utf-8")
+    env = Path(__file__).resolve().parent.parent / ".env"
+    if not env.exists():
+        env.write_text("", encoding="utf-8")
 
     while True:
-        for raw in env_path.read_text(encoding="utf-8").splitlines():
-            line = raw.strip()
-            if line.startswith("BOT_TOKEN="):
-                token = line.split("=", 1)[1].strip()
-                if token:
-                    token = token.lstrip("\ufeff")
-                    token = token.replace("\r", "")
-                    token = token.replace("\u200b", "")
-                    token = token.strip("\n ")
-                    return token
+        text = env.read_text(encoding="utf-8")
+        m = re.search(r"^BOT_TOKEN\s*=\s*(\S+)\s*$", text, re.MULTILINE)
+        if m:
+            return m.group(1)
 
         if sys.stdin.isatty():
-            console.print("[bold yellow][?][/bold yellow] What is your bot token? ", end="")
-            token = (await asyncio.get_event_loop().run_in_executor(None, input, "")).strip()
-            env_path.write_text(f"BOT_TOKEN={token}\n", encoding="utf-8")
+            console.print("[bold yellow][?][/bold yellow] Enter bot token: ", end="")
+            token = (await asyncio.get_event_loop()
+                            .run_in_executor(None, input, "")).strip()
+            env.write_text(f"BOT_TOKEN={token}\n", encoding="utf-8")
             console.print("[bold green][✔][/bold green] Token saved.\n")
-            token = token.lstrip("\ufeff")
-            token = token.replace("\r", "")
-            token = token.replace("\u200b", "")
-            token = token.strip("\n ")
             return token
 
-        console.print("[bold yellow]Waiting for BOT_TOKEN in .env…[/bold yellow]")
+        console.print("[bold yellow]Waiting for BOT_TOKEN in .env...[/bold yellow]")
         await asyncio.sleep(5)
 
 # Register Plugins

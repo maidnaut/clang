@@ -133,8 +133,6 @@ async def start_bot():
 
     await connect()
 
-    bot_token = db_read("bot_token", ["bot_token:*"])
-    bot.globals["TOKEN"] = bot_token[0][1]
     await bot.start(bot.globals["TOKEN"])
 
 @bot.event

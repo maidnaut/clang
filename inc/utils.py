@@ -1,5 +1,6 @@
-import discord, random, asyncio
+import discord, random, asyncio, os
 from inc.db import *
+from dotenv import load_dotenv, set_key
 from rich.console import Console
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
@@ -7,6 +8,7 @@ from discord.ext.commands import CommandNotFound
 # Pretty print
 console = Console(force_terminal=True, markup=True)
 print = console.print
+ENV_PATH = Path(".env")
 
 # Decimal sleep
 async def random_decimal_sleep(min_sleep: float, max_sleep: float):
@@ -36,26 +38,24 @@ async def get_numeric_input(prompt, allow_empty=True, default="0"):
 
 # Check for the bot token in the database, if it doesn't exist then ask for it
 async def check_for_token():
-    """Prompt for or fetch the bot token from the DB."""
-    if not table_exists("bot_token"):
-        new_db("bot_token", [
-            ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
-            ("bot_token", "TEXT")
-        ])
+    load_dotenv(dotenv_path=ENV_PATH)
 
-    rows = db_read("bot_token", ["bot_token:*"])
-    if not rows:
+    token = os.getenv("BOT_TOKEN")
+    if not token:
         console.print(
             "[bold yellow][?][/bold yellow] What is your bot token? (Clang won’t work without it): ",
             end=""
         )
         token = (await ainput("")).strip()
-        db_insert("bot_token", ["bot_token"], [token])
-        console.print("[bold green][✔][/bold green] Token registered.\n")
-        await random_decimal_sleep(0.8, 1.2)
-        return token
 
-    return rows[0][1]
+        if not ENV_PATH.exists():
+            ENV_PATH.touch()
+
+        set_key(str(ENV_PATH), "BOT_TOKEN", token)
+        console.print("[bold green][✔][/bold green] Token registered in .env.\n")
+        await random_decimal_sleep(0.8, 1.2)
+
+    return token
 
 # Register Plugins
 PLUGIN: dict[str, dict[str, any]] = {}

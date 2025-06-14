@@ -1,6 +1,7 @@
 import discord, random, asyncio, os
 from inc.db import *
-from dotenv import load_dotenv, set_key
+from dotenv import *
+from pathlib import path
 from rich.console import Console
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound

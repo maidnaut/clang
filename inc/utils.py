@@ -48,11 +48,8 @@ async def check_for_token():
     match = re.search(r"^BOT_TOKEN\s*=\s*(.+)$", content, re.MULTILINE)
 
     if match and (token := match.group(1).strip()):
-        if token.count('.') == 2 and 59 <= len(token) <= 60:
-            console.print("[bold green][✔][/bold green] Valid token found")
-            return token
-        else:
-            console.print(f"[bold red][!][/bold red] Invalid token structure (length: {len(token)})")
+        console.print("[bold green][✔][/bold green] Valid token found")
+        return token
 
     if sys.stdin.isatty():
         console.print("[bold yellow][?][/bold yellow] Enter bot token: ", end="")

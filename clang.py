@@ -10,6 +10,12 @@ version = "0.9b"
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
+try:
+    TOKEN = loop.run_until_complete(check_for_token())
+finally:
+    pass
+
+
 class ClangBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -89,9 +95,6 @@ bot.globals["init_db"] = False
 async def start_bot():
     # Check for token
     bot.globals["TOKEN"] = await check_for_token()
-    token = bot.globals["TOKEN"]
-    print("→ RAW TOKEN repr:", repr(token))
-    print("→ RAW TOKEN hex codes:", [hex(ord(c)) for c in token])
 
     min_wait = 0
     max_wait = 0.1

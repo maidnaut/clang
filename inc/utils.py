@@ -1,4 +1,4 @@
-import discord, random, asyncio, os, re
+import discord, random, asyncio, os, sys, re
 from inc.db import *
 from pathlib import Path
 from rich.console import Console

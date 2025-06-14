@@ -9,8 +9,7 @@ from discord.ext.commands import CommandNotFound
 # Pretty print
 console = Console(force_terminal=True, markup=True)
 print = console.print
-ENV_PATH = Path(__file__).parent / ".env"
-load_dotenv(dotenv_path=ENV_PATH)
+ENV_PATH = Path(__file__).parent.parent / ".env"
 
 # Decimal sleep
 async def random_decimal_sleep(min_sleep: float, max_sleep: float):
@@ -40,25 +39,34 @@ async def get_numeric_input(prompt, allow_empty=True, default="0"):
 
 # Check for the bot token in the database, if it doesn't exist then ask for it
 async def check_for_token():
+    load_dotenv(dotenv_path=ENV_PATH, override=True)
     token = os.getenv("BOT_TOKEN")
     if token:
         return token.strip()
 
-    # no term, bail
-    if not sys.stdin.isatty():
-        raise RuntimeError(
-            "BOT_TOKEN not set and no TTY available. "
-            "Set BOT_TOKEN in .env or via systemd Environment."
+    if sys.stdin.isatty():
+        console.print(
+            "[bold yellow][?][/bold yellow] What is your bot token? (Clang won’t work without it): ",
+            end=""
         )
+        token = (await loop.run_in_executor(None, input, "")).strip()
 
-    console.print("[bold yellow][?][/bold yellow] Enter bot token: ", end="")
-    token = (await ainput("")).strip()
+        ENV_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with ENV_PATH.open("a") as f:
+            f.write(f"\nBOT_TOKEN={token}\n")
 
-    with open(ENV_PATH, "a") as f:
-        f.write(f"\nBOT_TOKEN={token}\n")
+        console.print("[bold green][✔][/bold green] Token registered in .env.\n")
+        await random_decimal_sleep(0.8, 1.2)
+        return token
 
-    console.print("[bold green][✔][/bold green] Token saved.\n")
-    return token
+    console.print("[bold yellow]No TTY available; waiting for BOT_TOKEN in .env...[/bold yellow]")
+    while True:
+        await asyncio.sleep(5)
+        load_dotenv(dotenv_path=ENV_PATH, override=True)
+        token = os.getenv("BOT_TOKEN")
+        if token:
+            console.print("[bold green]Found BOT_TOKEN in .env — continuing startup.[/bold green]")
+            return token.strip()
 
 # Register Plugins
 PLUGIN: dict[str, dict[str, any]] = {}

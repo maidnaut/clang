@@ -1,4 +1,3 @@
-<div align=center> 
 <img src="Clang.png" width=100px>
 
 
@@ -28,9 +27,9 @@ Clang.
 
 # Package build Clang (easy)
 1) Git clone the pkgbuild version (made by Jorgen): `https://github.com/Jorgen10/clang-pkgbuild.git`
-2) `cd clang-pkgbuild`
-3) makepkg -si
-4) Run Clang `cd /opt/python-clang && python3 clang.py`
+2) cd into Clang's directory: `cd clang-pkgbuild`
+3) Run makepkg: `makepkg -si`
+4) Run Clang: `cd /opt/python-clang && sudo -u python-clang ./venv/bin/python ./clang.py`
 
 # Manual install
 

@@ -1,5 +1,6 @@
 import discord, asyncio, os, re, random
 from inc.utils import *
+from inc.db import *
 from discord.ext import commands
 from collections import defaultdict, deque
 from profanity_check import predict, predict_prob
@@ -21,6 +22,18 @@ class MarkovCog(commands.Cog):
         self.save_interval = 300 # 5 minute autosave
         self.bg_task = self.bot.loop.create_task(self.auto_save())
 
+        if not table_exists("markov_optout"):
+            new_db("markov_optout", [
+                ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+                ("user_id", "INTEGER"),
+            ])
+
+        self.__help__ = {
+            "markov": {
+                "args": "on, off",
+                "desc": "Opts in or out of markov chain training/",
+                "perm": "everyone"
+            },
 
 
 
@@ -97,6 +110,10 @@ class MarkovCog(commands.Cog):
     # Add to the chain
     async def train_markov(self, message):
         if not message.guild or message.author.bot:
+            return
+
+        opted_out = db_read("markov_optout", [f"user_id:{message.author.id}"])
+        if opted_out:
             return
 
         guild_id = message.guild.id
@@ -221,3 +238,19 @@ class MarkovCog(commands.Cog):
             
             ctx = await self.bot.get_context(message)
             await message.channel.send(f"{await user_ping(ctx, message.author)} {response}")
+
+
+
+
+
+    # Markov opt out
+    @commands.command()
+    async def markov(self, ctx, mode: str = None):
+        if mode == "off":
+            db_insert("markov_optout", ["user_id"], [str(ctx.author.id)])
+            await ctx.send(f"{await user_ping(ctx, ctx.author)} You’re now opted out of Markov chain logging.")
+        elif mode == "on":
+            db_remove("markov_optout", ["user_id"], [str(ctx.author.id)])
+            await ctx.send(f"{await user_ping(ctx, ctx.author)} You’re now opted back in to Markov chain logging.")
+        else:
+            await ctx.send(f"{await user_ping(ctx, ctx.author)} Usage: `!markov on` or `!markov off`")

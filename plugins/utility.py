@@ -122,7 +122,7 @@ class UtilsCog(commands.Cog):
             name="Your Controls",
             value=(
                 "- `!dn <id>` - delete your notes\n"
-                "- `!markov optout` *(coming soon)* - exclude your messages from training\n"
+                "- `!markov off` - opt out of markov training\n"
                 "- Server admins can enable/disable any plugin via config"
             ),
             inline=False

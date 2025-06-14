@@ -83,12 +83,12 @@ class UtilsCog(commands.Cog):
     async def privacy(self, ctx):
         embed = discord.Embed(
             title="Privacy Policy",
-            description="Here’s what Clang stores and how your data is handled.",
+            description="Here’s what Clang stores and how your data is handled.\n",
             color=discord.Color.blue()
         )
 
         embed.add_field(
-            name="🔹 Stored Data",
+            name="Stored Data",
             value=(
                 "- **User Notes**: Optional. Notes you create are stored with your user ID. "
                 "You can delete them at any time with `!dn <id>`.\n"
@@ -96,24 +96,24 @@ class UtilsCog(commands.Cog):
                 "- **Moderation Logs**: If enabled by server mods, bans/warns/etc are logged to a modlog channel.\n"
                 "- **Guild Configs**: Stores channel/role IDs and plugin settings for bot functionality.\n"
                 "- **Markov Chains**: Learns from messages in enabled channels. Does **not** store author IDs or message metadata. Markov data is anonymized and chunked into 3 word lengths.\n"
-                "Server admins can disable any feature or clear data at any time."
+                "- Server admins can disable any feature or clear data at any time. \n\n"
             ),
             inline=False
         )
 
         embed.add_field(
-            name="🔹 What Clang doesn't store",
+            name="What Clang doesn't store",
             value=(
                 "- No message logs\n"
                 "- No DMs\n"
                 "- No cross-server tracking\n"
-                "- No analytics or usage tracking"
+                "- No analytics or usage tracking \n\n"
             ),
             inline=False
         )
 
         embed.add_field(
-            name="🔹 Your Controls",
+            name="Your Controls",
             value=(
                 "- `!dn <id>` - delete your notes\n"
                 "- `!markov optout` *(coming soon)* - exclude your messages from training\n"

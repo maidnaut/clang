@@ -34,6 +34,7 @@ class MarkovCog(commands.Cog):
                 "desc": "Opts in or out of markov chain training/",
                 "perm": "everyone"
             },
+        }
 
 
 

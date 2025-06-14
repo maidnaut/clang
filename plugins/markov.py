@@ -1,4 +1,4 @@
-import discord, asyncio, os, re, random
+import discord, asyncio, os, re, random, difflib
 from inc.utils import *
 from inc.db import *
 from discord.ext import commands
@@ -181,13 +181,17 @@ class MarkovCog(commands.Cog):
 
     # Generate a response
     def generate_response(self, guild_id, seed_words=None, original_msg=None):
+
+        def is_too_similar(a, b, threshold=0.75):
+            return difflib.SequenceMatcher(None, a, b).ratio() >= threshold
+
         chain = self.chains[guild_id]
         if not chain:
             return "clang not know words"
 
         keys = list(chain.keys())
         attempts = 0
-        max_attempts = 5
+        max_attempts = 10
         response = ""
 
         original_msg = original_msg.lower().strip() if original_msg else ""
@@ -219,9 +223,10 @@ class MarkovCog(commands.Cog):
                 if len(words) > 20 or random.random() < 0.1:
                     break
 
-            response = ' '.join(words)
+            candidate = ' '.join(words).strip().lower()
 
-            if not original_msg or response.lower().strip() != original_msg:
+            if not original_msg or not is_too_similar(candidate, original_msg):
+                response = candidate
                 break
 
         return response or "clang confused"

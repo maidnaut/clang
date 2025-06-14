@@ -38,36 +38,46 @@ async def get_numeric_input(prompt, allow_empty=True, default="0"):
         await asyncio.sleep(0.1)
 
 # Check for the bot token in the database, if it doesn't exist then ask for it
-async def check_for_token():
-    load_dotenv(dotenv_path=ENV_PATH, override=True)
-    token = os.getenv("BOT_TOKEN")
-    if token:
-        return token.strip()
+def _read_token_from_env() -> str | None:
+    """Return the BOT_TOKEN value from .env, or None if missing/empty."""
+    if not ENV_PATH.is_file():
+        return None
 
+    for line in ENV_PATH.read_text(encoding="utf-8").splitlines():
+        # Strip BOM + whitespace:
+        raw = line.lstrip("\ufeff").strip()
+        if not raw or raw.startswith("#"):
+            continue  # skip blanks and comments
+        if raw.upper().startswith("BOT_TOKEN="):
+            # Split only on the first =, then strip any whitespace
+            _, _, value = raw.partition("=")
+            token = value.strip()
+            return token or None
+    return None
+
+async def check_for_token():
+    # 1) Try reading it
+    token = _read_token_from_env()
+    if token:
+        return token
+
+    # 2) Interactive prompt if possible
     if sys.stdin.isatty():
         console.print("[?] Bot token: ", end="")
         token = (await loop.run_in_executor(None, input, "")).strip()
-
-        lines = []
-        if ENV_PATH.exists():
-            lines = [l for l in ENV_PATH.read_text().splitlines()
-                     if not l.startswith("BOT_TOKEN=")]
-
-        lines.append(f"BOT_TOKEN={token}")
-
-        ENV_PATH.write_text("\n".join(lines) + "\n")
-
+        # Overwrite .env with exactly one clean line:
+        ENV_PATH.write_text(f"BOT_TOKEN={token}\n", encoding="utf-8")
         console.print("[✔] Token saved.\n")
         return token
 
+    # 3) No TTY: poll until someone writes it
     console.print("No TTY; waiting for BOT_TOKEN in .env…")
     while True:
         await asyncio.sleep(5)
-        load_dotenv(dotenv_path=ENV_PATH, override=True)
-        token = os.getenv("BOT_TOKEN")
+        token = _read_token_from_env()
         if token:
             console.print("Found BOT_TOKEN—continuing.")
-            return token.strip()
+            return token
 
 # Register Plugins
 PLUGIN: dict[str, dict[str, any]] = {}

@@ -52,8 +52,7 @@ Once you have Clang set up on your host machine/server, there's a few things you
 1) Go to [discord's developer portal](https://discord.com/developers/) and create a new bot for your instance of Clang.
 2) In the bot tab and generate a new token. Hold onto it because we're going to need it in a second.
 3) Generate a new invite link for Clang in the OAuth tab, selecting `bot` in the scopes.
-4) If you're running Clang under an init service, you need to generate the .env file manually. Create it in Clang's root directory and supply it with the bot token: `BOT_TOKEN:(token)` (with no parentheses).
-5) If you're running Clang yourself, it'll ask you to paste the token into the terminal.
+4) If you're running Clang yourself, it'll ask you to paste the token into the terminal. If you installed it with the makepkg option, skip this step because you should have already made the .env file for the token yourself.
 
 ### Phase 2
 After you've got Clang connected to your server, you need to create the required roles and channels for its base moderation roles. By default Clang should accept (most) commands from the server owner, but to use the moderation suite you need to create the following roles and channels. If you'd like to skip !op roles, just run `!elevation off`, and if you want do disable the submod role, you can just choose to not set it.

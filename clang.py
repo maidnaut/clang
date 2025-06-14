@@ -89,6 +89,9 @@ bot.globals["init_db"] = False
 async def start_bot():
     # Check for token
     bot.globals["TOKEN"] = await check_for_token()
+    token = bot.globals["TOKEN"]
+    print("→ RAW TOKEN repr:", repr(token))
+    print("→ RAW TOKEN hex codes:", [hex(ord(c)) for c in token])
 
     min_wait = 0
     max_wait = 0.1

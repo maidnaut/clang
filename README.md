@@ -1,8 +1,8 @@
+# CLANG
+
 <img src="Clang.png" width=250px> 
 
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/maidnaut/clang?style=for-the-badge)
-
-# CLANG
 
 Clang is an all-in-one self hosted discord bot witten with pycord, inspired by Valkyrja. Handles moderation, tickets, logging, notes, and fun commands.
 

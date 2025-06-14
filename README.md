@@ -23,7 +23,7 @@ Clang.
 <br>
 
 ## Package build Clang (easy)
-1) Git clone the pkgbuild version (made by Jorgen) (https://github.com/Jorgen10/clang-pkgbuild.git)[https://github.com/Jorgen10/clang-pkgbuild.git]
+1) Git clone the pkgbuild version (made by Jorgen) `https://github.com/Jorgen10/clang-pkgbuild.git`
 2) cd into Clang's directory: `cd clang-pkgbuild`
 3) Run makepkg: `makepkg -si`
 4) Modify `/opt/python-clang/.env` to add your bot token as `BOT_TOKEN=(token)` (without parentheses)

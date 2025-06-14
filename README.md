@@ -50,7 +50,7 @@ Once you have Clang set up on your host machine/server, there's a few things you
 
 ### Phase 1
 1) Go to [discord's developer portal](https://discord.com/developers/) and create a new bot for your instance of Clang.
-2) In the bot tab and generate a new token. Hold onto it because we're going to need it in a second.
+2) Generate a new token in the bot tab. Hold onto it because we're going to need it in a second.
 3) Generate a new invite link for Clang in the OAuth tab, selecting `bot` in the scopes.
 4) If you're running Clang yourself, it'll ask you to paste the token into the terminal. If you installed it with the makepkg option, skip this step because you should have already made the .env file for the token yourself.
 

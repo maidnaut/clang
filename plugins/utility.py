@@ -87,7 +87,7 @@ class UtilsCog(commands.Cog):
             color=discord.Color.blue()
         )
 
-        embed.add_field(name="", value="", inline=False)
+        embed.add_field(name="", value="\n\n", inline=False)
 
         embed.add_field(
             name="Stored Data",
@@ -103,7 +103,7 @@ class UtilsCog(commands.Cog):
             inline=False
         )
 
-        embed.add_field(name="", value="", inline=False)
+        embed.add_field(name="", value="\n\n", inline=False)
 
         embed.add_field(
             name="What Clang doesn't store",
@@ -116,7 +116,7 @@ class UtilsCog(commands.Cog):
             inline=False
         )
 
-        embed.add_field(name="", value="", inline=False)
+        embed.add_field(name="", value="\n\n", inline=False)
 
         embed.add_field(
             name="Your Controls",

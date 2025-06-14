@@ -1,4 +1,4 @@
-import discord, random, asyncio, os
+import discord, random, asyncio, os, sys
 from inc.db import *
 from dotenv import *
 from pathlib import Path
@@ -40,21 +40,24 @@ async def get_numeric_input(prompt, allow_empty=True, default="0"):
 
 # Check for the bot token in the database, if it doesn't exist then ask for it
 async def check_for_token():
-    load_dotenv(dotenv_path=ENV_PATH)
-
     token = os.getenv("BOT_TOKEN")
     if token:
         return token.strip()
 
-    console.print("[bold yellow][?][/bold yellow] What is your bot token? (Clang won’t work without it): ", end="")
+    # no term, bail
+    if not sys.stdin.isatty():
+        raise RuntimeError(
+            "BOT_TOKEN not set and no TTY available. "
+            "Set BOT_TOKEN in .env or via systemd Environment."
+        )
+
+    console.print("[bold yellow][?][/bold yellow] Enter bot token: ", end="")
     token = (await ainput("")).strip()
 
     with open(ENV_PATH, "a") as f:
         f.write(f"\nBOT_TOKEN={token}\n")
 
-    console.print("[bold green][✔][/bold green] Token registered in .env.\n")
-    await random_decimal_sleep(0.8, 1.2)
-
+    console.print("[bold green][✔][/bold green] Token saved.\n")
     return token
 
 # Register Plugins

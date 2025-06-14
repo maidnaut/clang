@@ -78,10 +78,7 @@ async def check_for_token():
         match = re.search(r"^BOT_TOKEN\s*=\s*(.+)$", content, re.MULTILINE)
 
         if match and (token := match.group(1).strip()):
-            if token.count('.') == 2 and 59 <= len(token) <= 60:
-                return token
-            else:
-                console.print(f"[bold red][!][/bold red] Invalid token in file (length: {len(token)})")
+            return token
 
         await asyncio.sleep(5)
 

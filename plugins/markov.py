@@ -140,9 +140,11 @@ class MarkovCog(commands.Cog):
         clean_content = re.sub(r'<@!?\d+>', '', message.content)
         clean_content = re.sub(r'<@&\d+>', '', clean_content)
         clean_content = re.sub(r'<#\d+>', '', clean_content).strip()
+        clean_content = re.sub(r'https?://\S+|www\.\S+', '', clean_content).strip()
         
         if not clean_content or predict([clean_content])[0] == 1:
             return
+
 
         # Bump it in
         words = clean_content.split()

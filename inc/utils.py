@@ -66,6 +66,10 @@ async def check_for_token():
             if line.startswith("BOT_TOKEN="):
                 token = line.split("=", 1)[1].strip()
                 if token:
+                    token = token.lstrip("\ufeff")
+                    token = token.replace("\r", "")
+                    token = token.replace("\u200b", "")
+                    token = token.strip("\n ")
                     return token
 
         if sys.stdin.isatty():
@@ -73,6 +77,10 @@ async def check_for_token():
             token = (await asyncio.get_event_loop().run_in_executor(None, input, "")).strip()
             env_path.write_text(f"BOT_TOKEN={token}\n", encoding="utf-8")
             console.print("[bold green][✔][/bold green] Token saved.\n")
+            token = token.lstrip("\ufeff")
+            token = token.replace("\r", "")
+            token = token.replace("\u200b", "")
+            token = token.strip("\n ")
             return token
 
         console.print("[bold yellow]Waiting for BOT_TOKEN in .env…[/bold yellow]")

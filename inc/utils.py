@@ -9,7 +9,7 @@ from discord.ext.commands import CommandNotFound
 # Pretty print
 console = Console(force_terminal=True, markup=True)
 print = console.print
-ENV_PATH = Path.cwd() / ".env"
+ENV_PATH = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=ENV_PATH)
 
 # Decimal sleep

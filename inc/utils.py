@@ -1,4 +1,4 @@
-import discord, random, asyncio, sys, re
+import discord, random, asyncio, os, re
 from inc.db import *
 from pathlib import Path
 from rich.console import Console
@@ -35,44 +35,54 @@ async def get_numeric_input(prompt, allow_empty=True, default="0"):
         console.print("[bold red][X][/bold red] Please enter a valid numeric ID.")
         await asyncio.sleep(0.1)
 
-# Check for the bot token in the database, if it doesn't exist then ask for it
-def _read_token_from_env() -> str | None:
-    """Return the BOT_TOKEN value from .env, or None if missing/empty."""
-    if not ENV_PATH.is_file():
-        return None
-
-    for line in ENV_PATH.read_text(encoding="utf-8").splitlines():
-        # Strip BOM + whitespace:
-        raw = line.lstrip("\ufeff").strip()
-        if not raw or raw.startswith("#"):
-            continue  # skip blanks and comments
-        if raw.upper().startswith("BOT_TOKEN="):
-            # Split only on the first =, then strip any whitespace
-            _, _, value = raw.partition("=")
-            token = value.strip()
-            return token or None
-    return None
-
+# Get the token
 async def check_for_token():
-    env = Path(__file__).resolve().parent.parent / ".env"
-    if not env.exists():
-        env.write_text("", encoding="utf-8")
+    env_path = Path(__file__).resolve().parent.parent / ".env"
 
-    while True:
-        text = env.read_text(encoding="utf-8")
-        m = re.search(r"^BOT_TOKEN\s*=\s*(\S+)\s*$", text, re.MULTILINE)
-        if m:
-            return m.group(1)
+    if not env_path.exists():
+        env_path.touch()
+        env_path.write_text("BOT_TOKEN=\n", encoding="utf-8")
+        console.print("[bold yellow][!][/bold yellow] Created new .env file")
 
-        if sys.stdin.isatty():
-            console.print("[bold yellow][?][/bold yellow] Enter bot token: ", end="")
-            token = (await asyncio.get_event_loop()
-                            .run_in_executor(None, input, "")).strip()
-            env.write_text(f"BOT_TOKEN={token}\n", encoding="utf-8")
-            console.print("[bold green][✔][/bold green] Token saved.\n")
+    content = env_path.read_text(encoding="utf-8")
+    match = re.search(r"^BOT_TOKEN\s*=\s*(.+)$", content, re.MULTILINE)
+
+    if match and (token := match.group(1).strip()):
+        if token.count('.') == 2 and 59 <= len(token) <= 60:
+            console.print("[bold green][✔][/bold green] Valid token found")
             return token
+        else:
+            console.print(f"[bold red][!][/bold red] Invalid token structure (length: {len(token)})")
 
-        console.print("[bold yellow]Waiting for BOT_TOKEN in .env...[/bold yellow]")
+    if sys.stdin.isatty():
+        console.print("[bold yellow][?][/bold yellow] Enter bot token: ", end="")
+        token = (await asyncio.get_event_loop()
+                .run_in_executor(None, input, "")).strip()
+
+        new_content = re.sub(
+            r"^BOT_TOKEN\s*=.*$",
+            f"BOT_TOKEN={token}",
+            content,
+            flags=re.MULTILINE
+        )
+        if new_content == content:
+            new_content += f"\nBOT_TOKEN={token}" if content else f"BOT_TOKEN={token}"
+
+        env_path.write_text(new_content, encoding="utf-8")
+        console.print("[bold green][✔][/bold green] Token saved")
+        return token
+
+    console.print("[bold yellow]Waiting for valid token in .env...[/bold yellow]")
+    while True:
+        content = env_path.read_text(encoding="utf-8")
+        match = re.search(r"^BOT_TOKEN\s*=\s*(.+)$", content, re.MULTILINE)
+
+        if match and (token := match.group(1).strip()):
+            if token.count('.') == 2 and 59 <= len(token) <= 60:
+                return token
+            else:
+                console.print(f"[bold red][!][/bold red] Invalid token in file (length: {len(token)})")
+
         await asyncio.sleep(5)
 
 # Register Plugins

@@ -42,19 +42,17 @@ async def check_for_token():
     load_dotenv(dotenv_path=ENV_PATH)
 
     token = os.getenv("BOT_TOKEN")
-    if not token:
-        console.print(
-            "[bold yellow][?][/bold yellow] What is your bot token? (Clang won’t work without it): ",
-            end=""
-        )
-        token = (await ainput("")).strip()
+    if token:
+        return token.strip()
 
-        if not ENV_PATH.exists():
-            ENV_PATH.touch()
+    console.print("[bold yellow][?][/bold yellow] What is your bot token? (Clang won’t work without it): ", end="")
+    token = (await ainput("")).strip()
 
-        set_key(str(ENV_PATH), "BOT_TOKEN", token)
-        console.print("[bold green][✔][/bold green] Token registered in .env.\n")
-        await random_decimal_sleep(0.8, 1.2)
+    with open(ENV_PATH, "a") as f:
+        f.write(f"\nBOT_TOKEN={token}\n")
+
+    console.print("[bold green][✔][/bold green] Token registered in .env.\n")
+    await random_decimal_sleep(0.8, 1.2)
 
     return token
 

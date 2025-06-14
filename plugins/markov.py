@@ -31,7 +31,7 @@ class MarkovCog(commands.Cog):
         self.__help__ = {
             "markov": {
                 "args": "on, off",
-                "desc": "Opts in or out of markov chain training/",
+                "desc": "Opts in or out of markov chain training",
                 "perm": "everyone"
             },
         }

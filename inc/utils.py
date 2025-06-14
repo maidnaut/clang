@@ -45,27 +45,28 @@ async def check_for_token():
         return token.strip()
 
     if sys.stdin.isatty():
-        console.print(
-            "[bold yellow][?][/bold yellow] What is your bot token? (Clang won’t work without it): ",
-            end=""
-        )
+        console.print("[?] Bot token: ", end="")
         token = (await loop.run_in_executor(None, input, "")).strip()
 
-        ENV_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with ENV_PATH.open("a") as f:
-            f.write(f"\nBOT_TOKEN={token}\n")
+        lines = []
+        if ENV_PATH.exists():
+            lines = [l for l in ENV_PATH.read_text().splitlines()
+                     if not l.startswith("BOT_TOKEN=")]
 
-        console.print("[bold green][✔][/bold green] Token registered in .env.\n")
-        await random_decimal_sleep(0.8, 1.2)
+        lines.append(f"BOT_TOKEN={token}")
+
+        ENV_PATH.write_text("\n".join(lines) + "\n")
+
+        console.print("[✔] Token saved.\n")
         return token
 
-    console.print("[bold yellow]No TTY available; waiting for BOT_TOKEN in .env...[/bold yellow]")
+    console.print("No TTY; waiting for BOT_TOKEN in .env…")
     while True:
         await asyncio.sleep(5)
         load_dotenv(dotenv_path=ENV_PATH, override=True)
         token = os.getenv("BOT_TOKEN")
         if token:
-            console.print("[bold green]Found BOT_TOKEN in .env — continuing startup.[/bold green]")
+            console.print("Found BOT_TOKEN—continuing.")
             return token.strip()
 
 # Register Plugins

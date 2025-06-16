@@ -10,8 +10,11 @@ def get_data_path(caller = None):
     path = os.getenv("DATA_DIR") or os.getcwd()
 
     # Special case for DB_FILE. This is to avoid breakage of the official Clang if DATA_DIR is not set
-    if caller == "DB_FILE" and os.getcwd() == path:
-        return (Path(path)/"inc").resolve()
+    if os.getcwd() == path:
+        if caller == "DB_FILE":
+            return (Path(path)/"inc").resolve()
+        elif caller == "markov":
+            return (Path(path)/"inc").resolve()
     return Path(path).resolve()
 
 DB_FILE = str(get_data_path("DB_FILE")/"database.db")

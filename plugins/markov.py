@@ -13,7 +13,7 @@ class MarkovCog(commands.Cog):
         self.bot = bot
         self.chains = defaultdict(lambda: defaultdict(list))
         self.key_order = defaultdict(deque)
-        self.data_dir = "inc/markov"
+        self.data_dir = str(get_data_path("markov")/"markov")
         self.MAX_ENTRIES = 50000
         
         os.makedirs(self.data_dir, exist_ok=True)

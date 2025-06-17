@@ -787,7 +787,7 @@ class ModerationCog(commands.Cog):
 
         # Args not supplied
         if user_str is None or time is None:
-            return await ctx.send(f"{await author_ping(ctx)} Usage: ``!mute <user> <time/off> <reason>")
+            return await ctx.send(f"{await author_ping(ctx)} Usage: ``!mute <user> <time/off> <reason>``")
 
         # Find user
         try:

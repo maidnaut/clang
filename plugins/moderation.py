@@ -774,7 +774,7 @@ class ModerationCog(commands.Cog):
 
         # No perms
         user_level = await get_level(ctx)
-        if user_level < 2:
+        if user_level < 1:
             return
 
         elev = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled"])

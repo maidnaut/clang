@@ -1,6 +1,5 @@
 import discord, random, asyncio, sys, re
 from inc.db import *
-from pathlib import Path
 from rich.console import Console
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
@@ -37,7 +36,7 @@ async def get_numeric_input(prompt, allow_empty=True, default="0"):
 
 # Get the token
 async def check_for_token():
-    env = Path(__file__).resolve().parent.parent / ".env"
+    env = get_data_path() / ".env"
     if not env.exists():
         env.write_text("", encoding="utf-8")
 

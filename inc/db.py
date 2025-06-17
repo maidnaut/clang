@@ -1,6 +1,23 @@
-import sqlite3, re
+import sqlite3, re, os
+from pathlib import Path
 
-DB_FILE = './inc/database.db'
+# Runtime paths
+def get_data_path(caller = None):
+    """
+    Returns the path to the data directory if given as an environment variable.
+    If nonexistent, returns the current working directory.
+    """
+    path = os.getenv("DATA_DIR") or os.getcwd()
+
+    # Special case for DB_FILE. This is to avoid breakage of the official Clang if DATA_DIR is not set
+    if os.getcwd() == path:
+        if caller == "DB_FILE":
+            return (Path(path)/"inc").resolve()
+        elif caller == "markov":
+            return (Path(path)/"inc").resolve()
+    return Path(path).resolve()
+
+DB_FILE = str(get_data_path("DB_FILE")/"database.db")
 
 # usage: new_db("table_name", [("name1", "type1"), ("name2", "type2")])
 def new_db(table, columns):

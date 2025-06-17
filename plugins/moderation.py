@@ -708,11 +708,6 @@ class ModerationCog(commands.Cog):
         if user_level < 1:
             return
 
-        elev = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled"])
-        if elev and elev[0][3] == "y":
-            if user_level in [2, 4]:
-                return await ctx.send("!op?")
-
         # Time not supplied
         if time is None:
             return await ctx.send(f"{await author_ping(ctx)} Please provide a time. ``!slowmode <time/off>``")
@@ -777,11 +772,6 @@ class ModerationCog(commands.Cog):
         if user_level < 1:
             return
 
-        elev = db_read("config", [f"guild_id:{ctx.guild.id}", "name:elevation_enabled"])
-        if elev and elev[0][3] == "y":
-            if user_level in [2, 4]:
-                return await ctx.send("!op?")
-
         if reason is None:
             reason = "None provided"
 
@@ -819,7 +809,7 @@ class ModerationCog(commands.Cog):
         # Pattern match for s/d/h
         match = re.match(r"^(\d+)([smh])$", time.strip().lower())
         if not match:
-            return await ctx.send(f"{await author_ping(ctx)} Invalid format. Use like ``!mute <user> <time> (10s``, ``5m``, ``1h``), <reason>")
+            return await ctx.send(f"{await author_ping(ctx)} Invalid format. Use like ``!mute <user> <time> (10s, 5m, 1h), <reason>``")
         
         value, unit = match.groups()
         value = int(value)

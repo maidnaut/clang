@@ -15,6 +15,6 @@ Redistribution and use in source and binary forms, with or without modification,
 
 4. Internal use is permitted within profit generating organizations, provided it is not customer facing or directly monetized.
 
-5. This license is waived if the derivative work contains a significant amount of original core code/functionality (>50% new code), or is embedded in a larger system where this software is not the primary value proposition, not counting that of "plugins" or "extensions".
+5. Conditions 1, 3 and 4 are waived if the derivative work contains a significant amount of original core code/functionality (>50% new code), or is embedded in a larger system where this software is not the primary value proposition, not counting that of "plugins" or "extensions".
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

@@ -11,3 +11,7 @@ Clang is fully modular, extendable, extensible, and customizable with its functi
 Clang is a skull kept alive by eldritch magic. It screams and talks nonsense.
 
 Please view the [installation guide](https://github.com/maidnaut/clang/wiki/Installation-Guide) for instructions on how to get it up and running.
+
+<hr>
+
+**Licensing information**: This software is NOT licensed under open source. Please view the [license](https://github.com/maidnaut/clang/blob/main/LICENSE.md) and the [license faq](https://github.com/maidnaut/clang/wiki/License-FAQ) for details.

@@ -1,5 +1,5 @@
-## Cosmic Arp Software License  
-**Version 1.0 | Source-Available, Non-Commercial**
+"Non-Commercial Commons License"
+Version 1.0 | Source-Available, Non-Commercial
 
 Copyright © 2025, Cosmic Arp
 
@@ -7,7 +7,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 1. Redistributions of the software in source code or binary form must retain the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
 
-2. Neither Cosmic Arp nor its contributors names may be used to endorse or promote derivative works without prior written permission.
+2. Neither Cosmic Arp nor contributors names may be used to endorse or promote derivative works without prior written permission.
 
 3. You are prohibited from selling, renting, leasing, or commercially exploiting this software, forks of this software, or derivates thereof. You may not use this software as a core revenue generating component of any product, monetizing access to its functionality, or as SaaS.
 

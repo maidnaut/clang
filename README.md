@@ -14,4 +14,4 @@ Please view the [installation guide](https://github.com/maidnaut/clang/wiki/Inst
 
 <hr>
 
-**Licensing information**: This software is NOT licensed under open source. Please view the [license](https://github.com/maidnaut/clang/blob/main/LICENSE.md) and the [license faq](https://github.com/maidnaut/clang/wiki/License-FAQ) for details.
+**Licensing information**: This software is NOT licensed under open source. Please view the [license](https://github.com/maidnaut/clang/blob/main/LICENSE.md) and the [NCCL FAQ](https://github.com/maidnaut/nccl/wiki/FAQ) for details.

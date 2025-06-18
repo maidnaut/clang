@@ -1,4 +1,4 @@
-## Cosmic Arp Source License  
+## Cosmic Arp Software License  
 **Version 1.0 | Source-Available, Non-Commercial**
 
 Copyright © 2025, Cosmic Arp

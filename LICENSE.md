@@ -1,6 +1,7 @@
-### Modified BSD License
+## Cosmic Arp Source License  
+**Version 1.0 | Source-Available, Non-Commercial**
 
-Copyright 2025, Cosmic Arp
+Copyright © 2025, Cosmic Arp
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

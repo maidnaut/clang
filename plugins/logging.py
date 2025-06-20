@@ -107,7 +107,7 @@ class LoggingCog(commands.Cog):
             embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
             embed.add_field(name="", value=f"{message.author.mention} deleted a message in {message.channel.mention}", inline=False)
             embed.add_field(name="", value=f"{message.content[:2000] or '*[No content]*'}", inline=False)
+            await channel.send(embed=embed, silent=True)
+            
             if files:
-                await channel.send(embed=embed, files=files, silent=True)
-            else:
-                await channel.send(embed=embed, silent=True)
+                await channel.send(files=files, silent=True)

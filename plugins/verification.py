@@ -36,6 +36,7 @@ class VerificationCog(commands.Cog):
 
         if time is None:
             await ctx.send(f"{await author_ping(ctx)} Please provide a time. ``!verificationtime <time>``" )
+            return
 
         # Time is an int, interpret as seconds
         if time.isdigit():

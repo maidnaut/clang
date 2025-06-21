@@ -133,7 +133,8 @@ class SettingsCog(commands.Cog):
                 "op",
                 "admin",
                 "root",
-                "bots"
+                "bots",
+                "verified"
             ]
 
             all_roles = ", ".join(roles)

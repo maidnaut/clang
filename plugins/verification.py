@@ -1,6 +1,6 @@
-import discord
+import datetime, discord
 from inc.utils import *
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 def setup(bot):
     bot.add_cog(VerificationCog(bot))
@@ -24,6 +24,17 @@ class VerificationCog(commands.Cog):
                 ("guild_id", "INTEGER"),
                 ("time", "INTEGER")
             ])
+        
+        if not table_exists("to_be_verified"):
+            new_db("to_be_verified", [
+                ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+                ("guild_id", "INTEGER"),
+                ("user_id", "INTEGER"),
+                ("time", "STRING")
+            ])
+
+        if not self.verification_loop.is_running():
+            self.verification_loop.start()
 
     @commands.command()
     async def verificationtime(self, ctx, time: str = None):
@@ -47,7 +58,8 @@ class VerificationCog(commands.Cog):
         
         match = re.match(r"^(\d+)([smhdw])$", time.strip().lower())
         if not match:
-            return await ctx.send(f"{await author_ping(ctx)} Invalid format. Use like ``!slowmode 10s``, ``5m``, or ``1h``.")
+            await ctx.send(f"{await author_ping(ctx)} Invalid format. Use like ``!slowmode 10s``, ``5m``, or ``1h``.")
+            return
         
         value, unit = match.groups()
         value = int(value)
@@ -84,15 +96,30 @@ class VerificationCog(commands.Cog):
         time = time[0][2]
         role_id = role_id[0][3]
 
-        asyncio.create_task(self._verify_after_timeout(member, time, role_id))
+        verification_time = (datetime.datetime.now() + datetime.timedelta(seconds=time)).replace(microsecond=0).isoformat()
 
-    async def _verify_after_timeout(self, member, time, role_id):
-        await asyncio.sleep(time)
+        to_be_verified = db_read("to_be_verified", [f"guild_id:{member.guild.id}", f"user_id:{member.id}"])
+        if to_be_verified == []:
+            db_insert("to_be_verified", ["guild_id", "user_id", "time"], [member.guild.id, member.id, verification_time])
+        else:
+            db_update("to_be_verified", [f"guild_id:{member.guild.id}", f"user_id:{member.id}"], [("time", verification_time)])
+    
+    @tasks.loop(minutes=1)
+    async def verification_loop(self):
+        cur_time = datetime.datetime.now().replace(microsecond=0).isoformat()
 
-        if member.guild.get_role(role_id) in member.roles:
-            return
-        
-        if not member.guild:
-            return
+        to_be_verified = db_read("to_be_verified", [f"time:<{cur_time}"])
+        for row in to_be_verified:
+            guild_id = int(row[1]); user_id = int(row[2]); time = row[3]
+            guild    = discord.utils.get(self.bot.guilds, id=guild_id)
+            if not guild:
+                continue
 
-        await member.add_roles(discord.Object(role_id))
+            user = guild.get_member(user_id)
+            role_id = int(db_read("roles", [f"guild_id:{guild_id}", "name:verified"])[0][3])
+            try:
+                await user.add_roles(discord.Object(id=role_id), reason="Verification")
+            except Exception as e:
+                print(f"\n[!] Verification failed for {user_id}@{guild_id}: {e}")
+
+            db_remove("to_be_verified", ["guild_id", "user_id"], [guild.id, user_id])

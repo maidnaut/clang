@@ -695,13 +695,13 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                 return
 
         # Logarithmic scaling
-        if current <= 5000:
-            boost_factor = (5000 - current) / 5000
+        if amount_int <= 5000:
+            boost_factor = (5000 - amount_int) / 5000
             boost = int(20 + 30 * boost_factor)
             base_roll = random.randint(0, 300)
             adjusted_roll = min(300, base_roll + boost)
         else:
-            wealth_factor = min(1.0, math.log10(current) / math.log10(self.MAX_COOKIES))
+            wealth_factor = min(1.0, math.log10(amount_int) / math.log10(self.MAX_COOKIES))
             penalty = int(wealth_factor * 15)
             base_roll = random.randint(0, 300)
             adjusted_roll = max(0, base_roll - penalty)

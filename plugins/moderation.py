@@ -367,7 +367,7 @@ class ModerationCog(commands.Cog):
             return await ctx.send(f"{await author_ping(ctx)} Usage: `!ban <user> [time] <reason>`")
 
         # Get ban time
-        tm = re.match(r"(?:(\d+)y)?(?:(\d+)M)?(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)", args.split()[0])
+        tm = re.match(r"(?:(\d+)y)?(?:(\d+)M)?(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?", args.split()[0])
         if tm and any(tm.groups()):
             ban_time = args.split()[0]
             reason   = " ".join(args.split()[1:])
@@ -398,6 +398,7 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             return await ctx.send(f"{await author_ping(ctx)} Error checking bans: {e}")
 
+        unban_in = ""
         # Figure out unban_date
         if ban_time:
             years = int(tm.group(1) or 0)
@@ -408,6 +409,23 @@ class ModerationCog(commands.Cog):
             mins  = int(tm.group(6) or 0)
             delta = datetime.timedelta(days=years*365 + months*30 + weeks*7 + days, hours=hrs, minutes=mins)
             unban_dt = (datetime.datetime.now() + delta).replace(microsecond=0)
+
+            if years:
+                unban_in += f"{years} year(s) "
+            if months:
+                unban_in += f"{months} month(s) "
+            if weeks:
+                unban_in += f"{weeks} week(s) "
+            if days:
+                unban_in += f"{days} day(s) "
+            if hrs:
+                unban_in += f"{hrs} hour(s) "
+            if mins:
+                unban_in += f"{mins} minute(s) "
+            unban_in = unban_in.strip()
+            
+            #suffix = ["year(s)", "month(s)", "week(s)", "day(s)", "hour(s)", "minute(s)"][i]
+                
         else:
             unban_dt = None
 
@@ -447,7 +465,7 @@ class ModerationCog(commands.Cog):
             embed.add_field(name="User",   value=user.mention,      inline=True)
             embed.add_field(name="Mod",    value=ctx.author.mention, inline=True)
             embed.add_field(name="Reason", value=reason,            inline=False)
-            embed.add_field(name="Duration", value=ban_time,         inline=True)
+            embed.add_field(name="Duration", value=unban_in,         inline=True)
             await modlog.send(embed=embed)
 
         await ctx.send(f"{user.mention} banned{' for '+ban_time if ban_time else ''}. Reason: {reason}")

@@ -447,6 +447,7 @@ class ModerationCog(commands.Cog):
             embed.add_field(name="User",   value=user.mention,      inline=True)
             embed.add_field(name="Mod",    value=ctx.author.mention, inline=True)
             embed.add_field(name="Reason", value=reason,            inline=False)
+            embed.add_field(name="Duration", value=ban_time,         inline=True)
             await modlog.send(embed=embed)
 
         await ctx.send(f"{user.mention} banned{' for '+ban_time if ban_time else ''}. Reason: {reason}")

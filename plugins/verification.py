@@ -56,7 +56,7 @@ class VerificationCog(commands.Cog):
             await ctx.send(f"{await author_ping(ctx)} Verification time set to {time} second(s).")
             return
         
-        match = re.match(r"^(\d+)([smhdw])$", time.strip().lower())
+        match = re.match(r"^(\d+)([smhdwMy])$", time.strip().lower())
         if not match:
             await ctx.send(f"{await author_ping(ctx)} Invalid format. Use like ``!slowmode 10s``, ``5m``, or ``1h``.")
             return
@@ -64,7 +64,7 @@ class VerificationCog(commands.Cog):
         value, unit = match.groups()
         value = int(value)
 
-        durations = [('s', 1, f"{value} second(s)"), ('m', 60, f"{value} minute(s)"), ('h', 60, f"{value} hour(s)"), ('d', 24, f"{value} day(s)"), ('w', 7, f"{value} week(s)")]
+        durations = [('s', 1, f"{value} second(s)"), ('m', 60, f"{value} minute(s)"), ('h', 60, f"{value} hour(s)"), ('d', 24, f"{value} day(s)"), ('w', 7, f"{value} week(s)"), ('M', 4, f"{value} month(s)"), ('y', 12, f"{value} year(s)")]
 
         seconds = value
         for duration in durations:

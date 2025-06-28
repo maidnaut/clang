@@ -367,7 +367,7 @@ class ModerationCog(commands.Cog):
             return await ctx.send(f"{await author_ping(ctx)} Usage: `!ban <user> [time] <reason>`")
 
         # Get ban time
-        tm = re.match(r"(?:(\d+)y)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?", args.split()[0])
+        tm = re.match(r"(?:(\d+)y)?(?:(\d+)M)?(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)", args.split()[0])
         if tm and any(tm.groups()):
             ban_time = args.split()[0]
             reason   = " ".join(args.split()[1:])
@@ -401,10 +401,12 @@ class ModerationCog(commands.Cog):
         # Figure out unban_date
         if ban_time:
             years = int(tm.group(1) or 0)
-            days  = int(tm.group(2) or 0)
-            hrs   = int(tm.group(3) or 0)
-            mins  = int(tm.group(4) or 0)
-            delta = datetime.timedelta(days=years*365 + days, hours=hrs, minutes=mins)
+            months = int(tm.group(2) or 0)
+            weeks = int(tm.group(3) or 0)
+            days  = int(tm.group(4) or 0)
+            hrs   = int(tm.group(5) or 0)
+            mins  = int(tm.group(6) or 0)
+            delta = datetime.timedelta(days=years*365 + months*30 + weeks*7 + days, hours=hrs, minutes=mins)
             unban_dt = (datetime.datetime.now() + delta).replace(microsecond=0)
         else:
             unban_dt = None

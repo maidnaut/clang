@@ -52,7 +52,7 @@ async def check_for_token():
                 print(f"[!] Invalid token structure: {token} (length: {len(token)})")
 
         if sys.stdin.isatty():
-            print("[?] Enter bot token: ", end="", flush=True)
+            print("[?] Enter bot token: ", end="")
             token = (await asyncio.get_event_loop()
                     .run_in_executor(None, input, "")).strip()
 

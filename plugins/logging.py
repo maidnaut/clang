@@ -78,7 +78,7 @@ class LoggingCog(commands.Cog):
 
         channel = await get_channel(int(before.guild.id), "logs")
 
-        if channel is not None and channel not in channels:
+        if channel is not None or channel not in channels:
             embed = discord.Embed(
                 color=discord.Color.orange(),
             )
@@ -103,7 +103,7 @@ class LoggingCog(commands.Cog):
 
         channel = await get_channel(int(before.guild.id), "logs")
 
-        if channel is not None and channel not in channels:
+        if channel is not None or channel not in channels:
             embed = discord.Embed(
                 color=discord.Color.red(),
             )

@@ -1,7 +1,9 @@
 import discord, time
+from inc.db import *
 from inc.utils import *
 from datetime import datetime
 from discord.ext import commands
+from discord import CategoryChannel
 from collections import defaultdict, deque
 
 
@@ -71,9 +73,12 @@ class LoggingCog(commands.Cog):
         if before.author.bot or before.content == after.content:
             return
 
+        mod_category = await get_channel(before.guild.id, "mod_category")
+        channels = mod_category.channels
+
         channel = await get_channel(int(before.guild.id), "logs")
 
-        if channel is not None:
+        if channel is not None and channel not in channels:
             embed = discord.Embed(
                 color=discord.Color.orange(),
             )
@@ -93,9 +98,12 @@ class LoggingCog(commands.Cog):
         if not message.guild or message.author.bot:
             return
 
-        channel = await get_channel(int(message.guild.id), "logs")
-        
-        if channel:
+        mod_category = await get_channel(before.guild.id, "mod_category")
+        channels = mod_category.channels
+
+        channel = await get_channel(int(before.guild.id), "logs")
+
+        if channel is not None and channel not in channels:
             embed = discord.Embed(
                 color=discord.Color.red(),
             )

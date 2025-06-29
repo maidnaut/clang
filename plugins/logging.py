@@ -66,56 +66,65 @@ class LoggingCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
 
-        # Drop out if in dm's
         if not before.guild or before.author.bot or before.content == after.content:
             return
-            
-        if before.author.bot or before.content == after.content:
+
+        # Get mod category and log channel
+        mod_category = await get_channel(before.guild.id, "mod_category")
+        log_channel = await get_channel(int(before.guild.id), "logs")
+
+        # Skip if log channel doesn't exist
+        if not log_channel:
             return
 
-        mod_category = await get_channel(before.guild.id, "mod_category")
-        channels = mod_category.channels
+        # Skip if message is in mod category
+        if mod_category and isinstance(mod_category, discord.CategoryChannel):
+            if before.channel.category_id == mod_category.id:
+                return
 
-        channel = await get_channel(int(before.guild.id), "logs")
-
-        if channel is not None or channel not in channels:
             embed = discord.Embed(
                 color=discord.Color.orange(),
             )
 
-            embed.set_thumbnail(url=before.author.avatar.url if before.author.avatar else None)
-            embed.add_field(name="", value=f" {before.author.mention} edited a message in {before.channel.mention}", inline=False)
-            embed.add_field(name="", value=f"**Message Link:** [Jump to Message]({before.jump_url})", inline=False)
-            embed.add_field(name="Before", value=before.content[:1024], inline=False)
-            embed.add_field(name="After", value=after.content[:1024], inline=False)
-            await channel.send(embed=embed, silent=True)
+        embed.set_thumbnail(url=before.author.avatar.url if before.author.avatar else None)
+        embed.add_field(name="", value=f" {before.author.mention} edited a message in {before.channel.mention}", inline=False)
+        embed.add_field(name="", value=f"**Message Link:** [Jump to Message]({before.jump_url})", inline=False)
+        embed.add_field(name="Before", value=before.content[:1024], inline=False)
+        embed.add_field(name="After", value=after.content[:1024], inline=False)
+        await channel.send(embed=embed, silent=True)
 
     # On delete
     @commands.Cog.listener()
     async def on_message_delete(self, message):
 
-        # Drop out if dm's or bot
         if not message.guild or message.author.bot:
             return
 
-        mod_category = await get_channel(before.guild.id, "mod_category")
-        channels = mod_category.channels
+        # Get mod category and log channel
+        mod_category = await get_channel(message.guild.id, "mod_category")
+        log_channel = await get_channel(int(message.guild.id), "logs")
 
-        channel = await get_channel(int(before.guild.id), "logs")
+        # Skip if log channel doesn't exist
+        if not log_channel:
+            return
 
-        if channel is not None or channel not in channels:
-            embed = discord.Embed(
-                color=discord.Color.red(),
-            )
-            
-            files = []
-            for attachment in message.attachments:
-                files.append(await attachment.to_file())
+        # Skip if message is in mod category
+        if mod_category and isinstance(mod_category, discord.CategoryChannel):
+            if message.channel.category_id == mod_category.id:
+                return
 
-            embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
-            embed.add_field(name="", value=f"{message.author.mention} deleted a message in {message.channel.mention}", inline=False)
-            embed.add_field(name="", value=f"{message.content[:2000] or '*[No content]*'}", inline=False)
-            await channel.send(embed=embed, silent=True)
-            
-            if files:
-                await channel.send(files=files, silent=True)
+        embed = discord.Embed(
+            color=discord.Color.red(),
+        )
+
+        files = []
+        for attachment in message.attachments:
+            files.append(await attachment.to_file())
+
+        embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
+        embed.add_field(name="", value=f"{message.author.mention} deleted a message in {message.channel.mention}", inline=False)
+        embed.add_field(name="", value=f"{message.content[:2000] or '*[No content]*'}", inline=False)
+        await channel.send(embed=embed, silent=True)
+
+        if files:
+            await channel.send(files=files, silent=True)

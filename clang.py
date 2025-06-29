@@ -22,7 +22,7 @@ class ClangBot(commands.Bot):
         self.globals = {}
         self.avatar_paths = []
         self.status_messages = [
-            "discord.gg/archverse",
+            "discord.gg/cli-cafe",
             "!help",
             "CLANG 👏 CLANG 👏 CLANG 👏",
             "No maidens?",

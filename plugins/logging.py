@@ -62,10 +62,9 @@ class LoggingCog(commands.Cog):
 
             await channel.send(embed=embed, silent=True)
 
-    # On edit
+    # on edit
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
-
         if not before.guild or before.author.bot or before.content == after.content:
             return
 
@@ -82,21 +81,20 @@ class LoggingCog(commands.Cog):
             if before.channel.category_id == mod_category.id:
                 return
 
-            embed = discord.Embed(
-                color=discord.Color.orange(),
-            )
-
+        # Proceed with logging
+        embed = discord.Embed(
+            color=discord.Color.orange(),
+        )
         embed.set_thumbnail(url=before.author.avatar.url if before.author.avatar else None)
         embed.add_field(name="", value=f" {before.author.mention} edited a message in {before.channel.mention}", inline=False)
         embed.add_field(name="", value=f"**Message Link:** [Jump to Message]({before.jump_url})", inline=False)
         embed.add_field(name="Before", value=before.content[:1024], inline=False)
         embed.add_field(name="After", value=after.content[:1024], inline=False)
-        await channel.send(embed=embed, silent=True)
+        await log_channel.send(embed=embed, silent=True)
 
-    # On delete
+    # on delete
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-
         if not message.guild or message.author.bot:
             return
 
@@ -113,6 +111,7 @@ class LoggingCog(commands.Cog):
             if message.channel.category_id == mod_category.id:
                 return
 
+        # Proceed with logging
         embed = discord.Embed(
             color=discord.Color.red(),
         )
@@ -124,7 +123,7 @@ class LoggingCog(commands.Cog):
         embed.set_thumbnail(url=message.author.avatar.url if message.author.avatar else None)
         embed.add_field(name="", value=f"{message.author.mention} deleted a message in {message.channel.mention}", inline=False)
         embed.add_field(name="", value=f"{message.content[:2000] or '*[No content]*'}", inline=False)
-        await channel.send(embed=embed, silent=True)
+        await log_channel.send(embed=embed, silent=True)
 
         if files:
-            await channel.send(files=files, silent=True)
+            await log_channel.send(files=files, silent=True)

@@ -425,3 +425,9 @@ async def load_plugins():
 
 if __name__ == "__main__":
     loop.run_until_complete(start_bot())
+
+    @bot.event
+    async def on_command_error(ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            return
+        raise error

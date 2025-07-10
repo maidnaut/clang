@@ -393,12 +393,15 @@ async def check_guilds():
 # Load plugins
 #################################################################################
 async def load_plugins():
-    
+
     # Search all plugins in /plugins and gracefully fail on any errors
 
     await random_decimal_sleep(0, 0.4)
 
-    for filename in os.listdir("./plugins"):
+    filenames = os.listdir("./plugins")
+    filenames.sort()
+
+    for filename in filenames:
         if filename.endswith(".py") and not filename.startswith("_"):
             try:
                 bot.load_extension(f"plugins.{filename[:-3]}")

@@ -61,7 +61,7 @@ class FunCog(commands.Cog):
     @commands.command()
     async def clang(self, ctx):
         # Generate a random number for the response
-        choice = random.randint(1, 25)
+        choice = random.randint(1, 26)
 
         # Response dict
         messages = {
@@ -90,6 +90,7 @@ class FunCog(commands.Cog):
             23: "i use arch btw",
             24: "install gentoo",
             25: "HOUSE IS CLANG. CLANG ALWAYS WINS.",
+            26: "I, Clang, support trans rights.",
         }
 
         # Get the message corresponding to the chosen number
@@ -143,7 +144,7 @@ class FunCog(commands.Cog):
         ]
 
         # Generate a random number for the response
-        choice = random.randint(1, 24)
+        choice = random.randint(1, 25)
 
         word = random.choice(words)
         concept = random.choice(concepts)
@@ -175,6 +176,7 @@ class FunCog(commands.Cog):
             22: "TOO MANY EXCESS VACATION DAYS? TAKE A GODDAMN VACATION STRAIGHT TO HELL",
             23: "NOW'S YOUR CHANCE TO BE A [[BIGSHOT]]",
             24: "[[HYPERLINK BLOCKED]]"
+            25: "I, Clang, support trans rights."
         }
 
         # Get the message corresponding to the chosen number

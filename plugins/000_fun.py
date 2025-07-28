@@ -60,8 +60,6 @@ class FunCog(commands.Cog):
     # !clang
     @commands.command()
     async def clang(self, ctx):
-        # Generate a random number for the response
-        choice = random.randint(1, 25)
 
         # Response dict
         messages = {
@@ -90,7 +88,12 @@ class FunCog(commands.Cog):
             23: "i use arch btw",
             24: "install gentoo",
             25: "HOUSE IS CLANG. CLANG ALWAYS WINS.",
+            26: "trans rights",
+            27: "I, Clang, support trans rights.",
         }
+
+        # Generate a random number for the response
+        choice = random.randint(1, len(messages))
 
         # Get the message corresponding to the chosen number
         await ctx.send(f"{await author_ping(ctx)} {messages.get(choice)}")

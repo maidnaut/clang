@@ -370,7 +370,7 @@ async def check_guilds():
     # Delete guilds from the database that the bot is no longer part of
     if guilds_to_delete:
         for guild_id in guilds_to_delete:
-            db_delete("guilds", ["guild_id"], [guild_id])
+            db_remove("guilds", ["guild_id"], [guild_id])
             print(f"[bold cyan]==>[/bold cyan] Deleted guild {guild_id} from the database. Clang is no longer there.")
 
     # Update the database with any new guilds

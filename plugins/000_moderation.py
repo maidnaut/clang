@@ -970,7 +970,7 @@ class ModerationCog(commands.Cog):
             return
 
     # Sticky loop
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=15)
     async def sticky_loop(self):
 
         sticky = db_read("stickies", [])
@@ -983,7 +983,9 @@ class ModerationCog(commands.Cog):
             if not channel:
                 continue
 
-            last_message = (await channel.history(limit=1).flatten())[0]
+            lookback = 50
+            last_messages = [msg async for msg in channel.history(limit=lookback)]
+            bot_has_posted = any(msg.author.id == self.bot.user.id for msg in last_messages)
 
-            if last_message.author.id != self.bot.user.id:
+            if not bot_has_posted:
                 await channel.send(message)

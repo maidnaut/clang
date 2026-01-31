@@ -952,7 +952,7 @@ class ModerationCog(commands.Cog):
             db_insert(
                 "stickies",
                 ["channel_id","author_id","message","date"],
-                [ctx.guild.id, ctx.author.id, stick_me, now]
+                [ctx.channel.id, ctx.author.id, stick_me, now]
             )
 
             response = "Message sticked to channel."

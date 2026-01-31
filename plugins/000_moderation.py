@@ -982,6 +982,6 @@ class ModerationCog(commands.Cog):
 
                 last_message = (await channel.history(limit=1).flatten())[0]
 
-                if last_message.author.id not bot.user.id:
+                if last_message.author.id != bot.user.id:
 
                     await channel.send(f"{message}")

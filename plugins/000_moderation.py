@@ -911,7 +911,7 @@ class ModerationCog(commands.Cog):
             new_db("stickies", [
                 ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
                 ("channel_id", "INTEGER"),
-                ("author_id", "INTEGER")
+                ("author_id", "INTEGER"),
                 ("message", "TEXT"),
                 ("date", "TEXT"),
             ])

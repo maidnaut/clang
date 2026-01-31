@@ -924,7 +924,7 @@ class ModerationCog(commands.Cog):
             if not sticky:
 
                 response = "There wasn't a sticky here anyway. :D"
-                await ctx.send(f"{await user_ping(ctx, message.author)} {response}")
+                await ctx.send(f"{await author_ping(ctx)} {response}")
                 return
 
             else:
@@ -935,7 +935,7 @@ class ModerationCog(commands.Cog):
                         [int(ctx.guild.id)])
 
                     response = "Sticky removed."
-                    await ctx.send(f"{await user_ping(ctx, message.author)} {response}")
+                    await ctx.send(f"{await author_ping(ctx)} {response}")
                     return
 
                 # Database is busted?
@@ -956,7 +956,7 @@ class ModerationCog(commands.Cog):
             )
 
             response = "Message sticked to channel."
-            await ctx.send(f"{await user_ping(ctx, message.author)} {response}")
+            await ctx.send(f"{await author_ping(ctx)} {response}")
             return
 
         # Database is busted?

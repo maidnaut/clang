@@ -111,6 +111,7 @@ class ModerationCog(commands.Cog):
         # Start unban loop
         if not self.unban_loop.is_running():
             self.unban_loop.start()
+            self.sticky_loop.start()
 
 
 
@@ -932,7 +933,7 @@ class ModerationCog(commands.Cog):
                 try:
                     db_remove("stickies",
                         ["channel_id"],
-                        [int(ctx.guild.id)])
+                        [int(ctx.channel.id)])
 
                     response = "Sticky removed."
                     await ctx.send(f"{await author_ping(ctx)} {response}")

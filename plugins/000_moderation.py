@@ -973,19 +973,17 @@ class ModerationCog(commands.Cog):
     @tasks.loop(minutes=1)
     async def sticky_loop(self):
 
-        all_channels = list(self.bot.get_all_channels())
+        sticky = db_read("stickies", [])
 
-        for channel in channels:
-
-            channel = self.bot.get_channel(int(row[1]))
-            author = str(row[2])
+        for row in sticky_rows:
+            channel_id = int(row[1])
+            channel = self.bot.get_channel(channel_id)
             message = str(row[3])
-            date = str(row[4])
 
-            if channel:
+            if not channel:
+                continue
 
-                last_message = (await channel.history(limit=1).flatten())[0]
+            last_message = (await channel.history(limit=1).flatten())[0]
 
-                if last_message.author.id != self.bot.user.id:
-
-                    await channel.send(f"{message}")
+            if last_message.author.id != self.bot.user.id:
+                await channel.send(message)

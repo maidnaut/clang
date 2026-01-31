@@ -111,6 +111,9 @@ class ModerationCog(commands.Cog):
         # Start unban loop
         if not self.unban_loop.is_running():
             self.unban_loop.start()
+
+        # Start sticky loop
+        if not self.sticky_loop.is_running():
             self.sticky_loop.start()
 
 

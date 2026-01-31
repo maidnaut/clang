@@ -917,7 +917,7 @@ class ModerationCog(commands.Cog):
             ])
 
         # Delete the message
-        if message == "off":
+        if stick_me == "off":
 
             sticky = db_read("stickies", [f"channel_id:{ctx.channel.id}"])
 

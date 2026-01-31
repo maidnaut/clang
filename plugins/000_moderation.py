@@ -80,7 +80,12 @@ class ModerationCog(commands.Cog):
                 "args": "<user> <time> <reason:optional>",
                 "desc": "(Alias: !mute) Times out a user for the set amount of time, dming them the reason",
                 "perm": ["submod", "mod", "admin"]
-            }
+            },
+            "sticky": {
+                "args": "<message/off>",
+                "desc": "Have Clang repeat a channel notification.",
+                "perm": ["submod", "mod", "admin"]
+            },
         }
 
         # Ensure our tables exist
@@ -888,3 +893,95 @@ class ModerationCog(commands.Cog):
         await user.timeout_for(duration, reason=reason)
 
         await ctx.send(f"{await author_ping(ctx)} - {await user_ping(ctx, user)} timed out for {display}.{dm_status}")
+
+
+
+    # !sticky
+    @commands.command()
+    async def sticky(self, ctx, message: str = None):
+        user_level = await get_level(ctx)
+        if user_level < 2:
+            return
+
+        # No message supplied
+        if message == None:
+            return await ctx.send(f"{await author_ping(ctx)} Please provide a message: `!sticky <message>`")
+
+        if not table_exists("stickies"):
+            new_db("stickies", [
+                ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
+                ("channel_id", "INTEGER"),
+                ("author_id", "INTEGER")
+                ("message", "TEXT"),
+                ("date", "TEXT"),
+            ])
+
+        # Delete the message
+        if message == "off":
+
+            sticky = db_read("stickies", [f"channel_id:{ctx.channel.id}"])
+
+            if not sticky:
+
+                response = "There wasn't a sticky here anyway. :D"
+                await message.channel.send(f"{await user_ping(ctx, message.author)} {response}")
+                return
+
+            else:
+
+                try:
+                    db_remove("stickies",
+                        ["channel_id"],
+                        [int(ctx.guild.id)])
+
+                    response = "Sticky removed."
+                    await message.channel.send(f"{await user_ping(ctx, message.author)} {response}")
+                    return
+
+                # Database is busted?
+                except Exception as e:
+                    await ctx.send(f"{await author_ping(ctx)} Something went wrong.")
+                    await ctx.send(f"Database error: {e}")
+                    return
+
+        # Try stickying
+        try:
+
+            now = datetime.datetime.now()
+
+            db_insert(
+                "stickies",
+                ["channel_id","author_id","message","date"],
+                [ctx.guild.id, ctx.channel.id, author.id, message, now]
+            )
+
+            response = "Message sticked to channel."
+            await message.channel.send(f"{await user_ping(ctx, message.author)} {response}")
+            return
+
+        # Database is busted?
+        except Exception as e:
+            await ctx.send(f"{await author_ping(ctx)} Something went wrong.")
+            await ctx.send(f"Database error: {e}")
+            return
+
+    # Sticky loop
+    @tasks.loop(minutes=1)
+    async def sticky_loop(self):
+
+        all_channels = list(bot.get_all_channels())
+
+        for channel in channels:
+
+            channel = bot.get_channel(int(row[1]))
+            author = str(row[2])
+            message = str(row[3])
+            date = str(row[4])
+
+            if channel:
+
+                last_message = (await channel.history(limit=1).flatten())[0]
+
+                if last_message.author.id not bot.user.id:
+
+                    await channel.send(f"{message}")

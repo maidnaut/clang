@@ -898,13 +898,13 @@ class ModerationCog(commands.Cog):
 
     # !sticky
     @commands.command()
-    async def sticky(self, ctx, message: str = None):
+    async def sticky(self, ctx, stick_me: str = None):
         user_level = await get_level(ctx)
         if user_level < 2:
             return
 
         # No message supplied
-        if message == None:
+        if stick_me == None:
             return await ctx.send(f"{await author_ping(ctx)} Please provide a message: `!sticky <message>`")
 
         if not table_exists("stickies"):
@@ -924,7 +924,7 @@ class ModerationCog(commands.Cog):
             if not sticky:
 
                 response = "There wasn't a sticky here anyway. :D"
-                await message.channel.send(f"{await user_ping(ctx, message.author)} {response}")
+                await ctx.send(f"{await user_ping(ctx, message.author)} {response}")
                 return
 
             else:
@@ -935,7 +935,7 @@ class ModerationCog(commands.Cog):
                         [int(ctx.guild.id)])
 
                     response = "Sticky removed."
-                    await message.channel.send(f"{await user_ping(ctx, message.author)} {response}")
+                    await ctx.send(f"{await user_ping(ctx, message.author)} {response}")
                     return
 
                 # Database is busted?
@@ -952,11 +952,11 @@ class ModerationCog(commands.Cog):
             db_insert(
                 "stickies",
                 ["channel_id","author_id","message","date"],
-                [ctx.guild.id, ctx.channel.id, author.id, message, now]
+                [ctx.guild.id, ctx.channel.id, author.id, stick_me, now]
             )
 
             response = "Message sticked to channel."
-            await message.channel.send(f"{await user_ping(ctx, message.author)} {response}")
+            await ctx.send(f"{await user_ping(ctx, message.author)} {response}")
             return
 
         # Database is busted?

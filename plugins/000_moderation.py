@@ -975,7 +975,7 @@ class ModerationCog(commands.Cog):
 
         sticky = db_read("stickies", [])
 
-        for row in sticky_rows:
+        for row in sticky:
             channel_id = int(row[1])
             channel = self.bot.get_channel(channel_id)
             message = str(row[3])

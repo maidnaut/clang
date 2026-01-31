@@ -898,7 +898,7 @@ class ModerationCog(commands.Cog):
 
     # !sticky
     @commands.command()
-    async def sticky(self, ctx, stick_me: str = None):
+    async def sticky(self, ctx, *, stick_me: str = None):
         user_level = await get_level(ctx)
         if user_level < 2:
             return

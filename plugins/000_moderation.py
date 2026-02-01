@@ -909,7 +909,11 @@ class ModerationCog(commands.Cog):
 
         # No message supplied
         if stick_me == None:
-            return await ctx.send(f"{await author_ping(ctx)} Please provide a message: `!sticky <message>`")
+            sticky = db_read("stickies", [f"channel_id:{ctx.channel.id}"])
+
+            message = str(row[3])
+
+            return await ctx.send(f"{await author_ping(ctx)} Currnet sticky:\n\n{message}\n\nType ``!sticky <message>`` to add a new one.")
 
         if not table_exists("stickies"):
             new_db("stickies", [
@@ -952,12 +956,24 @@ class ModerationCog(commands.Cog):
         try:
 
             now = datetime.datetime.now()
+            sticky = db_read("stickies", [f"channel_id:{ctx.channel.id}"])
 
-            db_insert(
-                "stickies",
-                ["channel_id","author_id","message","date"],
-                [ctx.channel.id, ctx.author.id, stick_me, now]
-            )
+            if not sticky:
+
+                db_insert(
+                    "stickies",
+                    ["channel_id","author_id","message","date"],
+                    [ctx.channel.id, ctx.author.id, stick_me, now]
+                )
+
+            else:
+
+                db_update(
+                    "stickies",
+                    ["channel_id","author_id","message","date"],
+                    [ctx.channel.id, ctx.author.id, stick_me, now]
+                )
+
 
             response = "Message sticked to channel."
             await ctx.send(f"{await author_ping(ctx)} {response}")

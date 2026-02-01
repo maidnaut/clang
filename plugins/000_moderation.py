@@ -937,7 +937,7 @@ class ModerationCog(commands.Cog):
                 return await ctx.send(f"{await author_ping(ctx)} Usage: ``!sticky <message\off>``")
 
             else:
-                message = str(sticky[3])
+                message = str(sticky[0][3])
 
                 return await ctx.send(f"{await author_ping(ctx)} Currnet sticky:\n\n{message}\n\nType ``!sticky <message>`` to add a new one.")
 

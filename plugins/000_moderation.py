@@ -911,7 +911,7 @@ class ModerationCog(commands.Cog):
         if stick_me == None:
             sticky = db_read("stickies", [f"channel_id:{ctx.channel.id}"])
 
-            message = str(row[3])
+            message = str(sticky[3])
 
             return await ctx.send(f"{await author_ping(ctx)} Currnet sticky:\n\n{message}\n\nType ``!sticky <message>`` to add a new one.")
 

@@ -985,11 +985,7 @@ class ModerationCog(commands.Cog):
 
             else:
 
-                db_update(
-                    "stickies",
-                    ["channel_id","author_id","message","date"],
-                    [ctx.channel.id, ctx.author.id, stick_me, now]
-                )
+                db_update("stickies", [f"channel_id:{ctx.channel.id}"], [("author_id", ctx.author.id), ("message", stick_me), ("date", now)])
 
 
             response = "Message sticked to channel."

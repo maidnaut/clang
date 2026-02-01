@@ -926,9 +926,6 @@ class ModerationCog(commands.Cog):
                 return await ctx.send(f"{await author_ping(ctx)} Usage: ``!sticky <message\off>``")
 
             else:
-                for row in sticky:
-                    print(f"{row[1]\n row[2]\n row[3]\n row[4]}")
-
                 message = str(sticky[3])
 
                 return await ctx.send(f"{await author_ping(ctx)} Currnet sticky:\n\n{message}\n\nType ``!sticky <message>`` to add a new one.")

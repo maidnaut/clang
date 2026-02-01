@@ -964,6 +964,17 @@ class ModerationCog(commands.Cog):
             now = datetime.datetime.now()
             sticky = db_read("stickies", [f"channel_id:{ctx.channel.id}"])
 
+            # Cleanup if we accidentally pushed more than one per channel
+            if len(sticky) > 1:
+                sticky.sort(key=lambda r: r[4], reverse=True)
+                for row in sticky[1:]:
+                    db_remove(
+                        "stickies",
+                        ["id"],
+                        [row[0]]
+                    )
+                sticky = sticky[:1]
+
             if not sticky:
 
                 db_insert(

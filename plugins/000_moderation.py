@@ -907,20 +907,6 @@ class ModerationCog(commands.Cog):
         if user_level < 2:
             return
 
-        # No message supplied
-        if stick_me == None:
-
-            sticky = db_read("stickies", [f"channel_id:{ctx.channel.id}"])
-            for row in sticky:
-                print(f"{row[1]\n row[2]\n row[3]\n row[4]}")
-
-
-            sticky = db_read("stickies", [f"channel_id:{ctx.channel.id}"])
-
-            message = str(sticky[3])
-
-            return await ctx.send(f"{await author_ping(ctx)} Currnet sticky:\n\n{message}\n\nType ``!sticky <message>`` to add a new one.")
-
         if not table_exists("stickies"):
             new_db("stickies", [
                 ("id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
@@ -929,6 +915,23 @@ class ModerationCog(commands.Cog):
                 ("message", "TEXT"),
                 ("date", "TEXT"),
             ])
+
+        # No message supplied
+        if stick_me == None:
+
+            sticky = db_read("stickies", [f"channel_id:{ctx.channel.id}"])
+
+            if not sticky:
+
+                return await ctx.send(f"{await author_ping(ctx)} Usage: ``!sticky <message\off>``")
+
+            else:
+                for row in sticky:
+                    print(f"{row[1]\n row[2]\n row[3]\n row[4]}")
+
+                message = str(sticky[3])
+
+                return await ctx.send(f"{await author_ping(ctx)} Currnet sticky:\n\n{message}\n\nType ``!sticky <message>`` to add a new one.")
 
         # Delete the message
         if stick_me == "off":

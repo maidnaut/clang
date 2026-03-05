@@ -34,7 +34,7 @@ class CookieCog(commands.Cog):
         self.THANK_LIMIT = 3
         self.GAMBLE_LIMIT = 10
         self.GAMBLE_WINDOW = 30
-        self.MAX_COOKIES = 1000000
+        self.MAX_COOKIES = 1000000000
 
         # Help info
         self.__help__ = {
@@ -604,7 +604,7 @@ class CookieCog(commands.Cog):
                 hall_of_fame += f"**💎 #{i}** {await user_ping(ctx, user)} - {formatted_cookies}\n"
 
         embed = discord.Embed(
-            title="🏆 Filthy Capitalist Millionaires 🏆",
+            title="🏆 Filthy Capitalist Billionaires 🏆",
             description=hall_of_fame,
             color=discord.Color.dark_gold()
         )
@@ -615,7 +615,7 @@ class CookieCog(commands.Cog):
     @commands.command(aliases=['bet'])
     async def gamble(self, ctx, amount: str = None):
 
-        max_bet = 100
+        max_bet = 1000000000
         
         user_id = ctx.author.id
         current_time = time.time()
@@ -788,7 +788,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         # Snake eyes
         snake_eyes = False
         if base_roll == 0:
-            multiplier = 0.0
+            multiplier = 0.1
             snake_eyes = True
 
         # Calculate winnings
@@ -800,7 +800,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         # Special case for "all" bets with 0 multiplier
         dead = (bet_type == "all" and multiplier == 0)
         if dead:
-            new_balance = 0  # Lose all cookies
+            new_balance = 10  # Lose all cookies
 
         # Balance update logic
         if new_balance > self.MAX_COOKIES:
@@ -814,13 +814,13 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
             if actual_winnings > 0:
                 response = (
                     f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
-                    f"Your winnings of {winnings} cookies were capped at 1,000,000!\n"
+                    f"Your winnings of {winnings} cookies were capped at 1,000,000,000!\n"
                     f"You received {actual_winnings} cookies instead (Net: +{actual_net_gain})."
                 )
             else:
                 response = (
                     f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
-                    f"Your balance was already at 1,000,000 cookies!\n"
+                    f"Your balance was already at 1,000,000,000 cookies!\n"
                     f"No additional winnings were awarded."
                 )
             

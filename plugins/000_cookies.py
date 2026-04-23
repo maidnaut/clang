@@ -696,7 +696,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
 
         # Logarithmic scaling
         wealth_factor = min(1.0, math.log10(amount_int) / math.log10(self.MAX_COOKIES))
-        penalty = int(wealth_factor * 8)
+        penalty = int(wealth_factor * 7)
         base_roll = random.randint(0, 300)
         adjusted_roll = max(0, base_roll - penalty)
             

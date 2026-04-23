@@ -790,7 +790,10 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
 
         # Calculate winnings and handle tiny bets
         tiny_bet_threshold = 100
-        winnings = math.floor(amount_int * multiplier)
+        if multiplier < 1.0:
+            winnings = math.floor(amount_int * multiplier)
+        else:
+            winnings = round(amount_int * multiplier)
 
         new_balance = current - amount_int + winnings
         net_gain = winnings - amount_int

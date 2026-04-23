@@ -635,18 +635,14 @@ class CookieCog(commands.Cog):
         ]
 
         if len(self.gamble_cooldowns[user_id]) >= self.GAMBLE_LIMIT:
-            # Calculate when the block should expire
             oldest = self.gamble_cooldowns[user_id][0]
             block_until = oldest + self.GAMBLE_WINDOW
-
             self.gamble_blocks[user_id] = block_until
-
             wait_time = int(block_until - current_time)
             await ctx.send(
                 f"{await author_ping(ctx)} You've been rate limited! "
                 f"Please wait {wait_time} seconds before gambling again."
             )
-
             del self.gamble_cooldowns[user_id]
             return
 
@@ -654,11 +650,11 @@ class CookieCog(commands.Cog):
 
         if amount is None:
             await ctx.send(f"""
-    {await author_ping(ctx)} <:spamton:1377920510666739712> NOW'S YOUR CHANCE TO BE A [[BIGSHOT]]\n
-    How to gamba: Use ``!gamble`` or ``!bet`` with an amount under 100 to roll the dice to see how much you can win!\n
-    Betting ``half`` breaks the betting limit, but the higher you bet, the more dangerous the odds. Going all in with ``!bet all`` is even more risky than a half bet.\n
-    Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
-    """)
+{await author_ping(ctx)} <:spamton:1377920510666739712> NOW'S YOUR CHANCE TO BE A [[BIGSHOT]]\n
+How to gamba: Use ``!gamble`` or ``!bet`` with an amount under 100 to roll the dice to see how much you can win!\n
+Betting ``half`` breaks the betting limit, but the higher you bet, the more dangerous the odds. Going all in with ``!bet all`` is even more risky than a half bet.\n
+Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
+""")
             return
 
         guild_id = ctx.guild.id
@@ -694,17 +690,17 @@ class CookieCog(commands.Cog):
                 await ctx.send(f"{await author_ping(ctx)} You can only spend {max_bet} cookies at a time!")
                 return
 
-        # Logarithmic scaling
+        # Logarithmic scaling – reduces payout for larger bets
         wealth_factor = min(1.0, math.log10(amount_int) / math.log10(self.MAX_COOKIES))
-        penalty = int(wealth_factor * 8)
-        base_roll = random.randint(0, 300)
-        adjusted_roll = max(0, base_roll - penalty)
+        max_reduction = 0.25                   # tune this (0 = no scaling, 0.25 = -25% at max)
+        scaling_multiplier = 1.0 - (wealth_factor * max_reduction)
 
-        # Outcomes
+        base_roll = random.randint(0, 300)     # fair roll, no penalty
+
+        # Outcomes (same threshold tables + ultra-rare)
         def get_outcome(roll_val, bet_type):
             if bet_type == "all":
                 thresholds = [
-                    # Roll / Multiplier
                     (285, 2.5),
                     (270, 1.8),
                     (240, 1.6),
@@ -712,11 +708,11 @@ class CookieCog(commands.Cog):
                     (180, 1.2),
                     (150, 1.0),
                     (120, 0.8),
-                    (90, 0.6),
-                    (60, 0.4),
-                    (30, 0.2),
-                    (15, 0.1),
-                    (0, 0.0)
+                    (90,  0.6),
+                    (60,  0.4),
+                    (30,  0.2),
+                    (15,  0.1),
+                    (0,   0.0)
                 ]
             else:
                 thresholds = [
@@ -727,14 +723,13 @@ class CookieCog(commands.Cog):
                     (200, 1.2),
                     (150, 1.0),
                     (100, 0.9),
-                    (80, 0.8),
-                    (60, 0.7),
-                    (40, 0.6),
-                    (20, 0.5),
-                    (0, 0.0)
+                    (80,  0.8),
+                    (60,  0.7),
+                    (40,  0.6),
+                    (20,  0.5),
+                    (0,   0.0)
                 ]
 
-            # Regular thresholds
             for threshold, mult in thresholds:
                 if roll_val >= threshold:
                     base_multiplier = mult
@@ -742,7 +737,6 @@ class CookieCog(commands.Cog):
             else:
                 base_multiplier = 0.0
 
-            # Ultra rare gambas
             ultra_rare_hit = False
             if roll_val >= 280:
                 ultra_rare = random.randint(1, 60)
@@ -766,7 +760,6 @@ class CookieCog(commands.Cog):
                         final_multiplier = 2.5
                     else:
                         final_multiplier = 2.0
-
                     ultra_rare_hit = False
                 else:
                     final_multiplier = base_multiplier
@@ -777,16 +770,19 @@ class CookieCog(commands.Cog):
 
         # Determine outcome
         bet_type = "all" if amount.lower() == "all" else "fixed"
-        multiplier, ultra_rare_hit = get_outcome(adjusted_roll, bet_type)
+        multiplier, ultra_rare_hit = get_outcome(base_roll, bet_type)
+
+        # Apply logarithmic scaling to the multiplier
+        final_multiplier = multiplier * scaling_multiplier
 
         # Snake eyes
         snake_eyes = False
         if base_roll == 0:
-            multiplier = 0.1
+            final_multiplier = 0.1 * scaling_multiplier
             snake_eyes = True
 
-        # New probabilistic betting algo
-        raw_winnings = amount_int * multiplier
+        # Probabilistic rounding
+        raw_winnings = amount_int * final_multiplier
         winnings = math.floor(raw_winnings)
         if random.random() < (raw_winnings - winnings):
             winnings += 1
@@ -795,20 +791,18 @@ class CookieCog(commands.Cog):
         net_gain = winnings - amount_int
         loss_amount = amount_int - winnings
 
-        # Special case for "all" bets with 0 multiplier
+        # Special case for "all" bets with 0 multiplier (only from table)
         dead = (bet_type == "all" and multiplier == 0)
         if dead:
-            new_balance = 10  # Lose all cookies
+            new_balance = 10   # pity cookies
 
         # Balance update logic
         if new_balance > self.MAX_COOKIES:
             actual_winnings = self.MAX_COOKIES - (current - amount_int)
             actual_net_gain = actual_winnings - amount_int
-
             db_update("cookies",
                     [f"user_id:{user_id}", f"guild_id:{guild_id}"],
                     [("cookies", self.MAX_COOKIES)])
-
             if actual_winnings > 0:
                 response = (
                     f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
@@ -821,54 +815,47 @@ class CookieCog(commands.Cog):
                     f"Your balance was already at 1,000,000,000 cookies!\n"
                     f"No additional winnings were awarded."
                 )
-
             await ctx.send(f"{await author_ping(ctx)} {response}")
             return
         else:
-            # Regular update
             db_update("cookies",
                     [f"user_id:{user_id}", f"guild_id:{guild_id}"],
                     [("cookies", new_balance)])
 
-        # Fudge the response to snake eyes if the loss is equal to the pot
+        # Fudge the response to snake eyes if loss equals bet (and not already dead)
         if loss_amount == amount_int:
             if bet_type == "all":
                 dead = True
             else:
                 snake_eyes = True
 
-        # Response with ORIGINAL MESSAGES
+        # Response messages
         if dead:
             response = f"🎲 🎲 **SNAKE EYES** - Your cookies have CRUMBLED!! You lost them all! <:cri:1369238296479273042>"
         elif snake_eyes:
             response = f"🎲 🎲 **SNAKE EYES** - You lost {amount_int} cookies!! <:cri:1369238296479273042>"
         elif net_gain > 0:
             if ultra_rare_hit:
-
                 if multiplier == 4.0:
-                    response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBA** - You won THE HIGHEST PAYOUT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-
-                if multiplier == 3.8:
-                    response = f"✨✨✨ **EXTRA RARE SPARKLY GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-
-                if multiplier == 3.6:
-                    response = f"⭐⭐⭐ **RARE GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-
-                if multiplier == 3.2:
-                    response = f"🎉🎉🎉 **EXTRA SPECIAL GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-
-                if multiplier == 3.0:
-                    response = f"7️7️7️ **SPECIAL GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-
+                    response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBA** - You won THE HIGHEST PAYOUT with a ``{final_multiplier:.2f}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                elif multiplier == 3.8:
+                    response = f"✨✨✨ **EXTRA RARE SPARKLY GAMBA** - You won THE JACKPOT with a ``{final_multiplier:.2f}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                elif multiplier == 3.6:
+                    response = f"⭐⭐⭐ **RARE GAMBA** - You won THE JACKPOT with a ``{final_multiplier:.2f}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                elif multiplier == 3.2:
+                    response = f"🎉🎉🎉 **EXTRA SPECIAL GAMBA** - You won THE JACKPOT with a ``{final_multiplier:.2f}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                elif multiplier == 3.0:
+                    response = f"7️7️7️ **SPECIAL GAMBA** - You won THE JACKPOT with a ``{final_multiplier:.2f}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
+                else:
+                    response = f"🥳 You won with a ``{final_multiplier:.2f}x`` multiplier! Net gain: ``{net_gain}`` cookies."
             elif multiplier >= 2.0:
-                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{multiplier}x`` multiplier! Net gain: ``{net_gain}`` cookies."
+                response = f"💰 💰 💰 **JACKPOT** - You WON BIG with a ``{final_multiplier:.2f}x`` multiplier! Net gain: ``{net_gain}`` cookies."
             else:
-                response = f"🥳 You won with a ``{multiplier}x`` multiplier! Net gain: ``{net_gain}`` cookies."
+                response = f"🥳 You won with a ``{final_multiplier:.2f}x`` multiplier! Net gain: ``{net_gain}`` cookies."
         elif net_gain == 0:
             response = f"<:bruh:1371231771462729730> You broke even. You got your ``{amount_int}`` cookies back."
         else:
             response = f"😔 You lost ``{loss_amount}`` cookies!"
 
-        # Final response with current balance
         current = self.check_cookies(guild_id, str(user_id))
         await ctx.send(f"{await author_ping(ctx)} {response} Current cookies: ``{current}``")

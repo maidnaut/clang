@@ -707,11 +707,18 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         def get_outcome(roll_val, bet_type):
             if bet_type == "all":
                 thresholds = [
-                    # Roll / Multiplier
+                    (285, 2.5),
+                    (270, 1.8),
+                    (240, 1.6),
+                    (210, 1.4),
+                    (180, 1.25),
                     (150, 1.1),
                     (120, 0.95),
                     (90, 0.8),
                     (60, 0.65),
+                    (30, 0.4),
+                    (15, 0.2),
+                    (0, 0.0)
                 ]
             else:
                 thresholds = [

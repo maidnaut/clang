@@ -708,11 +708,10 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
             if bet_type == "all":
                 thresholds = [
                     # Roll / Multiplier
-                    (150, 1.05),
-                    (120, 0.9),
-                    (90, 0.75),
-                    (60, 0.6),
-                    (30, 0.4),
+                    (150, 1.1),
+                    (120, 0.95),
+                    (90, 0.8),
+                    (60, 0.65),
                 ]
             else:
                 thresholds = [

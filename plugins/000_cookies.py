@@ -789,7 +789,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
 
         # Calculate winnings
         if amount_int <= 100:
-            winnings = int(amount_int * (multiplier + 0.1))
+            winnings = int(amount_int * (multiplier + 0.5))
         else:
             if multiplier < 1.0:
                 winnings = math.floor(amount_int * multiplier)

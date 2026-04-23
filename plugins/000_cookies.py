@@ -717,7 +717,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                     (90, 0.9),
                     (60, 0.65),
                     (30, 0.4),
-                    (15, 0.2),
+                    (10, 0.2),
                     (0, 0.0)
                 ]
             else:
@@ -732,7 +732,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                     (80, 0.8),
                     (60, 0.7),
                     (40, 0.6),
-                    (20, 0.5),
+                    (10, 0.5),
                     (0, 0.0)
                 ]
 

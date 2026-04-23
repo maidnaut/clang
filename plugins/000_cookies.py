@@ -699,7 +699,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         if amount_int < 100:
             penalty = 0
         else:
-            penalty = int(wealth_factor * 3)
+            penalty = int(wealth_factor * 2)
         base_roll = random.randint(0, 300)
         adjusted_roll = max(0, base_roll - penalty)
 

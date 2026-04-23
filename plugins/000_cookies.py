@@ -696,7 +696,10 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
 
         # Logarithmic scaling
         wealth_factor = min(1.0, math.log10(amount_int) / math.log10(self.MAX_COOKIES))
-        penalty = int(wealth_factor * 3)
+        if amount_int < 100:
+            penalty = 0
+        else:
+            penalty = int(wealth_factor * 3)
         base_roll = random.randint(0, 300)
         adjusted_roll = max(0, base_roll - penalty)
 
@@ -786,7 +789,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
             snake_eyes = True
 
         # Calculate winnings and handle tiny bets
-        tiny_bet_threshold = 10
+        tiny_bet_threshold = 100
         if amount_int <= tiny_bet_threshold and multiplier < 1.0:
             winnings = max(0, amount_int - 1)
         else:

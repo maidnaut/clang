@@ -787,12 +787,11 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
             multiplier = 0.1
             snake_eyes = True
 
-        # Calculate winnings and handle tiny bets
-        tiny_bet_threshold = 100
+        # Calculate winnings
         if multiplier < 1.0:
             winnings = math.floor(amount_int * multiplier)
         else:
-            winnings = round(amount_int * multiplier)
+            winnings = int(amount_int * multiplier)
 
         new_balance = current - amount_int + winnings
         net_gain = winnings - amount_int

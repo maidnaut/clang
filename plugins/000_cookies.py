@@ -616,49 +616,49 @@ class CookieCog(commands.Cog):
     async def gamble(self, ctx, amount: str = None):
 
         max_bet = 1000000000
-        
+
         user_id = ctx.author.id
         current_time = time.time()
-        
+
         # Cooldown spam prevention
         if user_id in self.gamble_blocks:
             if current_time < self.gamble_blocks[user_id]:
                 return
             del self.gamble_blocks[user_id]
-        
+
         if user_id not in self.gamble_cooldowns:
             self.gamble_cooldowns[user_id] = []
-        
+
         self.gamble_cooldowns[user_id] = [
-            t for t in self.gamble_cooldowns[user_id] 
+            t for t in self.gamble_cooldowns[user_id]
             if current_time - t < self.GAMBLE_WINDOW
         ]
-        
+
         if len(self.gamble_cooldowns[user_id]) >= self.GAMBLE_LIMIT:
             # Calculate when the block should expire
             oldest = self.gamble_cooldowns[user_id][0]
             block_until = oldest + self.GAMBLE_WINDOW
-            
+
             self.gamble_blocks[user_id] = block_until
-            
+
             wait_time = int(block_until - current_time)
             await ctx.send(
                 f"{await author_ping(ctx)} You've been rate limited! "
                 f"Please wait {wait_time} seconds before gambling again."
             )
-            
+
             del self.gamble_cooldowns[user_id]
             return
-        
+
         self.gamble_cooldowns[user_id].append(current_time)
-        
+
         if amount is None:
             await ctx.send(f"""
-{await author_ping(ctx)} <:spamton:1377920510666739712> NOW'S YOUR CHANCE TO BE A [[BIGSHOT]]\n
-How to gamba: Use ``!gamble`` or ``!bet`` with an amount under 100 to roll the dice to see how much you can win!\n
-Betting ``half`` breaks the betting limit, but the higher you bet, the more dangerous the odds. Going all in with ``!bet all`` is even more risky than a half bet.\n
-Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
-""")
+    {await author_ping(ctx)} <:spamton:1377920510666739712> NOW'S YOUR CHANCE TO BE A [[BIGSHOT]]\n
+    How to gamba: Use ``!gamble`` or ``!bet`` with an amount under 100 to roll the dice to see how much you can win!\n
+    Betting ``half`` breaks the betting limit, but the higher you bet, the more dangerous the odds. Going all in with ``!bet all`` is even more risky than a half bet.\n
+    Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
+    """)
             return
 
         guild_id = ctx.guild.id
@@ -699,7 +699,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         penalty = int(wealth_factor * 8)
         base_roll = random.randint(0, 300)
         adjusted_roll = max(0, base_roll - penalty)
-            
+
         # Outcomes
         def get_outcome(roll_val, bet_type):
             if bet_type == "all":
@@ -766,7 +766,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                         final_multiplier = 2.5
                     else:
                         final_multiplier = 2.0
-                    
+
                     ultra_rare_hit = False
                 else:
                     final_multiplier = base_multiplier
@@ -778,19 +778,23 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         # Determine outcome
         bet_type = "all" if amount.lower() == "all" else "fixed"
         multiplier, ultra_rare_hit = get_outcome(adjusted_roll, bet_type)
-        
+
         # Snake eyes
         snake_eyes = False
         if base_roll == 0:
             multiplier = 0.1
             snake_eyes = True
 
-        # Calculate winnings
-        winnings = round(amount_int * multiplier)
+        # New probabilistic betting algo
+        raw_winnings = amount_int * multiplier
+        winnings = math.floor(raw_winnings)
+        if random.random() < (raw_winnings - winnings):
+            winnings += 1
+
         new_balance = current - amount_int + winnings
         net_gain = winnings - amount_int
         loss_amount = amount_int - winnings
-        
+
         # Special case for "all" bets with 0 multiplier
         dead = (bet_type == "all" and multiplier == 0)
         if dead:
@@ -800,11 +804,11 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
         if new_balance > self.MAX_COOKIES:
             actual_winnings = self.MAX_COOKIES - (current - amount_int)
             actual_net_gain = actual_winnings - amount_int
-            
+
             db_update("cookies",
                     [f"user_id:{user_id}", f"guild_id:{guild_id}"],
                     [("cookies", self.MAX_COOKIES)])
-            
+
             if actual_winnings > 0:
                 response = (
                     f"💎💎💎 **YOU WON CAPITALISM!** 💎💎💎\n"
@@ -817,7 +821,7 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
                     f"Your balance was already at 1,000,000,000 cookies!\n"
                     f"No additional winnings were awarded."
                 )
-            
+
             await ctx.send(f"{await author_ping(ctx)} {response}")
             return
         else:
@@ -840,19 +844,19 @@ Remember, if you wanna win big, always bet on CLANG <:clang:1373291982528577566>
             response = f"🎲 🎲 **SNAKE EYES** - You lost {amount_int} cookies!! <:cri:1369238296479273042>"
         elif net_gain > 0:
             if ultra_rare_hit:
-                
+
                 if multiplier == 4.0:
                     response = f"💎💎💎 **ULTRA RARE MYTHIC GAMBA** - You won THE HIGHEST PAYOUT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-                
+
                 if multiplier == 3.8:
                     response = f"✨✨✨ **EXTRA RARE SPARKLY GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-                
+
                 if multiplier == 3.6:
                     response = f"⭐⭐⭐ **RARE GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-                
+
                 if multiplier == 3.2:
                     response = f"🎉🎉🎉 **EXTRA SPECIAL GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
-                
+
                 if multiplier == 3.0:
                     response = f"7️7️7️ **SPECIAL GAMBA** - You won THE JACKPOT with a ``{multiplier}x`` multiplier!!! Net gain: ``{net_gain}`` cookies!"
 
